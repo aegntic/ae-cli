@@ -12,9 +12,11 @@ export default defineCommand({
 
     console.log()
     consola.info("Workspace Balance")
-    console.log(`  Balance:   $${data.balance.toFixed(2)} ${data.currency}`)
-    console.log(`  Held:      $${data.held.toFixed(2)} ${data.currency}`)
-    console.log(`  Available: $${data.available.toFixed(2)} ${data.currency}`)
+    // 4dp: per-call/per-result metering can be sub-cent (e.g. $0.001).
+    // 2dp would hide the charge from a single call.
+    console.log(`  Balance:   $${data.balance.toFixed(4)} ${data.currency}`)
+    console.log(`  Held:      $${data.held.toFixed(4)} ${data.currency}`)
+    console.log(`  Available: $${data.available.toFixed(4)} ${data.currency}`)
     console.log()
   },
 })
