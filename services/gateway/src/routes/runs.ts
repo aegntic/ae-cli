@@ -43,7 +43,11 @@ runsRoute.post("/runs", async (c) => {
 
   executeAsync(run.id, provider, endpoint, input, estimatedCost)
 
-  return c.json(run, 201)
+  const response: ApiResponse<Run> = {
+    data: run,
+    requestId: nanoid(8),
+  }
+  return c.json(response, 201)
 })
 
 runsRoute.get("/runs", (c) => {

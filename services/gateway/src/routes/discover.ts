@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import type { Context } from "hono"
 import { nanoid } from "nanoid"
 import { searchProviders } from "../providers/registry.js"
 import type { Env } from "../types.js"
@@ -6,7 +7,9 @@ import type { DiscoverResponse, HintsBlock, ApiResponse } from "@aegntic/sdk"
 
 export const discoverRoute = new Hono<Env>()
 
-discoverRoute.post("/discover", (c) => {
+// Discovery is an idempotent read; accept both GET (CLI default) and POST
+// (agents/SDKs that prefer not to encode a query body in the URL).
+const handleDiscover = (c: Context) => {
   const q = c.req.query("q") ?? ""
   const limit = Math.min(Number(c.req.query("limit")) || 10, 50)
   const minScore = Number(c.req.query("minScore")) || 0
@@ -37,4 +40,7 @@ discoverRoute.post("/discover", (c) => {
   }
 
   return c.json(response)
-})
+}
+
+discoverRoute.get("/discover", handleDiscover)
+discoverRoute.post("/discover", handleDiscover)
