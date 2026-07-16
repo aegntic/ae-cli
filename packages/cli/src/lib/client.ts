@@ -64,9 +64,10 @@ export async function inspect(
   provider: string,
   endpoint: string,
 ): Promise<InspectResponse> {
+  const params = new URLSearchParams({ provider, endpoint })
   const res = await request<ApiResponse<InspectResponse>>(
     "GET",
-    `/v1/providers/${provider}/endpoints/${endpoint}`,
+    `/v1/inspect?${params}`,
   )
   return res.data
 }
@@ -78,8 +79,8 @@ export async function createRun(
 ): Promise<Run> {
   const res = await request<ApiResponse<Run>>(
     "POST",
-    `/v1/providers/${provider}/endpoints/${endpoint}/runs`,
-    { input },
+    `/v1/runs`,
+    { provider, endpoint, input },
   )
   return res.data
 }

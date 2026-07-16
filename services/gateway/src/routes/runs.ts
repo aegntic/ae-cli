@@ -1,356 +1,166 @@
 import { Hono } from "hono"
-import { db } from "../db/index.js"
-import { jobs, tools, balanceLedger } from "../db/schema.js"
-import { eq, and, sum, desc } from "drizzle-orm"
 import { nanoid } from "nanoid"
+import type { Run, RunInput, CostBreakdown, ApiResponse, HintsBlock } from "@aegntic/sdk"
 import type { Env } from "../types.js"
-import { registry } from "../adapters/index.js"
+import { createRun, getRun, updateRun, listRuns, getBalance, holdBalance, deductBalance } from "../store.js"
+import { getEndpoint, getProvider } from "../providers/registry.js"
 
 export const runsRoute = new Hono<Env>()
 
-function estimateCost(tool: any, input: any): number {
-  const costModel = tool.costModel as any
-  const body = input?.body || {}
-  const limit = body.maxItems || body.maxResults || body.limit || 10
-  
-  if (costModel.type === "per_result") {
-    return Math.ceil(limit * costModel.unitPrice * 1.25)
-  }
-  return 100
-}
-
-const activeTasks = new Map<string, { timer: NodeJS.Timeout; promise: Promise<void>; resolve: () => void }>()
-
 runsRoute.post("/runs", async (c) => {
-  const workspaceId = c.get("workspaceId")
-  const { provider, endpoint, input } = await c.req.json()
+  const workspace = c.get("workspace")
   const idempotencyKey = c.req.header("Idempotency-Key")
 
+  const body = await c.req.json<{ provider: string; endpoint: string; input: RunInput }>()
+  const { provider, endpoint, input } = body
+
   if (!provider || !endpoint) {
-    return c.json({ error: "Missing provider or endpoint" }, 400)
+    return c.json({ error: "Fields 'provider' and 'endpoint' are required" }, 400)
   }
 
-  if (idempotencyKey) {
-    const existing = await db
-      .select()
-      .from(jobs)
-      .where(and(eq(jobs.workspaceId, workspaceId), eq(jobs.idempotencyKey, idempotencyKey)))
-      .limit(1)
-
-    if (existing.length > 0) {
-      return c.json({
-        data: {
-          ...existing[0],
-          input: existing[0].input as any,
-          cost: existing[0].cost as any,
-          result: existing[0].result as any,
-        },
-        requestId: Math.random().toString(36).substring(7),
-      })
-    }
+  const ep = getEndpoint(provider, endpoint)
+  if (!ep) {
+    return c.json({ error: `Endpoint ${provider}/${endpoint} not found` }, 404)
   }
 
-  const toolResults = await db
-    .select()
-    .from(tools)
-    .where(and(eq(tools.provider, provider), eq(tools.path, endpoint)))
-    .limit(1)
-
-  if (toolResults.length === 0) {
-    return c.json({ error: `Tool not found: ${provider}${endpoint}` }, 404)
+  const validationError = validateInput(ep.inputSchema, input)
+  if (validationError) {
+    return c.json({ error: validationError }, 400)
   }
 
-  const tool = toolResults[0]
+  const balance = getBalance(workspace.id)
+  const adapter = getProvider(provider)
+  const estimatedCost = adapter ? await adapter.estimateCost(endpoint, input) : 0.01
 
-  const ledgerSum = await db
-    .select({ total: sum(balanceLedger.deltaCents) })
-    .from(balanceLedger)
-    .where(eq(balanceLedger.workspaceId, workspaceId))
-
-  const balance = ledgerSum[0]?.total ? parseInt(ledgerSum[0].total, 10) : 0
-  const estimatedCostCents = estimateCost(tool, input)
-
-  if (balance < estimatedCostCents) {
-    const jobId = `run_${nanoid(16)}`
-    const blockedJob = {
-      id: jobId,
-      workspaceId,
-      provider,
-      endpoint,
-      input: input || {},
-      status: "BLOCKED" as const,
-      cost: {
-        value: 0,
-        currency: "USD" as const,
-        items: 0,
-        unitPrice: (tool.costModel as any).unitPrice,
-      },
-      stoppable: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    await db.insert(jobs).values({
-      ...blockedJob,
-      idempotencyKey: idempotencyKey || null,
-    })
-
-    return c.json({
-      data: blockedJob,
-      requestId: Math.random().toString(36).substring(7),
-    })
+  if (balance.balance - balance.held < estimatedCost) {
+    return c.json({ error: "Insufficient balance", estimatedCost, available: balance.balance - balance.held }, 402)
   }
 
-  const jobId = `run_${nanoid(16)}`
-  const newJob = {
-    id: jobId,
-    workspaceId,
-    provider,
-    endpoint,
-    input: input || {},
-    status: "RUNNING" as const,
-    stoppable: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+  holdBalance(workspace.id, estimatedCost)
+
+  const run = createRun(workspace.id, provider, endpoint, input, idempotencyKey)
+  updateRun(run.id, { status: "RUNNING" })
+
+  executeAsync(run.id, provider, endpoint, input, estimatedCost)
+
+  const response: ApiResponse<Run> = {
+    data: run,
+    requestId: nanoid(8),
   }
-
-  await db.insert(jobs).values({
-    ...newJob,
-    idempotencyKey: idempotencyKey || null,
-  })
-
-  let resolveTask: () => void = () => {}
-  const taskPromise = new Promise<void>((resolve) => {
-    resolveTask = resolve
-  })
-
-  const runTask = async () => {
-    try {
-      const adapter = registry.getAdapter(provider)
-      const executeResult = await adapter.execute(endpoint, input)
-
-      const checkJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
-      if (checkJob.length === 0 || checkJob[0].status === "STOPPED") {
-        activeTasks.delete(jobId)
-        return
-      }
-
-      const actualCostCents = estimateCost(tool, { ...input, body: { ...((input as any)?.body || {}), maxItems: executeResult.items } })
-
-      const ledgerId = `ledger_${nanoid(16)}`
-      await db.insert(balanceLedger).values({
-        id: ledgerId,
-        workspaceId,
-        deltaCents: -actualCostCents,
-        type: "charge",
-        description: `Charge for run ${jobId} against ${provider}${endpoint}`,
-        jobId,
-      })
-
-      await db
-        .update(jobs)
-        .set({
-          status: "COMPLETED",
-          result: executeResult.data as any,
-          resultUri: `https://api.aegntic.ai/v1/runs/${jobId}/results.json`,
-          cost: {
-            value: actualCostCents / 100,
-            currency: "USD",
-            items: executeResult.items,
-            unitPrice: (tool.costModel as any).unitPrice / 100,
-          } as any,
-          stoppable: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(jobs.id, jobId))
-    } catch (err: any) {
-      const checkJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
-      if (checkJob.length > 0 && checkJob[0].status === "STOPPED") {
-        activeTasks.delete(jobId)
-        return
-      }
-
-      await db
-        .update(jobs)
-        .set({
-          status: "FAILED",
-          error: err.message || "Execution failed",
-          stoppable: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(jobs.id, jobId))
-    }
-
-    activeTasks.delete(jobId)
-  }
-
-  const timer = setTimeout(() => {
-    runTask().then(() => resolveTask())
-  }, 10)
-
-  activeTasks.set(jobId, { timer, promise: taskPromise, resolve: resolveTask })
-
-  const waitParam = c.req.query("wait")
-  if (waitParam !== undefined) {
-    const waitTime = parseInt(waitParam, 10) || 30
-    await Promise.race([
-      taskPromise,
-      new Promise((resolve) => setTimeout(resolve, Math.min(waitTime, 30) * 1000)),
-    ])
-
-    const updatedJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
-    return c.json({
-      data: {
-        ...updatedJob[0],
-        input: updatedJob[0].input as any,
-        cost: updatedJob[0].cost as any,
-        result: updatedJob[0].result as any,
-      },
-      requestId: Math.random().toString(36).substring(7),
-    })
-  }
-
-  return c.json({
-    data: {
-      id: jobId,
-      workspaceId,
-      provider,
-      endpoint,
-      input: input || {},
-      status: "RUNNING",
-      stoppable: true,
-      createdAt: newJob.createdAt,
-      updatedAt: newJob.updatedAt,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
+  return c.json(response, 201)
 })
 
-runsRoute.get("/runs", async (c) => {
-  const workspaceId = c.get("workspaceId")
-  const limitStr = c.req.query("limit")
-  const limit = limitStr ? Math.max(1, parseInt(limitStr, 10)) : 20
+runsRoute.get("/runs", (c) => {
+  const workspace = c.get("workspace")
+  const limit = Math.min(Number(c.req.query("limit")) || 50, 200)
+  const runs = listRuns(workspace.id, limit)
 
-  const results = await db
-    .select()
-    .from(jobs)
-    .where(eq(jobs.workspaceId, workspaceId))
-    .orderBy(desc(jobs.createdAt))
-    .limit(limit)
+  const response: ApiResponse<Run[]> = {
+    data: runs,
+    requestId: nanoid(8),
+  }
 
-  const formatted = results.map((job) => ({
-    ...job,
-    input: job.input as any,
-    cost: job.cost as any,
-    result: job.result as any,
-  }))
-
-  return c.json({
-    data: formatted,
-    requestId: Math.random().toString(36).substring(7),
-  })
+  return c.json(response)
 })
 
-runsRoute.get("/runs/:id", async (c) => {
-  const workspaceId = c.get("workspaceId")
+runsRoute.get("/runs/:id", (c) => {
+  const workspace = c.get("workspace")
   const id = c.req.param("id")
-  const waitParam = c.req.query("wait")
+  const run = getRun(id)
 
-  const results = await db
-    .select()
-    .from(jobs)
-    .where(and(eq(jobs.id, id), eq(jobs.workspaceId, workspaceId)))
-    .limit(1)
-
-  if (results.length === 0) {
+  if (!run || run.workspaceId !== workspace.id) {
     return c.json({ error: "Run not found" }, 404)
   }
 
-  let job = results[0]
-
-  if (job.status === "RUNNING" && waitParam !== undefined) {
-    const waitTime = parseInt(waitParam, 10) || 30
-    const task = activeTasks.get(id)
-    if (task) {
-      await Promise.race([
-        task.promise,
-        new Promise((resolve) => setTimeout(resolve, Math.min(waitTime, 30) * 1000)),
-      ])
-      const refreshed = await db
-        .select()
-        .from(jobs)
-        .where(and(eq(jobs.id, id), eq(jobs.workspaceId, workspaceId)))
-        .limit(1)
-      if (refreshed.length > 0) {
-        job = refreshed[0]
-      }
-    }
+  const response: ApiResponse<Run> = {
+    data: run,
+    requestId: nanoid(8),
   }
 
-  return c.json({
-    data: {
-      ...job,
-      input: job.input as any,
-      cost: job.cost as any,
-      result: job.result as any,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
+  return c.json(response)
 })
 
-runsRoute.post("/runs/:id/stop", async (c) => {
-  const workspaceId = c.get("workspaceId")
+runsRoute.post("/runs/:id/stop", (c) => {
+  const workspace = c.get("workspace")
   const id = c.req.param("id")
+  const run = getRun(id)
 
-  const results = await db
-    .select()
-    .from(jobs)
-    .where(and(eq(jobs.id, id), eq(jobs.workspaceId, workspaceId)))
-    .limit(1)
-
-  if (results.length === 0) {
+  if (!run || run.workspaceId !== workspace.id) {
     return c.json({ error: "Run not found" }, 404)
   }
 
-  const job = results[0]
-
-  if (job.status !== "RUNNING" && job.status !== "READY") {
-    return c.json({ error: "Run is already in a terminal state" }, 409)
+  if (!run.stoppable || run.status === "COMPLETED" || run.status === "FAILED") {
+    return c.json({ error: "Run cannot be stopped" }, 409)
   }
 
-  if (!job.stoppable) {
-    return c.json({ error: "Run is not stoppable" }, 409)
+  updateRun(id, { status: "STOPPED", stoppable: false })
+
+  const hints: HintsBlock = {
+    nextCommands: [`aegntic run ${run.provider}/${run.endpoint} --input '${JSON.stringify(run.input)}'`],
   }
 
-  const task = activeTasks.get(id)
-  if (task) {
-    clearTimeout(task.timer)
-    task.resolve()
-    activeTasks.delete(id)
-  }
-
-  await db
-    .update(jobs)
-    .set({
-      status: "STOPPED",
-      stoppable: false,
-      updatedAt: new Date(),
-    })
-    .where(eq(jobs.id, id))
-
-  const refreshed = await db
-    .select()
-    .from(jobs)
-    .where(eq(jobs.id, id))
-    .limit(1)
-
-  return c.json({
-    data: {
-      ...refreshed[0],
-      input: refreshed[0].input as any,
-      cost: refreshed[0].cost as any,
-      result: refreshed[0].result as any,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
+  return c.json({ ...getRun(id), hints })
 })
+
+async function executeAsync(
+  runId: string,
+  providerName: string,
+  endpointPath: string,
+  input: RunInput,
+  estimatedCost: number,
+): Promise<void> {
+  const workspace = getRun(runId)?.workspaceId
+  if (!workspace) return
+
+  try {
+    const adapter = getProvider(providerName)
+    if (!adapter) throw new Error(`Provider ${providerName} not found`)
+
+    const result = await adapter.execute(endpointPath, input)
+
+    const cost: CostBreakdown = {
+      value: result.cost,
+      currency: "USD",
+      items: result.items,
+      unitPrice: result.items > 0 ? result.cost / result.items : result.cost,
+    }
+
+    deductBalance(workspace, estimatedCost)
+    updateRun(runId, { status: "COMPLETED", result: result.data, cost, stoppable: false })
+  } catch (err) {
+    deductBalance(workspace, estimatedCost)
+    updateRun(runId, {
+      status: "FAILED",
+      error: err instanceof Error ? err.message : "Unknown error",
+      stoppable: false,
+    })
+  }
+}
+
+function validateInput(
+  schema: { queryParams?: Record<string, { required?: boolean }>; pathParams?: Record<string, { required?: boolean }>; body?: Record<string, { required?: boolean }> },
+  input?: RunInput,
+): string | null {
+  if (schema.queryParams) {
+    for (const [key, field] of Object.entries(schema.queryParams)) {
+      if (field.required && !input?.queryParams?.[key]) {
+        return `Missing required query param: ${key}`
+      }
+    }
+  }
+  if (schema.pathParams) {
+    for (const [key, field] of Object.entries(schema.pathParams)) {
+      if (field.required && !input?.pathParams?.[key]) {
+        return `Missing required path param: ${key}`
+      }
+    }
+  }
+  if (schema.body) {
+    for (const [key, field] of Object.entries(schema.body)) {
+      if (field.required && (input?.body?.[key] === undefined || input?.body?.[key] === null)) {
+        return `Missing required body field: ${key}`
+      }
+    }
+  }
+  return null
+}
