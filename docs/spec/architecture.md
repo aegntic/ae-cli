@@ -42,8 +42,23 @@
 
 ## Cross-cutting
 - **Idempotency:** `Idempotency-Key` header on `POST /v1/runs`.
-- **Billing:** reserve estimated cost at QUEUED; settle actual on COMPLETED; refund diff on FAILED.
-- **Security:** keys hashed (argon2), never logged; provider secrets in env/vault only.
+- **Billing (ADR-0005):** append-only `balance_ledger`; reserve estimate at QUEUED; settle actual `result_count × unit_cost × 1.25` on COMPLETED; refund on FAILED. Balance never negative.
+- **Security:** keys hashed (argon2), never logged; provider secrets in env/vault only; SECURITY GATE before billing endpoints ship.
+- **NL discovery:** pgvector on `tools` (embed `description` + `input_schema`), hybrid with BM25 over slug/tags.
 - **Observability:** every run emits structured log; build-log + run-log are the audit trail.
 
-⟦Stack ADR pending — see PRD open questions.⟧
+## Stack (ADR-0004)
+Hono on Bun (gateway) · Supabase Postgres + pgvector · Upstash QStash · oclif v4 (CLI) · Next.js 15 (web) · Stripe Checkout + webhooks · OpenAI text-embedding-3-small.
+
+## Provider adapter contract (ADR-0006)
+```ts
+interface ProviderAdapter {
+  searchTools(q: string): ToolManifest[];      // registered at boot
+  resolveTool(slug: string): ToolDefinition;
+  estimateCost(tool: string, input: unknown): CostEstimate;
+  startRun(tool: string, input: unknown, idemKey: string): Promise<{providerRunId, pollIntervalMs}>;
+  pollRun(providerRunId: string): Promise<RunStatus>;
+  fetchResults(providerRunId: string, offset, limit): Promise<ResultPage>;
+  cancelRun?(providerRunId: string): Promise<void>;
+}
+```
