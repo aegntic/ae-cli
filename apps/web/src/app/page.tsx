@@ -122,7 +122,7 @@ function Nav() {
           </a>
         </nav>
         <Link
-          href="https://app.aegntic.ai"
+          href="/app"
           className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90"
         >
           Get started &rarr;
@@ -422,7 +422,7 @@ function FinalCTA() {
         </div>
         <div className="mt-8">
           <Link
-            href="https://app.aegntic.ai"
+            href="/app"
             className="inline-flex items-center gap-2 rounded-xl gradient-accent px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-accent/20 transition-all hover:shadow-xl hover:shadow-accent/30"
           >
             Get started
@@ -469,7 +469,7 @@ function Footer() {
                 Docs
               </Link>
               <Link
-                href="https://app.aegntic.ai"
+                href="/app"
                 className="transition-colors hover:text-text-primary"
               >
                 Get started

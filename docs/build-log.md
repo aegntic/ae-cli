@@ -126,3 +126,19 @@ Deferred: Apify adapter (needs APIFY_API_TOKEN signup), argon2 swap, keys-add CL
 - verified: bg agent — add mints key that authenticates (balance 200); revoke deletes row (DB count 0, revoked key → 401, 404 on missing label). typecheck 5/5.
 - **Operational gotcha (env, not code):** a stale gateway from a *different worktree* (competition's ship-1) was bound to :3100 with an older binary → wrong response shape. Before integration tests, confirm the bound gateway PID points into the worktree under test (`readlink /proc/<pid>/cwd`), or bind a non-default PORT.
 - next: dashboard (apps/web real /app/*); deploy when platform auth available
+
+## [2026-07-17 10:35] build | P2 Phase 2g — web console (/app) + DB isolation
+- changed: apps/web/src/app/app/page.tsx (new — operator console), apps/web/src/app/page.tsx (landing CTAs → /app), docs/build-log.md
+- /app: client component. Key gate (localStorage), balance hero (4dp, gradient), available/held stats, recent-runs table with status pills + auto-poll (2.5s) while runs active. Calls /v1/balance + /v1/runs directly via NEXT_PUBLIC_AEGNTIC_BASE_URL (default :3100). Designed dark-luxury, single dominant number — not a card grid.
+- resilience: Promise.all → Promise.allSettled with per-section errors — a failing /runs no longer discards a valid /balance.
+- landing: the 3 "Get started" / Console CTAs pointed at non-existent app.aegntic.ai → repointed to the real /app route.
+- verified: bg agent + browser screenshots — balance 9.9990 USD, available/held, 1 run (openmeteo/weather/current COMPLETED, green pill, 0.0010), no 500s.
+
+### ⚠️ Operational lesson: per-worktree DB isolation
+First /app verify FAILED: `/v1/runs` 500 with `relation "runs" does not exist`. Root cause: the shared `aegntic-pg` (:5434) was clobbered — competition's `ship-1` worktree ran ITS migrations against the SAME database, replacing my `runs` table with `jobs`+`tools` (their schema). My `balance_ledger`/`api_keys` survived (data intact) but `runs` was gone.
+
+Fix: gave this worktree its OWN postgres — container `aegntic-pg-p2` on **localhost:5435** (db/user/pass = aegntic). DATABASE_URL for this worktree = `postgresql://aegntic:aegntic@localhost:5435/aegntic`. Migrations + seed re-applied cleanly (my 4 tables). No cross-worktree clobbering.
+
+Rule going forward: **one postgres DB per worktree** on this shared machine. Code default stays :5434 (canonical single-dev convention); set DATABASE_URL=:5435 (or a unique port) per worktree.
+- commit: (this commit)
+- next: favicon (404 cosmetic); dashboard auth (real better-auth per ADR-0004 vs localStorage key); deploy; Apify.
