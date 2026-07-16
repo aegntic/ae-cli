@@ -1,9 +1,11 @@
 import type { ProviderAdapter, Endpoint } from "@aegntic/sdk"
 import { mockProvider } from "./mock.js"
+import { openMeteoProvider } from "./openmeteo.js"
 
 const providers = new Map<string, ProviderAdapter>()
 
 providers.set(mockProvider.name, mockProvider)
+providers.set(openMeteoProvider.name, openMeteoProvider)
 
 export function addProvider(adapter: ProviderAdapter): void {
   providers.set(adapter.name, adapter)
