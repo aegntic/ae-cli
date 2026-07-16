@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
-import { logger } from "hono/middleware"
+import { logger } from "hono/logger"
 import { serve } from "@hono/node-server"
 import { discoverRoute } from "./routes/discover.js"
 import { inspectRoute } from "./routes/inspect.js"
@@ -8,8 +8,9 @@ import { runsRoute } from "./routes/runs.js"
 import { balanceRoute } from "./routes/balance.js"
 import { keysRoute } from "./routes/keys.js"
 import { authMiddleware } from "./middleware/auth.js"
+import type { Env } from "./types.js"
 
-const app = new Hono()
+const app = new Hono<Env>()
 
 app.use("*", cors())
 app.use("*", logger())

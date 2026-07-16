@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 
 import { defineCommand, runMain } from "citty"
-import { name, version, description } from "../package.json" with { type: "json" }
+import pkg from "../package.json" with { type: "json" }
+
+const { name, version } = pkg
 
 const main = defineCommand({
   meta: {
     name,
     version,
-    description,
+    description: "Discover and run data endpoints",
   },
   subCommands: {
-    discover: () => import("./commands/discover").then((m) => m.default),
-    inspect: () => import("./commands/inspect").then((m) => m.default),
-    run: () => import("./commands/run").then((m) => m.default),
-    runs: () => import("./commands/runs").then((m) => m.default),
-    balance: () => import("./commands/balance").then((m) => m.default),
-    keys: () => import("./commands/keys").then((m) => m.default),
-    setup: () => import("./commands/setup").then((m) => m.default),
+    discover: () => import("./commands/discover.js").then((m) => m.default),
+    inspect: () => import("./commands/inspect.js").then((m) => m.default),
+    run: () => import("./commands/run.js").then((m) => m.default),
+    runs: () => import("./commands/runs.js").then((m) => m.default),
+    balance: () => import("./commands/balance.js").then((m) => m.default),
+    keys: () => import("./commands/keys.js").then((m) => m.default),
+    setup: () => import("./commands/setup.js").then((m) => m.default),
   },
 })
 

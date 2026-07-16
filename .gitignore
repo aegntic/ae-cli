@@ -1,34 +1,8 @@
-# deps
 node_modules/
-.pnpm-store/
-
-# builds
 dist/
-build/
-out/
-*.tsbuildinfo
+.next/
 .turbo/
-.vercel/
-
-# env / secrets
+*.tsbuildinfo
 .env
-.env.*
-!.env.example
-*.pem
-*.key
-
-# logs / cache
-*.log
-npm-debug.log*
-.cache/
-coverage/
-
-# os / editor
-.DS_Store
-.idea/
-.vscode/*
-!.vscode/extensions.json
-
-# local db / runtime
-*.sqlite
-*.db
+.env.local
+.env.*.local
