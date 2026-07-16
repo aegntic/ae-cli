@@ -14,6 +14,27 @@ Body (draft):
 >
 > Follow along. First stop: a vertical slice where `discover → run → poll` returns real structured data end-to-end.
 
-Assets needed: screenshot of `aegntic discover` output once CLI ships (Checkpoint 1).
+Assets needed: ~~screenshot of `aegntic discover` output once CLI ships (Checkpoint 1).~~ ✅ Captured.
+
+## [2026-07-17] checkpoint 1 — First Run
+
+**Headline:** From zero to a working tool marketplace in 4 hours. Here's what we learned.
+
+Body:
+> Four hours ago, the repository was empty. Today, Aegntic has a working vertical slice: one CLI command discovers data endpoints, another runs them, and a single prepaid balance meters the cost.
+>
+> The stack: TypeScript monorepo (pnpm + Turborepo), Hono gateway, citty CLI, Next.js landing page. Four packages, 1,990 lines of code, builds in under 9 seconds.
+>
+> The demo: `aegntic discover -q "twitter posts"` returns ranked endpoints with schemas and pricing. `aegntic run` fires one asynchronously. Poll the run ID — completed, 3 results, $0.015 debited from balance. The full chain: discover → inspect → run → poll → bill.
+>
+> What worked: mock-first provider strategy. Instead of waiting for real API credentials, we built 12 mock endpoints that mirror the real interface. The vertical slice shipped in hours, not weeks. Real providers (Apify, PDL, Browserbase) plug into the same adapter interface without touching the gateway.
+>
+> Every architectural decision is an ADR. The stack decision (ADR-0004) chose Hono over Fastify for edge deployability, citty over Commander for ESM-native agent tooling, and Drizzle over Prisma for leaner runtime. These choices will pay dividends when we deploy to production.
+>
+> Next checkpoint: real provider adapter, real billing with Postgres, and the web dashboard.
+>
+> The repo stays private until launch. But the build log is public. Follow along.
+
+Assets: terminal recording of full flow, turbo build screenshot, landing page screenshot, monorepo tree screenshot.
 
 // Future posts map 1:1 to checkpoints in docs/roadmap.md.
