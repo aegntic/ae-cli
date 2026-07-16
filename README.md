@@ -2,7 +2,7 @@
 
 **Aegntic CLI** — `@aegntic-ai/cli`. One interface to discover, inspect, and run hundreds of data tools (scrapers, APIs, enrichment, search). Discover first; never hand-roll what a verified endpoint already does.
 
-> Status: **pre-build.** This repo is the build target for the aegntic tool-marketplace business (CLI client + gateway API + web dashboard). Repo `aegntic/ae-cli` and npm `@aegntic-ai/cli` do not exist yet — this is where they get built.
+> Status: **Checkpoint 2 (Real Money) verified.** The repo and the vertical slice exist and run. The CLI discovers endpoints, runs them against a real external provider (Open-Meteo, live data), and bills a durable Postgres ledger — append-only, balance derived, restart-persistent, failed runs free. Still **private** until the Launch checkpoint (ADR-0002); a SECURITY GATE (gitleaks + opensource-sanitizer) runs before any public flip. The web dashboard is landing-only today (real `/app/*` is the next phase). See `docs/build-log.md` for the commit-by-commit record.
 
 ## Mission
 

@@ -45,5 +45,9 @@ keysRoute.delete("/keys/:label", async (c) => {
     return c.json({ error: `Key with label '${label}' not found` }, 404)
   }
 
-  return c.json({ deleted: true, label })
+  const response: ApiResponse<{ deleted: boolean; label: string }> = {
+    data: { deleted: true, label },
+    requestId: nanoid(8),
+  }
+  return c.json(response)
 })
