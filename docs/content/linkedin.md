@@ -39,19 +39,25 @@ Assets: terminal recording of full flow, turbo build screenshot, landing page sc
 
 // Future posts map 1:1 to checkpoints in docs/roadmap.md.
 
-## [2026-07-17] Checkpoint 1 — First Run complete
-**Headline:** We just shipped the first billed run of our agent-tool router.
+## [2026-07-17] checkpoint 2 — Real Money
 
-Body (draft):
-> Checkpoint 1 of aegntic is officially complete. We firmed up our monorepo stack: Hono for the gateway, Drizzle + PostgreSQL for the database/billing ledger, and a lightweight citty-powered CLI.
->
-> In this milestone, we wired the entire vertical slice:
-> 1. Discovering endpoints using natural language from the terminal.
-> 2. Inspecting input schemas to know exactly what parameters are required.
-> 3. Running the job asynchronously and polling or waiting for completion.
-> 4. Settling actual results dynamically against a prepaid workspace ledger.
->
-> One of our biggest design decisions was charging per-result (incorporated with a 25% markup) instead of per-call. This aligns our interests with the developers: if a scraper fails, they don't lose a cent.
->
-> Up next: integrating the Apify and PDL providers, adding Argon2 API key hashing, and building the Next.js wallet dashboard.
+**Headline:** We stopped pretending. The CLI now hits a real external API and bills real (fractional) money against a durable ledger.
 
+Body:
+> Checkpoint 1 ran on mock data — a fake provider returning fake tweets, debiting a number that lived in a JavaScript Map. That was fine for proving the loop. It was not fine for proving the business.
+>
+> Checkpoint 2 is the real thing. Three things changed, and each is a discipline worth naming.
+>
+> **1. Persistence is append-only.** There is no `balance` column. Balance is derived: `SELECT` the signed sum of a `balance_ledger` table (`topup`/`refund` add, `charge` subtracts). Kill the gateway process, restart it — the balance is identical, because it was never state, it was history. An append-only ledger is the only design that survives audit.
+>
+> **2. Billing is correct, and we proved the failure path.** A run that succeeds charges its *actual* cost, not the estimate. A run that fails charges *nothing*. We could not trigger a failed run through the CLI, so we wrote a unit test that injects a provider which throws and asserts zero charge rows. "It probably works" is not a billing strategy.
+>
+> **3. The first real provider is live.** Open-Meteo — free, no API key, no signup — behind the exact same `ProviderAdapter` interface the mock used. One `addProvider()` call, zero gateway changes. `aegntic run openmeteo/weather/current` returns genuine current weather for Berlin (25.3°C this morning) and appends a `$0.0010` charge to the ledger.
+>
+> The honest moment: our end-to-end test first reported the billing worked. A second, paranoid pass reported the balance "didn't move." Both were right. We charge a tenth of a cent, and the balance command rounded to cents. Sub-cent charges were invisible. We don't ship invisible money — the display now shows four decimals.
+>
+> Six commits, six unit tests green, one live external call billed to a durable ledger. Next: deploy, a credentialed provider (Apify), and the dashboard.
+>
+> The repo stays private until Launch. The build log is public. Follow along.
+
+Assets: terminal recording of `aegntic run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.

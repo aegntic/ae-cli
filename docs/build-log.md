@@ -80,3 +80,40 @@ Append-only chronological record. One entry per build/commit batch. Format:
 - untested branch: failed-run-no-charge (no CLI path triggers FAILED post-creation) — unit test to follow.
 - commit: (this commit)
 - next: Phase 2c — billing unit tests (failure path + ledger invariants), then Apify adapter
+
+## [2026-07-17 09:20] build | P2 Phase 2c — billing tests + testable app factory
+- changed: services/gateway/src/{app.ts (new), index.ts, billing.test.ts (new)}
+- app.ts: createApp() extracted so tests drive Hono via app.request() without binding a port. index.ts calls createApp()+serve().
+- billing.test.ts: 2 DB-backed tests — (1) ledger invariants (topup/charge/refund derive balance), (2) failed run → FAILED + NO charge row (covers the billing fix the CLI e2e couldn't trigger).
+- verified: vitest 2/2 pass; typecheck clean. isolated workspaces, cascade cleanup.
+- commit: a6680ef
+- next: Phase 2d — real provider adapter
+
+## [2026-07-17 09:35] build | P2 Phase 2d — openmeteo: first REAL provider (live data, no key)
+- changed: services/gateway/src/providers/{openmeteo.ts (new), openmeteo.test.ts (new), registry.ts}
+- openmeteo.ts: ProviderAdapter hitting live api.open-meteo.com (weather/current), 10s upstream timeout, per_call $0.001. First non-mock provider — real external data, real ledger charge, zero gateway changes (additive via addProvider).
+- openmeteo.test.ts: 4 fetch-mocked unit tests (happy/missing-params/upstream-error/cost).
+- verified: vitest 4/4 pass; typecheck clean. live e2e vs real API pending.
+- why openmeteo not apify: apify needs signup (human); openmeteo needs no key → proves real-provider+real-billing loop now without a credential dependency. apify adapter deferred (env-gated, when APIFY_API_TOKEN provided).
+- commit: 12e689a
+- next: live e2e (real Berlin weather + ledger charge) → Checkpoint 2 close
+
+## [2026-07-17 09:45] build | P2 Phase 2e — balance display precision
+- changed: packages/cli/src/commands/balance.ts
+- fix: balance rendered 2dp → sub-cent charges ($0.001 openmeteo) invisible ($9.98 before+after a charge). Now 4dp ($9.9840). DB truth was always correct; display truncated.
+- surfaced by live openmeteo e2e (run 8FG6oIIjxP1B, charge 0.0010, DB 9.985→9.984).
+- verified: typecheck green; toFixed(4) sanity-checked.
+- commit: 6ea5549
+
+## [2026-07-17 09:50] milestone | CHECKPOINT 2: REAL MONEY — VERIFIED
+Full vertical slice now runs on real persistence + real external data + real durable billing:
+1. Postgres (dockerized aegntic-pg :5434) via Drizzle — workspaces, api_keys, runs, balance_ledger.
+2. Append-only ledger; balance DERIVED (no mutable column); survives gateway restart (proven).
+3. Billing correctness: charge ACTUAL cost on success, NOTHING on failure (unit-tested).
+4. First REAL provider: Open-Meteo (no key, live data). Live e2e returned genuine Berlin weather (25.3°C, wind 6.2 km/h, 15-min interval signature) + charged $0.0010 to the durable ledger (run 8FG6oIIjxP1B).
+5. 6/6 gateway unit tests pass; typecheck clean.
+
+Commits (worktree-p2, off caf8964): 0799dc5, 2522b03, 9eef8c6, a6680ef, 12e689a, 6ea5549.
+
+Deferred: Apify adapter (needs APIFY_API_TOKEN signup), argon2 swap, keys-add CLI fix, hold/release for concurrent-run safety, deploy (Cloudflare/Vercel).
+- next: P3 — deploy gateway + web live; second real provider (Apify, credentialed); dashboard (apps/web is landing-only). Then Launch checkpoint + SECURITY GATE (gitleaks, opensource-sanitizer) before public flip.
