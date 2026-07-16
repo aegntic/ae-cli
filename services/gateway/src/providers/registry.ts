@@ -12,7 +12,8 @@ export function addProvider(adapter: ProviderAdapter): void {
 export function getEndpoint(provider: string, path: string): Endpoint | undefined {
   const adapter = providers.get(provider)
   if (!adapter) return undefined
-  return adapter.endpoints.find((e) => e.path === path)
+  const normalized = path.replace(/^\/+/, "")
+  return adapter.endpoints.find((e) => e.path === normalized || e.path === path)
 }
 
 export function listEndpoints(): Endpoint[] {
