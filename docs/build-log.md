@@ -23,3 +23,8 @@ Append-only chronological record. One entry per build/commit batch. Format:
 - tracker: bd (beads) initialized; P1 epic + 8 tasks seeded
 - verified: bd stats OK; market-research brief sources cited; no secrets in tree
 - next: P1 phase 1 — pnpm/turbo monorepo init + tsconfig/eslint/vitest base (≤5 files)
+
+## [2026-07-17 07:33] build | P1 phase 1 — monorepo tooling
+- changed: package.json (vitest + @types/node + engines/desc/license + turbo bump), tsconfig.base.json, .npmrc, pnpm-lock.yaml; bd scaffold already contributed pnpm-workspace.yaml + turbo.json
+- verified: `pnpm install` exit 0 across 5 workspace projects; turbo 2.10.5, vitest 2.1.9, tsc 5.9.3 resolve
+- next: P1 phase 2 — packages/sdk typed client skeleton (shared types: Tool, Run, Balance) + first vitest test

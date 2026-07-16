@@ -1,7 +1,11 @@
 {
   "name": "aegntic",
   "private": true,
+  "version": "0.0.0",
+  "description": "Aegntic CLI monorepo — discover, inspect, and run hundreds of data tools. One CLI, one balance, every data tool.",
+  "license": "MIT",
   "packageManager": "pnpm@9.15.4",
+  "engines": { "node": ">=20" },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -11,7 +15,9 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "turbo": "^2.3.0",
-    "typescript": "^5.7.0"
+    "turbo": "^2.3.4",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9",
+    "@types/node": "^22.10.0"
   }
 }
