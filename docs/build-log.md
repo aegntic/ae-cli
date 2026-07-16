@@ -112,3 +112,12 @@ Commits (worktree-p2, off caf8964): 0799dc5, 2522b03, 9eef8c6, a6680ef, 12e689a,
 
 Deferred: Apify adapter (needs APIFY_API_TOKEN signup), argon2 swap, keys-add CLI fix, hold/release for concurrent-run safety, deploy (Cloudflare/Vercel).
 - next: P3 — deploy gateway + web live; second real provider (Apify, credentialed); dashboard (apps/web is landing-only). Then Launch checkpoint + SECURITY GATE (gitleaks, opensource-sanitizer) before public flip.
+
+## [2026-07-17 10:10] build | P2 Phase 2f — keys lifecycle (mint + revoke hit gateway)
+- changed: packages/cli/src/{lib/client.ts, commands/keys.ts}, services/gateway/src/routes/keys.ts, README.md
+- keys add: gateway MINTS the key (aegntic_live_<nanoid>) from {label?}; CLI no longer sends a caller-supplied secret. Saves the minted key to config, prints it once. client.addKey→createKey, typed ApiKeyCreated (was ApiKey — no .key).
+- keys remove: was LOCAL-ONLY (printed "Remote key revocation requires the API" but never called the gateway, though the DELETE /v1/keys/:label route existed). Now calls deleteKey → DELETE /v1/keys/:label → deleteApiKey (row deleted server-side). Gateway DELETE response wrapped in ApiResponse for consistency.
+- README: status updated from "pre-build" to "Checkpoint 2 verified, private until Launch."
+- verified: bg agent — add mints key that authenticates (balance 200); revoke deletes row (DB count 0, revoked key → 401, 404 on missing label). typecheck 5/5.
+- **Operational gotcha (env, not code):** a stale gateway from a *different worktree* (competition's ship-1) was bound to :3100 with an older binary → wrong response shape. Before integration tests, confirm the bound gateway PID points into the worktree under test (`readlink /proc/<pid>/cwd`), or bind a non-default PORT.
+- next: dashboard (apps/web real /app/*); deploy when platform auth available

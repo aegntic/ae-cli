@@ -1,18 +1,21 @@
 import { defineCommand } from "citty"
 import consola from "consola"
-import { listKeys, addKey } from "../lib/client.js"
+import { listKeys, createKey, deleteKey } from "../lib/client.js"
 import { getConfig, saveConfig } from "../lib/config.js"
 
 const add = defineCommand({
-  meta: { name: "add", description: "Add an API key" },
+  meta: { name: "add", description: "Create a new API key (server mints it)" },
   args: {
-    k: { type: "string", description: "API key value", required: true },
-    l: { type: "string", description: "Label for the key", required: true },
+    l: { type: "string", description: "Label for the key" },
   },
   async run({ args }) {
-    await addKey(args.k, args.l)
-    await saveConfig({ apiKey: args.k })
-    consola.success(`Key "${args.l}" added and set as active.`)
+    // Server mints the key and returns it once. Save the minted key, not a
+    // caller-supplied one.
+    const created = await createKey(args.l)
+    await saveConfig({ apiKey: created.key })
+    consola.success(`Key "${created.label}" created and set as active.`)
+    console.log(`  ${created.key}`)
+    consola.warn("Store this key securely — it will not be shown again.")
   },
 })
 
@@ -39,19 +42,19 @@ const list = defineCommand({
 })
 
 const remove = defineCommand({
-  meta: { name: "remove", description: "Remove an API key" },
+  meta: { name: "remove", description: "Revoke an API key (deletes it server-side)" },
   args: {
-    l: { type: "string", description: "Label of the key to remove", required: true },
+    l: { type: "string", description: "Label of the key to revoke", required: true },
     f: { type: "boolean", description: "Force (skip confirmation)", default: false },
   },
   async run({ args }) {
     if (!args.f) {
-      consola.warn(`This will remove key "${args.l}". Use -f to confirm.`)
+      consola.warn(`This will revoke key "${args.l}" on the server. Use -f to confirm.`)
       return
     }
 
-    consola.success(`Key "${args.l}" removed.`)
-    consola.info("Note: Remote key revocation requires the API. Config cleared locally.")
+    const res = await deleteKey(args.l)
+    consola.success(`Key "${res.label}" revoked (deleted server-side).`)
   },
 })
 
