@@ -1,31 +1,26 @@
 import { Hono } from "hono"
-import { db } from "../db/index.js"
-import { balanceLedger } from "../db/schema.js"
-import { eq, sum } from "drizzle-orm"
+import { nanoid } from "nanoid"
+import { getBalance } from "../store.js"
 import type { Env } from "../types.js"
+import type { BalanceResponse, ApiResponse } from "@aegntic/sdk"
 
 export const balanceRoute = new Hono<Env>()
 
 balanceRoute.get("/balance", async (c) => {
-  const workspaceId = c.get("workspaceId")
+  const workspace = c.get("workspace")
+  const record = await getBalance(workspace.id)
 
-  const ledgerSum = await db
-    .select({ total: sum(balanceLedger.deltaCents) })
-    .from(balanceLedger)
-    .where(eq(balanceLedger.workspaceId, workspaceId))
+  const data: BalanceResponse = {
+    balance: record.balance,
+    currency: "USD",
+    held: record.held,
+    available: record.balance - record.held,
+  }
 
-  const balance = ledgerSum[0]?.total ? parseInt(ledgerSum[0].total, 10) : 0
+  const response: ApiResponse<BalanceResponse> = {
+    data,
+    requestId: nanoid(8),
+  }
 
-  const held = 0
-  const available = balance - held
-
-  return c.json({
-    data: {
-      balance,
-      currency: "USD",
-      held,
-      available,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
+  return c.json(response)
 })

@@ -52,3 +52,31 @@ Append-only chronological record. One entry per build/commit batch. Format:
 - fix: normalized endpoint path lookup (strip leading slash) — commit c83acf9
 - pushed: github.com/aegntic/ae-cli main (7a357b6..c83acf9)
 - next: P2 — real provider adapter (Apify), real billing, workspaces + API keys, deploy gateway
+
+## [2026-07-17 08:15] build | P2 Phase 1 — e2e contract unblock (worktree-p2)
+- branch: worktree-p2 (off caf8964)
+- changed: packages/cli/src/lib/client.ts, services/gateway/src/routes/{discover,runs}.ts
+- fixed: (1) client inspect/createRun paths aligned to real routes; (2) POST /v1/runs now returns ApiResponse envelope (client reads .data.id); (3) discover accepts GET (was POST-only, CLI 404'd)
+- verified: bg e2e agent — discover→inspect→run(JEjdiF6Z0EwS, 3 items, $0.015)→runs get→balance $9.98. All 5 steps green.
+- commit: 0799dc5
+- next: Phase 2a — postgres persistence
+
+## [2026-07-17 08:40] build | P2 Phase 2a — postgres + append-only ledger schema
+- changed: services/gateway/src/db/{schema,client,seed}.ts (new), drizzle.config.ts (new), migrations/0000_init.sql (generated), services/gateway/package.json (db scripts), .env.example
+- schema: workspaces, api_keys (sha256 hash, unique), runs (jsonb, idempotency unique), balance_ledger (append-only, bigint identity pk). balance DERIVED from ledger via computeBalance() — no mutable balance column.
+- seed: idempotent (ws_default + test key hash + $10 topup), guarded by import.meta.main
+- verified: drizzle-kit migrate applied (4 tables), seed idempotent across runs, ledger shows topup 10.0000, test key present
+- infra: dockerized postgres `aegntic-pg` (postgres:16-alpine) on localhost:5434
+- commit: 2522b03
+- next: Phase 2b — async store wiring + billing correctness (charge actual, no-charge-on-fail)
+
+## [2026-07-17 09:05] build | P2 Phase 2b — async DB-backed store + ledger billing
+- changed: services/gateway/src/{store.ts (rewrite), middleware/auth.ts, routes/{balance,keys,runs}.ts, index.ts}
+- store.ts: all exports async, postgres-backed via drizzle. charge()/refund() write append-only ledger rows. balance DERIVED via computeBalance(). dropped in-memory Maps + holdBalance/deductBalance.
+- billing fix: executeAsync charges ACTUAL cost (result.cost) on success, NOTHING on failure (was: estimate on both paths). Failed runs are free.
+- consumers awaited (auth, balance, keys×3, runs×4). index.ts boot-calls seedDefaults().
+- verified: bg e2e+ledger agent — boot ok, balance $10→$9.98 (delta -$0.015 exact), ledger shows topup 10.0000 + charge 0.0150 (run_id+amount match), RESTART persistence (balance stays $9.98, not reset — proves DB-derived). typecheck 5/5.
+- known limitation: no hold/reserve → concurrent runs can overdraw (single-user demo safe; hold/release ledger entries = hardening step).
+- untested branch: failed-run-no-charge (no CLI path triggers FAILED post-creation) — unit test to follow.
+- commit: (this commit)
+- next: Phase 2c — billing unit tests (failure path + ledger invariants), then Apify adapter

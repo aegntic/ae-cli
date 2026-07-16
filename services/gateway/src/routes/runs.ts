@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { nanoid } from "nanoid"
 import type { Run, RunInput, CostBreakdown, ApiResponse, HintsBlock } from "@aegntic/sdk"
 import type { Env } from "../types.js"
-import { createRun, getRun, updateRun, listRuns, getBalance, holdBalance, deductBalance } from "../store.js"
+import { createRun, getRun, updateRun, listRuns, getBalance, charge } from "../store.js"
 import { getEndpoint, getProvider } from "../providers/registry.js"
 
 export const runsRoute = new Hono<Env>()
@@ -28,7 +28,7 @@ runsRoute.post("/runs", async (c) => {
     return c.json({ error: validationError }, 400)
   }
 
-  const balance = getBalance(workspace.id)
+  const balance = await getBalance(workspace.id)
   const adapter = getProvider(provider)
   const estimatedCost = adapter ? await adapter.estimateCost(endpoint, input) : 0.01
 
@@ -36,12 +36,11 @@ runsRoute.post("/runs", async (c) => {
     return c.json({ error: "Insufficient balance", estimatedCost, available: balance.balance - balance.held }, 402)
   }
 
-  holdBalance(workspace.id, estimatedCost)
+  const run = await createRun(workspace.id, provider, endpoint, input, idempotencyKey)
+  await updateRun(run.id, { status: "RUNNING" })
 
-  const run = createRun(workspace.id, provider, endpoint, input, idempotencyKey)
-  updateRun(run.id, { status: "RUNNING" })
-
-  executeAsync(run.id, provider, endpoint, input, estimatedCost)
+  // Fire-and-forget execution; charges land on the ledger on completion.
+  void executeAsync(run.id, provider, endpoint, input)
 
   const response: ApiResponse<Run> = {
     data: run,
@@ -50,10 +49,10 @@ runsRoute.post("/runs", async (c) => {
   return c.json(response, 201)
 })
 
-runsRoute.get("/runs", (c) => {
+runsRoute.get("/runs", async (c) => {
   const workspace = c.get("workspace")
   const limit = Math.min(Number(c.req.query("limit")) || 50, 200)
-  const runs = listRuns(workspace.id, limit)
+  const runs = await listRuns(workspace.id, limit)
 
   const response: ApiResponse<Run[]> = {
     data: runs,
@@ -63,10 +62,10 @@ runsRoute.get("/runs", (c) => {
   return c.json(response)
 })
 
-runsRoute.get("/runs/:id", (c) => {
+runsRoute.get("/runs/:id", async (c) => {
   const workspace = c.get("workspace")
   const id = c.req.param("id")
-  const run = getRun(id)
+  const run = await getRun(id)
 
   if (!run || run.workspaceId !== workspace.id) {
     return c.json({ error: "Run not found" }, 404)
@@ -80,10 +79,10 @@ runsRoute.get("/runs/:id", (c) => {
   return c.json(response)
 })
 
-runsRoute.post("/runs/:id/stop", (c) => {
+runsRoute.post("/runs/:id/stop", async (c) => {
   const workspace = c.get("workspace")
   const id = c.req.param("id")
-  const run = getRun(id)
+  const run = await getRun(id)
 
   if (!run || run.workspaceId !== workspace.id) {
     return c.json({ error: "Run not found" }, 404)
@@ -93,13 +92,13 @@ runsRoute.post("/runs/:id/stop", (c) => {
     return c.json({ error: "Run cannot be stopped" }, 409)
   }
 
-  updateRun(id, { status: "STOPPED", stoppable: false })
+  await updateRun(id, { status: "STOPPED", stoppable: false })
 
   const hints: HintsBlock = {
     nextCommands: [`aegntic run ${run.provider}/${run.endpoint} --input '${JSON.stringify(run.input)}'`],
   }
 
-  return c.json({ ...getRun(id), hints })
+  return c.json({ ...(await getRun(id)), hints })
 })
 
 async function executeAsync(
@@ -107,9 +106,9 @@ async function executeAsync(
   providerName: string,
   endpointPath: string,
   input: RunInput,
-  estimatedCost: number,
 ): Promise<void> {
-  const workspace = getRun(runId)?.workspaceId
+  const run = await getRun(runId)
+  const workspace = run?.workspaceId
   if (!workspace) return
 
   try {
@@ -125,11 +124,21 @@ async function executeAsync(
       unitPrice: result.items > 0 ? result.cost / result.items : result.cost,
     }
 
-    deductBalance(workspace, estimatedCost)
-    updateRun(runId, { status: "COMPLETED", result: result.data, cost, stoppable: false })
+    // Charge the ACTUAL cost, only on success. Failed runs cost nothing.
+    await charge(
+      workspace,
+      runId,
+      result.cost,
+      `run ${providerName}/${endpointPath} (${result.items} items)`,
+    )
+    await updateRun(runId, {
+      status: "COMPLETED",
+      result: result.data,
+      cost,
+      stoppable: false,
+    })
   } catch (err) {
-    deductBalance(workspace, estimatedCost)
-    updateRun(runId, {
+    await updateRun(runId, {
       status: "FAILED",
       error: err instanceof Error ? err.message : "Unknown error",
       stoppable: false,

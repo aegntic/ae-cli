@@ -8,7 +8,7 @@ import { runsRoute } from "./routes/runs.js"
 import { balanceRoute } from "./routes/balance.js"
 import { keysRoute } from "./routes/keys.js"
 import { authMiddleware } from "./middleware/auth.js"
-import { seed } from "./db/seed.js"
+import { seedDefaults } from "./db/seed.js"
 import type { Env } from "./types.js"
 
 const app = new Hono<Env>()
@@ -27,20 +27,11 @@ app.route("/v1", keysRoute)
 
 const port = Number(process.env.PORT) || 3100
 
-seed()
-  .then(() => {
-    console.log("Database seed check complete.")
-  })
-  .catch((err) => {
-    console.error("Database seeding failed:", err)
-  })
+// Ensure the dev workspace + test key + free credit exist (idempotent).
+await seedDefaults()
 
 console.log(`aegntic gateway listening on :${port}`)
 
-if (process.env.NODE_ENV !== "test") {
-  serve({ fetch: app.fetch, port })
-}
+serve({ fetch: app.fetch, port })
 
 export default app
-// Hot-reload trigger comment 4
-
