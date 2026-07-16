@@ -10,7 +10,7 @@ export async function authMiddleware(c: Context<Env>, next: Next) {
   }
 
   const token = header.slice(7)
-  const workspace = lookupWorkspaceByToken(token)
+  const workspace = await lookupWorkspaceByToken(token)
 
   if (!workspace) {
     return c.json({ error: "Invalid API key" }, 401)

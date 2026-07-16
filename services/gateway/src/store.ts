@@ -1,178 +1,302 @@
 import { nanoid } from "nanoid"
 import { createHash } from "node:crypto"
-import type { Workspace, ApiKey, ApiKeyCreated, Run, RunStatus, CostBreakdown } from "@aegntic/sdk"
+import { eq, and, desc } from "drizzle-orm"
+import type {
+  Workspace,
+  ApiKey,
+  ApiKeyCreated,
+  Run,
+  RunInput,
+  CostBreakdown,
+} from "@aegntic/sdk"
+import { db, schema, computeBalance } from "./db/client.js"
+import type {
+  WorkspaceRow,
+  ApiKeyRow,
+  RunRow,
+} from "./db/schema.js"
 
 function hashKey(key: string): string {
   return createHash("sha256").update(key).digest("hex")
 }
 
-interface BalanceRecord {
+/**
+ * Persistence layer — postgres-backed via Drizzle.
+ *
+ * All exports are async. Billing mutations go through the append-only ledger
+ * (charge/refund); the live balance is DERIVED from it (see computeBalance),
+ * never stored as mutable state. v1 charges synchronously on run completion
+ * (no hold/reserve): an affordability check gates run creation, and the
+ * actual cost is debited only on success. Concurrent-run overdraft is a
+ * known limitation — hold/release ledger entries are the documented next step.
+ */
+
+// ---------- row -> domain mappers ----------
+
+function rowToWorkspace(r: WorkspaceRow, balance: number): Workspace {
+  return {
+    id: r.id,
+    name: r.name,
+    balance,
+    currency: r.currency as Workspace["currency"],
+    createdAt: r.createdAt.toISOString(),
+  }
+}
+
+function rowToApiKey(r: ApiKeyRow): ApiKey {
+  return {
+    label: r.label,
+    prefix: r.prefix,
+    active: r.active,
+    createdAt: r.createdAt.toISOString(),
+    lastUsedAt: r.lastUsedAt ? r.lastUsedAt.toISOString() : undefined,
+  }
+}
+
+function rowToRun(r: RunRow): Run {
+  return {
+    id: r.id,
+    workspaceId: r.workspaceId,
+    provider: r.provider,
+    endpoint: r.endpoint,
+    input: r.input as RunInput,
+    status: r.status as Run["status"],
+    result: (r.result ?? undefined) as Run["result"],
+    resultUri: r.resultUri ?? undefined,
+    cost: (r.cost ?? undefined) as CostBreakdown | undefined,
+    error: r.error ?? undefined,
+    stoppable: r.stoppable,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  }
+}
+
+// ---------- auth ----------
+
+export async function lookupWorkspaceByToken(
+  token: string,
+): Promise<Workspace | undefined> {
+  const hash = hashKey(token)
+  const keyRows = await db
+    .select()
+    .from(schema.apiKeys)
+    .where(and(eq(schema.apiKeys.keyHash, hash), eq(schema.apiKeys.active, true)))
+    .limit(1)
+  const key = keyRows[0]
+  if (!key) return undefined
+
+  await db
+    .update(schema.apiKeys)
+    .set({ lastUsedAt: new Date() })
+    .where(eq(schema.apiKeys.id, key.id))
+
+  const wsRows = await db
+    .select()
+    .from(schema.workspaces)
+    .where(eq(schema.workspaces.id, key.workspaceId))
+    .limit(1)
+  const ws = wsRows[0]
+  if (!ws) return undefined
+  const bal = await computeBalance(ws.id)
+  return rowToWorkspace(ws, bal.balance)
+}
+
+export async function getWorkspace(
+  id: string,
+): Promise<Workspace | undefined> {
+  const rows = await db
+    .select()
+    .from(schema.workspaces)
+    .where(eq(schema.workspaces.id, id))
+    .limit(1)
+  if (!rows[0]) return undefined
+  const bal = await computeBalance(id)
+  return rowToWorkspace(rows[0], bal.balance)
+}
+
+export async function getBalance(workspaceId: string): Promise<{
   balance: number
   held: number
+  currency: string
+}> {
+  const b = await computeBalance(workspaceId)
+  // held is 0 in v1 (no hold/reserve); reserved for reserve-and-settle.
+  return { balance: b.balance, held: 0, currency: b.currency }
 }
 
-interface StoredApiKey {
-  label: string
-  prefix: string
-  keyHash: string
-  workspaceId: string
-  active: boolean
-  createdAt: string
-  lastUsedAt?: string
-}
+// ---------- ledger ----------
 
-const DEFAULT_WORKSPACE_ID = "ws_default"
-
-const workspaces = new Map<string, Workspace>([
-  [DEFAULT_WORKSPACE_ID, {
-    id: DEFAULT_WORKSPACE_ID,
-    name: "Default Workspace",
-    balance: 10.0,
+export async function charge(
+  workspaceId: string,
+  runId: string,
+  amount: number,
+  reason: string,
+): Promise<void> {
+  await db.insert(schema.balanceLedger).values({
+    workspaceId,
+    runId,
+    type: "charge",
+    amount: amount.toFixed(4),
     currency: "USD",
-    createdAt: new Date().toISOString(),
-  }],
-])
-
-const balances = new Map<string, BalanceRecord>([
-  [DEFAULT_WORKSPACE_ID, { balance: 10.0, held: 0 }],
-])
-
-const TEST_KEY = "aegntic_test_key_123"
-const TEST_KEY_HASH = hashKey(TEST_KEY)
-
-const apiKeys = new Map<string, StoredApiKey>([
-  [TEST_KEY_HASH, {
-    label: "test",
-    prefix: TEST_KEY.slice(0, 16),
-    keyHash: TEST_KEY_HASH,
-    workspaceId: DEFAULT_WORKSPACE_ID,
-    active: true,
-    createdAt: new Date().toISOString(),
-  }],
-])
-
-const runs = new Map<string, Run>()
-
-export function lookupWorkspaceByToken(token: string): Workspace | undefined {
-  const hash = hashKey(token)
-  const key = apiKeys.get(hash)
-  if (!key || !key.active) return undefined
-  key.lastUsedAt = new Date().toISOString()
-  return workspaces.get(key.workspaceId)
+    reason,
+  })
 }
 
-export function getWorkspace(id: string): Workspace | undefined {
-  return workspaces.get(id)
+export async function refund(
+  workspaceId: string,
+  runId: string,
+  amount: number,
+  reason: string,
+): Promise<void> {
+  await db.insert(schema.balanceLedger).values({
+    workspaceId,
+    runId,
+    type: "refund",
+    amount: amount.toFixed(4),
+    currency: "USD",
+    reason,
+  })
 }
 
-export function getBalance(workspaceId: string): BalanceRecord {
-  return balances.get(workspaceId) ?? { balance: 0, held: 0 }
-}
+// ---------- api keys ----------
 
-export function deductBalance(workspaceId: string, amount: number): void {
-  const b = balances.get(workspaceId)
-  if (!b) return
-  b.balance -= amount
-  b.held = Math.max(0, b.held - amount)
-}
-
-export function holdBalance(workspaceId: string, amount: number): void {
-  const b = balances.get(workspaceId)
-  if (!b) return
-  b.held += amount
-}
-
-export function createApiKey(workspaceId: string, label: string): ApiKeyCreated {
+export async function createApiKey(
+  workspaceId: string,
+  label: string,
+): Promise<ApiKeyCreated> {
   const key = `aegntic_live_${nanoid(32)}`
-  const kHash = hashKey(key)
+  const id = `ak_${nanoid(12)}`
   const prefix = key.slice(0, 16)
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  apiKeys.set(kHash, {
+  await db.insert(schema.apiKeys).values({
+    id,
+    workspaceId,
     label,
     prefix,
-    keyHash: kHash,
-    workspaceId,
+    keyHash: hashKey(key),
     active: true,
-    createdAt: now,
   })
 
-  return { label, prefix, active: true, createdAt: now, key }
+  return { label, prefix, active: true, createdAt: now.toISOString(), key }
 }
 
-export function listApiKeys(workspaceId: string): ApiKey[] {
-  const result: ApiKey[] = []
-  for (const k of apiKeys.values()) {
-    if (k.workspaceId === workspaceId) {
-      result.push({
-        label: k.label,
-        prefix: k.prefix,
-        active: k.active,
-        createdAt: k.createdAt,
-        lastUsedAt: k.lastUsedAt,
-      })
-    }
-  }
-  return result
+export async function listApiKeys(workspaceId: string): Promise<ApiKey[]> {
+  const rows = await db
+    .select()
+    .from(schema.apiKeys)
+    .where(eq(schema.apiKeys.workspaceId, workspaceId))
+    .orderBy(desc(schema.apiKeys.createdAt))
+  return rows.map(rowToApiKey)
 }
 
-export function deleteApiKey(workspaceId: string, label: string): boolean {
-  for (const [hash, k] of apiKeys.entries()) {
-    if (k.workspaceId === workspaceId && k.label === label) {
-      apiKeys.delete(hash)
-      return true
-    }
-  }
-  return false
+export async function deleteApiKey(
+  workspaceId: string,
+  label: string,
+): Promise<boolean> {
+  const deleted = await db
+    .delete(schema.apiKeys)
+    .where(
+      and(
+        eq(schema.apiKeys.workspaceId, workspaceId),
+        eq(schema.apiKeys.label, label),
+      ),
+    )
+    .returning({ id: schema.apiKeys.id })
+  return deleted.length > 0
 }
 
-export function createRun(
+// ---------- runs ----------
+
+export async function createRun(
   workspaceId: string,
   provider: string,
   endpoint: string,
-  input: Run["input"],
+  input: RunInput,
   idempotencyKey?: string,
-): Run {
+): Promise<Run> {
   if (idempotencyKey) {
-    for (const r of runs.values()) {
-      if (r.workspaceId === workspaceId && (r as Run & { idempotencyKey?: string }).idempotencyKey === idempotencyKey) {
-        return r
-      }
-    }
+    const existing = await db
+      .select()
+      .from(schema.runs)
+      .where(
+        and(
+          eq(schema.runs.workspaceId, workspaceId),
+          eq(schema.runs.idempotencyKey, idempotencyKey),
+        ),
+      )
+      .limit(1)
+    if (existing[0]) return rowToRun(existing[0])
   }
 
-  const run: Run & { idempotencyKey?: string } = {
-    id: nanoid(12),
+  const id = nanoid(12)
+  const now = new Date()
+  await db.insert(schema.runs).values({
+    id,
     workspaceId,
     provider,
     endpoint,
     input,
     status: "READY",
     stoppable: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
     idempotencyKey,
+  })
+
+  return {
+    id,
+    workspaceId,
+    provider,
+    endpoint,
+    input,
+    status: "READY",
+    result: undefined,
+    resultUri: undefined,
+    cost: undefined,
+    error: undefined,
+    stoppable: true,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
   }
-  runs.set(run.id, run)
-  return run
 }
 
-export function getRun(id: string): Run | undefined {
-  return runs.get(id)
+export async function getRun(id: string): Promise<Run | undefined> {
+  const rows = await db
+    .select()
+    .from(schema.runs)
+    .where(eq(schema.runs.id, id))
+    .limit(1)
+  return rows[0] ? rowToRun(rows[0]) : undefined
 }
 
-export function updateRun(id: string, patch: Partial<Pick<Run, "status" | "result" | "cost" | "error" | "stoppable">>): Run | undefined {
-  const run = runs.get(id)
-  if (!run) return undefined
-  Object.assign(run, patch, { updatedAt: new Date().toISOString() })
-  return run
+type RunPatch = Partial<
+  Pick<Run, "status" | "result" | "resultUri" | "cost" | "error" | "stoppable">
+>
+
+export async function updateRun(
+  id: string,
+  patch: RunPatch,
+): Promise<Run | undefined> {
+  const set: Record<string, unknown> = { updatedAt: new Date() }
+  if (patch.status !== undefined) set.status = patch.status
+  if (patch.result !== undefined) set.result = patch.result
+  if (patch.resultUri !== undefined) set.resultUri = patch.resultUri
+  if (patch.cost !== undefined) set.cost = patch.cost
+  if (patch.error !== undefined) set.error = patch.error
+  if (patch.stoppable !== undefined) set.stoppable = patch.stoppable
+
+  await db.update(schema.runs).set(set).where(eq(schema.runs.id, id))
+  return getRun(id)
 }
 
-export function listRuns(workspaceId: string, limit = 50): Run[] {
-  const result: Run[] = []
-  for (const r of runs.values()) {
-    if (r.workspaceId === workspaceId) result.push(r)
-  }
-  result.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  return result.slice(0, limit)
+export async function listRuns(
+  workspaceId: string,
+  limit = 50,
+): Promise<Run[]> {
+  const rows = await db
+    .select()
+    .from(schema.runs)
+    .where(eq(schema.runs.workspaceId, workspaceId))
+    .orderBy(desc(schema.runs.createdAt))
+    .limit(limit)
+  return rows.map(rowToRun)
 }

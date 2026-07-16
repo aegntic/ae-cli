@@ -6,9 +6,9 @@ import type { BalanceResponse, ApiResponse } from "@aegntic/sdk"
 
 export const balanceRoute = new Hono<Env>()
 
-balanceRoute.get("/balance", (c) => {
+balanceRoute.get("/balance", async (c) => {
   const workspace = c.get("workspace")
-  const record = getBalance(workspace.id)
+  const record = await getBalance(workspace.id)
 
   const data: BalanceResponse = {
     balance: record.balance,

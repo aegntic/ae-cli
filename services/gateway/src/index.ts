@@ -8,6 +8,7 @@ import { runsRoute } from "./routes/runs.js"
 import { balanceRoute } from "./routes/balance.js"
 import { keysRoute } from "./routes/keys.js"
 import { authMiddleware } from "./middleware/auth.js"
+import { seedDefaults } from "./db/seed.js"
 import type { Env } from "./types.js"
 
 const app = new Hono<Env>()
@@ -25,6 +26,9 @@ app.route("/v1", balanceRoute)
 app.route("/v1", keysRoute)
 
 const port = Number(process.env.PORT) || 3100
+
+// Ensure the dev workspace + test key + free credit exist (idempotent).
+await seedDefaults()
 
 console.log(`aegntic gateway listening on :${port}`)
 

@@ -11,7 +11,7 @@ keysRoute.post("/keys", async (c) => {
   const body = await c.req.json<{ label: string }>().catch(() => ({})) as { label?: string }
   const label = body.label ?? `key-${nanoid(4)}`
 
-  const created = createApiKey(workspace.id, label)
+  const created = await createApiKey(workspace.id, label)
 
   const response: ApiResponse<ApiKeyCreated> = {
     data: created,
@@ -24,9 +24,9 @@ keysRoute.post("/keys", async (c) => {
   return c.json(response, 201)
 })
 
-keysRoute.get("/keys", (c) => {
+keysRoute.get("/keys", async (c) => {
   const workspace = c.get("workspace")
-  const keys = listApiKeys(workspace.id)
+  const keys = await listApiKeys(workspace.id)
 
   const response: ApiResponse<ApiKey[]> = {
     data: keys,
@@ -36,11 +36,11 @@ keysRoute.get("/keys", (c) => {
   return c.json(response)
 })
 
-keysRoute.delete("/keys/:label", (c) => {
+keysRoute.delete("/keys/:label", async (c) => {
   const workspace = c.get("workspace")
   const label = c.req.param("label")
 
-  const deleted = deleteApiKey(workspace.id, label)
+  const deleted = await deleteApiKey(workspace.id, label)
   if (!deleted) {
     return c.json({ error: `Key with label '${label}' not found` }, 404)
   }
