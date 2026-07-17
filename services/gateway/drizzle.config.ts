@@ -12,7 +12,7 @@ export default defineConfig({
   dbCredentials: {
     url:
       process.env.DATABASE_URL ??
-      "postgresql://aegntic:aegntic@localhost:5434/aegntic",
+      "postgresql://aegntic:aegntic@localhost:5435/aegntic",
   },
   strict: true,
   verbose: true,
