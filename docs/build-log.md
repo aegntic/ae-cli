@@ -27,7 +27,12 @@ Append-only chronological record. One entry per build/commit batch. Format:
 ## [2026-07-17 07:33] build | P1 phase 1 — monorepo tooling
 - changed: package.json (vitest + @types/node + engines/desc/license + turbo bump), tsconfig.base.json, .npmrc, pnpm-lock.yaml; bd scaffold already contributed pnpm-workspace.yaml + turbo.json
 - verified: `pnpm install` exit 0 across 5 workspace projects; turbo 2.10.5, vitest 2.1.9, tsc 5.9.3 resolve
-- next: ~~P1 phase 2 — packages/sdk typed client skeleton (shared types: Tool, Run, Balance) + first vitest test~~ (superceded by full scaffold below)
+- next: P1 phase 2 — packages/sdk typed client skeleton (shared types: Tool, Run, Balance) + first vitest test
+
+## [2026-07-17 12:12] build | P1 vertical slice complete
+- changed: packages/sdk/src/index.ts, packages/sdk/tests/index.test.ts, packages/sdk/package.json, services/gateway/src/db/schema.ts, services/gateway/src/db/index.ts, services/gateway/src/db/seed.ts, services/gateway/src/middleware/auth.ts, services/gateway/src/routes/discover.ts, services/gateway/src/routes/inspect.ts, services/gateway/src/routes/balance.ts, services/gateway/src/routes/keys.ts, services/gateway/src/routes/runs.ts, services/gateway/src/index.ts, services/gateway/drizzle.config.ts, packages/cli/src/utils/config.ts, packages/cli/src/commands/keys.ts, packages/cli/src/commands/setup.ts, packages/cli/src/commands/discover.ts, packages/cli/src/commands/inspect.ts, packages/cli/src/commands/run.ts, packages/cli/src/commands/runs.ts, packages/cli/src/commands/balance.ts, packages/cli/tests/config.test.ts, docs/spec/security_review.md
+- verified: pnpm build successful across all monorepo packages. Vitest unit tests pass for both CLI and SDK. Dev server launched with seeding running correctly. CLI commands tested (setup, keys, balance, discover, inspect, run) end-to-end against live Hono gateway, executing async runs and ledger charging correctly.
+- next: P2 real provider adapter integration + real billing Stripe webhook + dashboard auth hooks.
 
 ## [2026-07-17 07:45] build | FULL MONOREPO SCAFFOLD + CHECKPOINT 1: FIRST RUN
 - changed: 28 files, 1990 insertions

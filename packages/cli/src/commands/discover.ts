@@ -1,64 +1,75 @@
 import { defineCommand } from "citty"
+import { getClient } from "../utils/config.js"
 import consola from "consola"
-import { discover } from "../lib/client.js"
 
 export default defineCommand({
   meta: {
     name: "discover",
-    description: "Search the endpoint catalog",
+    description: "Search for data tools and endpoints",
   },
   args: {
+    query: {
+      type: "positional",
+      description: "Search query",
+      required: false,
+    },
     q: {
       type: "string",
-      description: "Search query",
-      required: true,
+      alias: "q",
+      description: "Search query (named option)",
     },
-    l: {
+    limit: {
       type: "string",
-      description: "Max results (default: 10)",
+      alias: "l",
+      description: "Max results to return",
       default: "10",
     },
-    s: {
+    score: {
       type: "string",
-      description: "Minimum relevance score (default: 0)",
-      default: "0",
+      alias: "s",
+      description: "Minimum relevance score threshold",
+      default: "0.1",
     },
     json: {
       type: "boolean",
-      description: "Output raw JSON",
-      alias: ["j"],
-      default: false,
+      alias: "j",
+      description: "Output in JSON format",
     },
   },
   async run({ args }) {
-    const limit = Number(args.l) || 10
-    const minScore = Number(args.s) || 0
-
-    const data = await discover(args.q, { limit, minScore })
-
-    if (args.json) {
-      console.log(JSON.stringify(data, null, 2))
+    const q = args.query || args.q
+    if (!q) {
+      consola.error("Missing search query. Pass a query positional argument or use -q.")
       return
     }
 
-    if (!data.results.length) {
-      consola.info("No endpoints found matching your query.")
-      return
+    try {
+      const client = getClient()
+      const response = await client.discover(q, parseInt(args.limit, 10), parseFloat(args.score))
+
+      if (args.json) {
+        console.log(JSON.stringify(response, null, 2))
+        return
+      }
+
+      const results = response.data.results
+      if (results.length === 0) {
+        consola.info(`No tools found matching query "${q}"`)
+        return
+      }
+
+      consola.info(`Found ${results.length} tools:`)
+      for (const tool of results) {
+        console.log("")
+        console.log(`⚡ [${tool.provider}] ${tool.path} (Score: ${tool.relevanceScore?.toFixed(2) || "N/A"})`)
+        console.log(`   Description: ${tool.description}`)
+        console.log(`   Price Model: ${tool.costModel.type} (${tool.costModel.unitPrice} cents per result)`)
+        if (tool.verified) {
+          console.log(`   ✓ Verified`)
+        }
+      }
+    } catch (error: any) {
+      consola.error(error.message)
     }
-
-    consola.success(`Found ${data.total} result(s) for "${data.query}"\n`)
-
-    const rows = data.results.map((ep) => ({
-      provider: ep.provider,
-      endpoint: ep.path,
-      score: ep.relevanceScore?.toFixed(2) ?? "-",
-      verified: ep.verified ? "Yes" : "No",
-      description:
-        ep.description.length > 60
-          ? ep.description.slice(0, 57) + "..."
-          : ep.description,
-    }))
-
-    console.table(rows)
   },
 })

@@ -1,82 +1,110 @@
 import { defineCommand } from "citty"
+import { getClient } from "../utils/config.js"
 import consola from "consola"
-import { readFile, writeFile } from "node:fs/promises"
-import { createRun, getRun } from "../lib/client.js"
-import type { Run, RunInput, RunStatus } from "@aegntic/sdk"
-
-const TERMINAL: RunStatus[] = ["COMPLETED", "FAILED", "BLOCKED", "STOPPED", "TIME_OUT"]
-
-function parseJSON(raw: string, flag: string): Record<string, unknown> {
-  try {
-    return JSON.parse(raw)
-  } catch {
-    consola.error(`Invalid JSON for ${flag}`)
-    return process.exit(1)
-  }
-}
-
-async function pollUntilDone(runId: string): Promise<Run> {
-  let run = await getRun(runId)
-  while (!TERMINAL.includes(run.status)) {
-    consola.info(`Run ${runId}: ${run.status} ...`)
-    await new Promise((r) => setTimeout(r, 2000))
-    run = await getRun(runId)
-  }
-  return run
-}
+import { readFileSync, writeFileSync } from "fs"
 
 export default defineCommand({
   meta: {
     name: "run",
-    description: "Execute an endpoint",
+    description: "Execute a data tool or endpoint",
   },
   args: {
-    p: { type: "string", description: "Provider name", required: true },
-    e: { type: "string", description: "Endpoint path", required: true },
-    i: { type: "string", description: "Body input (JSON string)" },
-    f: { type: "string", description: "Body input from file path" },
-    query: { type: "string", description: "Query params (JSON string)" },
-    path: { type: "string", description: "Path params (JSON string)" },
-    w: { type: "boolean", description: "Wait for completion", default: false },
-    o: { type: "string", description: "Output file path" },
+    provider: {
+      type: "string",
+      alias: "p",
+      description: "Provider name",
+      required: true,
+    },
+    endpoint: {
+      type: "string",
+      alias: "e",
+      description: "Endpoint path",
+      required: true,
+    },
+    input: {
+      type: "string",
+      alias: "i",
+      description: "Inline body input parameters as JSON string",
+    },
+    file: {
+      type: "string",
+      alias: "f",
+      description: "Path to JSON file containing body input parameters",
+    },
+    query: {
+      type: "string",
+      description: "Query parameters as JSON string",
+    },
+    path: {
+      type: "string",
+      description: "Path parameters as JSON string",
+    },
+    wait: {
+      type: "boolean",
+      alias: "w",
+      description: "Wait/block for run completion",
+    },
+    output: {
+      type: "string",
+      alias: "o",
+      description: "Path to save output results",
+    },
+    json: {
+      type: "boolean",
+      alias: "j",
+      description: "Output raw run response in JSON format",
+    },
   },
   async run({ args }) {
-    const input: RunInput = {}
-
-    if (args.f) {
-      const raw = await readFile(args.f, "utf-8")
-      input.body = JSON.parse(raw)
-    } else if (args.i) {
-      input.body = parseJSON(args.i, "-i")
-    }
-
-    if (args.query) input.queryParams = parseJSON(args.query, "--query") as Record<string, string>
-    if (args.path) input.pathParams = parseJSON(args.path, "--path") as Record<string, string>
-
-    const run = await createRun(args.p, args.e, input)
-    consola.success(`Run created: ${run.id}`)
-
-    if (!args.w) {
-      console.log(`\nPoll with: aegntic runs get -r ${run.id} -w`)
-      return
-    }
-
-    const final = await pollUntilDone(run.id)
-
-    if (final.status === "COMPLETED") {
-      consola.success(`Run completed`)
-      if (final.cost) {
-        consola.info(`Cost: $${final.cost.value} ${final.cost.currency} (${final.cost.items} items @ $${final.cost.unitPrice})`)
+    try {
+      let bodyInput = {}
+      if (args.input) {
+        bodyInput = JSON.parse(args.input)
+      } else if (args.file) {
+        bodyInput = JSON.parse(readFileSync(args.file, "utf-8"))
       }
-      if (args.o && final.result) {
-        await writeFile(args.o, JSON.stringify(final.result, null, 2), "utf-8")
-        consola.success(`Result saved to ${args.o}`)
-      } else if (final.result) {
-        console.log(JSON.stringify(final.result, null, 2))
+
+      const runInput = {
+        body: bodyInput,
+        queryParams: args.query ? JSON.parse(args.query) : undefined,
+        pathParams: args.path ? JSON.parse(args.path) : undefined,
       }
-    } else {
-      consola.error(`Run ${final.status}${final.error ? `: ${final.error}` : ""}`)
-      process.exit(1)
+
+      const client = getClient()
+      const waitOption = args.wait ? 30 : undefined
+      const response = await client.run(args.provider, args.endpoint, runInput, { wait: waitOption })
+
+      if (args.json) {
+        console.log(JSON.stringify(response, null, 2))
+        return
+      }
+
+      const runResult = response.data
+      consola.info(`Run created successfully. ID: ${runResult.id}`)
+      console.log(`Status: ${runResult.status}`)
+
+      if (runResult.status === "COMPLETED") {
+        consola.success("Run completed!")
+        if (runResult.result) {
+          if (args.output) {
+            writeFileSync(args.output, JSON.stringify(runResult.result, null, 2), "utf-8")
+            consola.success(`Results saved to: ${args.output}`)
+          } else {
+            console.log("\nResults:")
+            console.log(JSON.stringify(runResult.result, null, 2))
+          }
+        }
+        if (runResult.cost) {
+          console.log(`Cost: $${runResult.cost.value.toFixed(2)} USD (${runResult.cost.items} items at $${runResult.cost.unitPrice.toFixed(4)}/item)`)
+        }
+      } else if (runResult.status === "BLOCKED") {
+        consola.warn("Run was BLOCKED by workspace controls (insufficient balance or cap limit).")
+      } else {
+        consola.info(`Run is still ${runResult.status}. To check progress, run:`)
+        console.log(`  aegntic runs get -r ${runResult.id}`)
+      }
+    } catch (error: any) {
+      consola.error(error.message)
     }
   },
 })

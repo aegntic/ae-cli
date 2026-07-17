@@ -1,73 +1,69 @@
 import { defineCommand } from "citty"
+import { getClient } from "../utils/config.js"
 import consola from "consola"
-import { inspect } from "../lib/client.js"
-import type { SchemaField } from "@aegntic/sdk"
-
-function printFields(
-  label: string,
-  fields: Record<string, SchemaField> | undefined,
-): void {
-  if (!fields || !Object.keys(fields).length) return
-
-  consola.info(`${label}:`)
-  for (const [name, field] of Object.entries(fields)) {
-    const req = field.required ? " (required)" : ""
-    const def = field.default !== undefined ? ` [default: ${JSON.stringify(field.default)}]` : ""
-    console.log(`  ${name}: ${field.type}${req}${def}`)
-    if (field.description) console.log(`    ${field.description}`)
-  }
-}
 
 export default defineCommand({
   meta: {
     name: "inspect",
-    description: "Inspect an endpoint's schema and cost model",
+    description: "Get input schema and details for a specific tool",
   },
   args: {
-    p: {
+    provider: {
       type: "string",
+      alias: "p",
       description: "Provider name",
       required: true,
     },
-    e: {
+    endpoint: {
       type: "string",
+      alias: "e",
       description: "Endpoint path",
       required: true,
     },
+    json: {
+      type: "boolean",
+      alias: "j",
+      description: "Output in JSON format",
+    },
   },
   async run({ args }) {
-    const data = await inspect(args.p, args.e)
-    const { endpoint } = data
+    try {
+      const client = getClient()
+      const response = await client.inspect(args.provider, args.endpoint)
 
-    console.log()
-    consola.info(`${endpoint.provider} / ${endpoint.path}`)
-    console.log(`  ${endpoint.description}`)
-    console.log()
+      if (args.json) {
+        console.log(JSON.stringify(response, null, 2))
+        return
+      }
 
-    if (endpoint.verified) {
-      consola.success("Verified endpoint")
-    } else {
-      consola.warn("Unverified endpoint")
-    }
+      const { endpoint, examples } = response.data
+      consola.info(`Tool Details: [${endpoint.provider}] ${endpoint.path}`)
+      console.log(`Description: ${endpoint.description}`)
+      console.log(`Price Model: ${endpoint.costModel.type} (${endpoint.costModel.unitPrice} cents per result)`)
+      
+      console.log("\nInput Schema:")
+      const schema = endpoint.inputSchema
+      if (schema.body) {
+        console.log("  Body:")
+        for (const [key, field] of Object.entries(schema.body)) {
+          console.log(`    - ${key} (${field.type})${field.required ? " *required" : ""}`)
+          if (field.description) {
+            console.log(`      Description: ${field.description}`)
+          }
+          if (field.default !== undefined) {
+            console.log(`      Default: ${JSON.stringify(field.default)}`)
+          }
+        }
+      } else {
+        console.log("  No body input required.")
+      }
 
-    console.log()
-    consola.info("Cost model:")
-    console.log(`  Type: ${endpoint.costModel.type}`)
-    console.log(`  Unit price: $${endpoint.costModel.unitPrice} ${endpoint.costModel.currency}`)
-
-    console.log()
-    printFields("Body", endpoint.inputSchema.body)
-    printFields("Query params", endpoint.inputSchema.queryParams)
-    printFields("Path params", endpoint.inputSchema.pathParams)
-
-    if (endpoint.inputSchema.bodyType) {
-      console.log(`\n  Body type: ${endpoint.inputSchema.bodyType}`)
-    }
-
-    if (data.examples?.length) {
-      console.log()
-      consola.info("Example usage:")
-      console.log(JSON.stringify(data.examples[0], null, 2))
+      if (examples && examples.length > 0) {
+        console.log("\nExamples:")
+        console.log(JSON.stringify(examples, null, 2))
+      }
+    } catch (error: any) {
+      consola.error(error.message)
     }
   },
 })

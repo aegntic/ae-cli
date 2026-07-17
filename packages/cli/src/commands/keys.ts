@@ -1,75 +1,109 @@
 import { defineCommand } from "citty"
+import { loadConfig, saveConfig } from "../utils/config.js"
 import consola from "consola"
-import { listKeys, addKey } from "../lib/client.js"
-import { getConfig, saveConfig } from "../lib/config.js"
 
-const add = defineCommand({
-  meta: { name: "add", description: "Add an API key" },
-  args: {
-    k: { type: "string", description: "API key value", required: true },
-    l: { type: "string", description: "Label for the key", required: true },
+const addCommand = defineCommand({
+  meta: {
+    name: "add",
+    description: "Add an API key",
   },
-  async run({ args }) {
-    await addKey(args.k, args.l)
-    await saveConfig({ apiKey: args.k })
-    consola.success(`Key "${args.l}" added and set as active.`)
+  args: {
+    key: {
+      type: "string",
+      alias: "k",
+      description: "API key value",
+      required: true,
+    },
+    label: {
+      type: "string",
+      alias: "l",
+      description: "Label for the key",
+      required: true,
+    },
+  },
+  run({ args }) {
+    const config = loadConfig()
+    config.keys[args.label] = args.key
+    if (!config.activeKey) {
+      config.activeKey = args.label
+    }
+    saveConfig(config)
+    consola.success(`Added API key "${args.key.substring(0, 20)}..." with label "${args.label}"`)
   },
 })
 
-const list = defineCommand({
-  meta: { name: "list", description: "List configured API keys" },
-  async run() {
-    const config = await getConfig()
-    const keys = await listKeys()
-
-    if (!keys.length) {
-      consola.info("No API keys configured.")
+const listCommand = defineCommand({
+  meta: {
+    name: "list",
+    description: "List all configured API keys",
+  },
+  run() {
+    const config = loadConfig()
+    const labels = Object.keys(config.keys)
+    if (labels.length === 0) {
+      consola.info("No API keys configured. Run 'aegntic keys add -k <key> -l <label>' to add one.")
       return
     }
-
-    console.log()
-    consola.info("API Keys:")
-    for (const key of keys) {
-      const active = key.active ? " (active)" : ""
-      const used = key.lastUsedAt ? ` | last used: ${key.lastUsedAt}` : ""
-      console.log(`  ${key.label}: ${key.prefix}...${active}${used}`)
+    consola.info("Configured API keys:")
+    for (const label of labels) {
+      const isActive = config.activeKey === label
+      const prefix = config.keys[label].substring(0, 20)
+      console.log(`${isActive ? "* " : "  "}${label}: ${prefix}...`)
     }
-    console.log()
   },
 })
 
-const remove = defineCommand({
-  meta: { name: "remove", description: "Remove an API key" },
-  args: {
-    l: { type: "string", description: "Label of the key to remove", required: true },
-    f: { type: "boolean", description: "Force (skip confirmation)", default: false },
+const removeCommand = defineCommand({
+  meta: {
+    name: "remove",
+    description: "Remove an API key",
   },
-  async run({ args }) {
-    if (!args.f) {
-      consola.warn(`This will remove key "${args.l}". Use -f to confirm.`)
+  args: {
+    label: {
+      type: "string",
+      alias: "l",
+      description: "Label of the key to remove",
+      required: true,
+    },
+  },
+  run({ args }) {
+    const config = loadConfig()
+    if (!config.keys[args.label]) {
+      consola.error(`No API key found with label "${args.label}"`)
       return
     }
-
-    consola.success(`Key "${args.l}" removed.`)
-    consola.info("Note: Remote key revocation requires the API. Config cleared locally.")
+    delete config.keys[args.label]
+    if (config.activeKey === args.label) {
+      const keys = Object.keys(config.keys)
+      config.activeKey = keys.length > 0 ? keys[0] : undefined
+    }
+    saveConfig(config)
+    consola.success(`Removed API key with label "${args.label}"`)
   },
 })
 
-const activate = defineCommand({
-  meta: { name: "activate", description: "Set a key as active" },
-  args: {
-    l: { type: "string", description: "Label of the key to activate", required: true },
+const activateCommand = defineCommand({
+  meta: {
+    name: "activate",
+    description: "Switch the active API key",
   },
-  async run({ args }) {
-    const keys = await listKeys()
-    const target = keys.find((k) => k.label === args.l)
-
-    if (!target) {
-      consola.error(`Key "${args.l}" not found.`)
+  args: {
+    label: {
+      type: "string",
+      alias: "l",
+      description: "Label of the key to activate",
+      required: true,
+    },
+  },
+  run({ args }) {
+    const config = loadConfig()
+    if (!config.keys[args.label]) {
+      consola.error(`No API key found with label "${args.label}"`)
       return
     }
-
-    consola.success(`Key "${args.l}" is now active.`)
+    config.activeKey = args.label
+    saveConfig(config)
+    consola.success(`Activated API key with label "${args.label}"`)
   },
 })
 
@@ -79,9 +113,9 @@ export default defineCommand({
     description: "Manage API keys",
   },
   subCommands: {
-    add: () => Promise.resolve(add),
-    list: () => Promise.resolve(list),
-    remove: () => Promise.resolve(remove),
-    activate: () => Promise.resolve(activate),
+    add: addCommand,
+    list: listCommand,
+    remove: removeCommand,
+    activate: activateCommand,
   },
 })

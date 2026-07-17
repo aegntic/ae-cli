@@ -38,3 +38,20 @@ Body:
 Assets: terminal recording of full flow, turbo build screenshot, landing page screenshot, monorepo tree screenshot.
 
 // Future posts map 1:1 to checkpoints in docs/roadmap.md.
+
+## [2026-07-17] Checkpoint 1 — First Run complete
+**Headline:** We just shipped the first billed run of our agent-tool router.
+
+Body (draft):
+> Checkpoint 1 of aegntic is officially complete. We firmed up our monorepo stack: Hono for the gateway, Drizzle + PostgreSQL for the database/billing ledger, and a lightweight citty-powered CLI.
+>
+> In this milestone, we wired the entire vertical slice:
+> 1. Discovering endpoints using natural language from the terminal.
+> 2. Inspecting input schemas to know exactly what parameters are required.
+> 3. Running the job asynchronously and polling or waiting for completion.
+> 4. Settling actual results dynamically against a prepaid workspace ledger.
+>
+> One of our biggest design decisions was charging per-result (incorporated with a 25% markup) instead of per-call. This aligns our interests with the developers: if a scraper fails, they don't lose a cent.
+>
+> Up next: integrating the Apify and PDL providers, adding Argon2 API key hashing, and building the Next.js wallet dashboard.
+

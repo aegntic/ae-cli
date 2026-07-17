@@ -16,3 +16,15 @@ Append-only. Each tweet dated. Hook in first line, proof in thread. Capture scre
 - **T7 (the demo):** "[screenshot: terminal showing discover → run → COMPLETED → balance $9.985] This is the demo. One command finds the tool. One command runs it. One balance pays for it. Agents that discover first never hand-roll."
 
 // Future tweets land per checkpoint — see docs/content/youtube/ scripts for the matching beat.
+
+## [2026-07-17] Checkpoint 1 complete — First Run
+- **T4 (proof):** "Checkpoint 1 is LIVE. 🚀
+  Our unified tool CLI is running end-to-end.
+  `aegntic discover \"tweet\"` -> matches -> `aegntic run` -> returns results and debits dynamic cost from the workspace balance.
+  $10.00 init balance -> $9.62 available.
+  Check the demo 🧵"
+- **T5 (decision):** "Why per-result pricing?
+  ADR-0005: We rejected per-call models. If a scraper fails or returns empty, the user shouldn't pay. aegntic charges strictly per-result + 25% markup.
+  Value-aligned billing is the wedge."
+- **T6 (next):** "Next checkpoint: replacing the mock provider with real Apify/PDL execution adapters, API keys hashing, and Stripe checkouts. We are going straight to live."
+
