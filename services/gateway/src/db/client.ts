@@ -10,7 +10,7 @@ import * as schema from "./schema.js"
  */
 const DATABASE_URL =
   process.env.DATABASE_URL ??
-  "postgresql://aegntic:aegntic@localhost:5434/aegntic"
+  "postgresql://aegntic:aegntic@localhost:5435/aegntic"
 
 if (!process.env.DATABASE_URL) {
   // eslint-disable-next-line no-console
