@@ -156,3 +156,20 @@ Cleanup: deleted obsolete worktrees (ship-1, /home/ae/ae-wt/p2) + branches (feat
 Known issues: bd pre-commit hook broken on this box (bypassed --no-verify). feat/aegntic-live's Stripe + Apify NOT yet ported (conflict-heavy, schema diverged) — deferred.
 - HEAD: 4b0745a. PR: https://github.com/aegntic/ae-cli/pull/1
 - next: outcome-telemetry at gateway (moat flywheel data, can't backfill); Phase 4 bind itemCount into signed payload; port Stripe+Apify; pgvector catalog from cldcde; MCP server + argon2/better-auth + QStash.
+
+## [2026-07-18] build | autonomous chain — telemetry, MCP, catalog, reliability (4 features)
+Human-out-of-loop run. Each feature: delegated to a coder agent with hard gates, then INDEPENDENTLY verified by main thread (tests + typecheck + live-curl), not on agent faith. All on feat/unified-signed-persistence.
+
+1. **Outcome telemetry** (79d148d) — `run_events` table: per-call provider/endpoint/latency_ms/http_status/success/item_count/result_hash (SHA-256 of canonical result)/cost_micros/error_message. `recordRunEvent()` seam. `executeAsync` instrumented (success + failure paths). Telemetry is observational only — failed-run-no-charge invariant still holds. The moat flywheel data asset (research C+D: can't backfill). Verified 18/18.
+
+2. **aegntic MCP server** (0a74ce5) — `services/gateway/src/mcp/` hand-rolled stdio JSON-RPC (no SDK dep, no DB at module load — verified by grep + smoke). 6 tools: discover/inspect/run/get_run/balance/balance_audit. bin `aegntic-mcp`. `docs/mcp-server.md` Claude Code/Cursor config. The GEO #1 surface (aegntic = a tool the LLM calls). Verified 36/36 + stdio initialize smoke returns protocol response.
+
+3. **Persisted catalog + DB discovery** (78de9f6, 97fcd9e) — `tools` table (tsvector via BEFORE-INSERT trigger — GENERATED columns reject non-IMMUTABLE array_to_string; GIN index). Seeded 14 native (mock 12 + openmeteo + catalog-e2e). discover/inspect/runs rewired over catalog (full-text `plainto_tsquery` + `ts_rank`, ILIKE fallback). Execution still via adapter registry. Verified 49/49 + e2e run-path test.
+
+4. **Reliability scoring + public leaderboard** (568c34f, be65ec4) — aggregate `run_events` (percentile_cont p50/p95, success_rate via FILTER, avg item/cost) LEFT JOIN tools. `GET /v1/reliability` (authed, raw) + `GET /leaderboard` (PUBLIC, no-auth, min-calls=3 threshold, omits cost). The citable GEO asset. Verified 54/54 + LIVE curl: /leaderboard 200 no-auth, /v1/reliability 401 no-auth.
+
+Chore: drizzle.config default :5434→:5435 (e921a52). Last stale port ref gone.
+
+**Process lesson:** an agent reported /leaderboard 200 from vitest (src) but the BUILT dist/ was stale → live `node dist/index.js` returned 404 until `pnpm build`. Forced verification caught it (live-curl, not just tests). Rule added: any route change → rebuild + live-curl the built gateway, not only vitest.
+- HEAD: be65ec4. 54/54 tests, 5/5 typecheck.
+- next: cldcde external-skills seed (kind=external, real launch-catalog content); rendered leaderboard HTML page (crawlable GEO); Phase 4 (itemCount into signed payload); router (needs provider redundancy); Apify/Stripe (creds-blocked).
