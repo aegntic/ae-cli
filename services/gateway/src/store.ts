@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid"
 import { createHash } from "node:crypto"
 import { eq, and, desc } from "drizzle-orm"
+import { appendLedgerEntry } from "./lib/ledger.js"
 import type {
   Workspace,
   ApiKey,
@@ -132,11 +133,15 @@ export async function charge(
   amount: number,
   reason: string,
 ): Promise<void> {
-  await db.insert(schema.balanceLedger).values({
+  // Routes through appendLedgerEntry so every charge row is hash-chained and
+  // Ed25519-signed. The signed-amount convention (charge = -amount) lives in
+  // computeBalance via the CASE expression; the ledger stores the positive
+  // magnitude here, consistent with topup/refund.
+  await appendLedgerEntry({
     workspaceId,
     runId,
     type: "charge",
-    amount: amount.toFixed(4),
+    amount,
     currency: "USD",
     reason,
   })
@@ -148,11 +153,11 @@ export async function refund(
   amount: number,
   reason: string,
 ): Promise<void> {
-  await db.insert(schema.balanceLedger).values({
+  await appendLedgerEntry({
     workspaceId,
     runId,
     type: "refund",
-    amount: amount.toFixed(4),
+    amount,
     currency: "USD",
     reason,
   })

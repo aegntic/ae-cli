@@ -69,6 +69,10 @@ export const runs = pgTable(
     error: text("error"),
     stoppable: boolean("stoppable").notNull().default(true),
     idempotencyKey: text("idempotency_key"),
+    // SHA-256 of canonical(result) — binds the signed charge entry to the
+    // exact bytes returned by the provider. Nullable; populated when the
+    // charge is signed (Phase 4 binds this into LedgerPayload).
+    resultHash: text("result_hash"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -92,6 +96,17 @@ export const balanceLedger = pgTable(
     currency: text("currency").notNull().default("USD"),
     reason: text("reason"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // --- tamper-evident chain (ruvos port, additive; nullable for backfill) ---
+    // SHA-256 hash-link to previous row: hashLink(prevHash, payloadHash).
+    // GENESIS_HASH (64 zeros) for the first row in the workspace.
+    prevHash: text("prev_hash"),
+    // SHA-256 of the canonical JSON payload (all signed fields).
+    payloadHash: text("payload_hash"),
+    // Ed25519 signature over payloadHash. Algo tag + signature hex.
+    signatureAlgo: text("signature_algo"), // "ed25519" | "ml-dsa-65" | "slh-dsa-128s"
+    signature: text("signature"), // hex (64 bytes for ed25519)
+    // Public key that signed this entry (hex). Workspace-level rotating key.
+    signerPublicKey: text("signer_public_key"),
   },
   (t) => ({
     workspaceIdx: index("ledger_workspace_idx").on(t.workspaceId),

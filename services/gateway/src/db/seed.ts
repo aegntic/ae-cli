@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import { sql } from "drizzle-orm"
 import { db, schema } from "./client.js"
+import { appendLedgerEntry } from "../lib/ledger.js"
 
 /**
  * Idempotent dev seed.
@@ -47,10 +48,12 @@ export async function seedDefaults(): Promise<void> {
     .from(schema.balanceLedger)
     .where(sql`${schema.balanceLedger.workspaceId} = ${DEFAULT_WORKSPACE_ID}`)
   if ((existing[0]?.n ?? 0) === 0) {
-    await db.insert(schema.balanceLedger).values({
+    // Genesis topup: first row for the workspace, so appendLedgerEntry seals
+    // it with prev_hash = GENESIS_HASH (no prior row exists).
+    await appendLedgerEntry({
       workspaceId: DEFAULT_WORKSPACE_ID,
       type: "topup",
-      amount: "10.0000",
+      amount: 10.0,
       currency: "USD",
       reason: "initial free credit",
     })
