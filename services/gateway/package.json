@@ -17,7 +17,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push --force",
     "db:seed": "tsx src/db/seed.ts",
-    "db:seed-catalog": "tsx src/db/seed-catalog.ts"
+    "db:seed-catalog": "tsx src/db/seed-catalog.ts",
+    "db:seed-runs": "tsx src/db/seed-runs.ts"
   },
   "dependencies": {
     "@aegntic/sdk": "workspace:*",
