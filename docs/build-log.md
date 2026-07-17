@@ -173,3 +173,14 @@ Chore: drizzle.config default :5434→:5435 (e921a52). Last stale port ref gone.
 **Process lesson:** an agent reported /leaderboard 200 from vitest (src) but the BUILT dist/ was stale → live `node dist/index.js` returned 404 until `pnpm build`. Forced verification caught it (live-curl, not just tests). Rule added: any route change → rebuild + live-curl the built gateway, not only vitest.
 - HEAD: be65ec4. 54/54 tests, 5/5 typecheck.
 - next: cldcde external-skills seed (kind=external, real launch-catalog content); rendered leaderboard HTML page (crawlable GEO); Phase 4 (itemCount into signed payload); router (needs provider redundancy); Apify/Stripe (creds-blocked).
+
+## [2026-07-18] milestone | SPINE COMPLETE on real data — 3 real providers + honest telemetry
+3 real no-key provider adapters shipped (639c6c8, 4640a25): `hackernews` (Firebase HN — top stories, user), `coingecko` (markets), `frankfurter` (ECB FX rates — swapped in for deprecated restcountries which returns a deprecation envelope for everything). All server-side fetch, AbortSignal timeout, no key. Catalog now 18 native tools / 6 providers.
+
+`db/seed-runs.ts` fires REAL adapter calls (13/run, 600ms spacing for CoinGecko rate limits) → 22 honest run_events across 4 real providers, including a DELIBERATE real failure (frankfurter `from=ZZZNOTACURRENCY` → genuine HTTP 404) so the leaderboard shows a non-trivial 66.7% rate. No fabricated telemetry.
+
+Verified independently (70/70 tests, 5/5 typecheck, dist rebuilt). LIVE /leaderboard now returns real data: coingecko 6 calls 100% p50 280ms, openmeteo 6 100% p50 320ms, hackernews 4 100% p50 758ms, frankfurter 3 @ 66.7% p50 661ms.
+
+**Product spine complete + demonstrable on real data:** discover (18 tools) → run (4 real providers) → bill (signed+correct ledger) → trust (audit + reliability leaderboard with real numbers). Callable via CLI, web console, MCP. The moat thesis (telemetry → reliability → routing signal) is backed by real numbers.
+- HEAD: 4640a25. 70/70 tests, 5/5 typecheck.
+- next: rendered leaderboard page (crawlable GEO, now with real data); cldcde external seed (breadth); Phase 4; router; deploy (creds).
