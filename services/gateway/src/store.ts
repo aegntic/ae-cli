@@ -305,3 +305,45 @@ export async function listRuns(
     .limit(limit)
   return rows.map(rowToRun)
 }
+
+// ---------- run outcome telemetry ----------
+
+/**
+ * Input for a single per-call telemetry row. All non-optional fields must be
+ * supplied by the call site; the seam exists so future phases (signed-event
+ * + PQ-algo) can intercept every telemetry write in one place.
+ */
+export interface NewRunEventInput {
+  runId: string
+  workspaceId: string
+  provider: string
+  endpoint: string
+  latencyMs: number
+  success: boolean
+  httpStatus?: number | null
+  itemCount?: number | null
+  resultHash?: string | null
+  costMicros?: number | null
+  errorMessage?: string | null
+}
+
+/**
+ * Single seam for per-call outcome telemetry writes. Inserts one run_events
+ * row. Purely observational — NEVER touches charge/refund/billing. All
+ * future instrumentation (signed events, PQ algos, sampling) routes here.
+ */
+export async function recordRunEvent(input: NewRunEventInput): Promise<void> {
+  await db.insert(schema.runEvents).values({
+    runId: input.runId,
+    workspaceId: input.workspaceId,
+    provider: input.provider,
+    endpoint: input.endpoint,
+    latencyMs: input.latencyMs,
+    success: input.success,
+    httpStatus: input.httpStatus ?? null,
+    itemCount: input.itemCount ?? null,
+    resultHash: input.resultHash ?? null,
+    costMicros: input.costMicros ?? null,
+    errorMessage: input.errorMessage ?? null,
+  })
+}

@@ -6,6 +6,7 @@ import {
   jsonb,
   boolean,
   bigint,
+  integer,
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core"
@@ -114,7 +115,62 @@ export const balanceLedger = pgTable(
   }),
 )
 
+/**
+ * Per-call OUTCOME TELEMETRY — the reliability data asset.
+ *
+ * One row per provider execution attempt inside executeAsync(). Captures
+ * wall-clock latency, success/failure, item count, and a SHA-256 of the
+ * canonical result payload — the exact fields reliability-weighted routing
+ * needs and CANNOT be backfilled later. Writes are ADDITIVE and purely
+ * observational: they never alter the charge/refund lifecycle or the signed
+ * ledger. run_events is its own table for now; Phase 4 binds resultHash +
+ * itemCount into the signed LedgerPayload.
+ *
+ * costMicros convention: integer micro-USD = round(result.cost * 1e4). This
+ * matches the ledger's numeric(14,4) "value * 1e4" representation (4 decimal
+ * places of USD = 1/10th of a micro-USD cent). Storing the unit-adjusted
+ * integer here keeps aggregations JOIN-free and avoids numeric/float drift
+ * in the analytics path. The authoritative cost lives in balance_ledger;
+ * costMicros on run_events is a denormalized copy for fast reporting.
+ */
+export const runEvents = pgTable(
+  "run_events",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    runId: text("run_id")
+      .notNull()
+      .references(() => runs.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    // Denormalized for fast provider/endpoint aggregation without joins.
+    provider: text("provider").notNull(),
+    endpoint: text("endpoint").notNull(),
+    // Wall time from execute start to resolve/reject.
+    latencyMs: integer("latency_ms").notNull(),
+    // Upstream HTTP status if known (null when not surfaced by the adapter).
+    httpStatus: integer("http_status"),
+    // true = provider returned without throwing.
+    success: boolean("success").notNull(),
+    // result.items on success.
+    itemCount: integer("item_count"),
+    // SHA-256 of canonical(result.data) on success — binds the outcome.
+    resultHash: text("result_hash"),
+    // micro-USD (cost * 1e4); null on failure. Denormalized copy of the
+    // ledger charge amount; authoritative value is in balance_ledger.amount.
+    costMicros: integer("cost_micros"),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    runIdx: index("run_events_run_idx").on(t.runId),
+    providerEndpointIdx: index("run_events_provider_endpoint_idx").on(t.provider, t.endpoint),
+    workspaceIdx: index("run_events_workspace_idx").on(t.workspaceId),
+  }),
+)
+
 export type WorkspaceRow = typeof workspaces.$inferSelect
 export type ApiKeyRow = typeof apiKeys.$inferSelect
 export type RunRow = typeof runs.$inferSelect
 export type LedgerRow = typeof balanceLedger.$inferSelect
+export type RunEventRow = typeof runEvents.$inferSelect

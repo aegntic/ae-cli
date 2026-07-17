@@ -1,8 +1,18 @@
 import { Hono } from "hono"
 import { nanoid } from "nanoid"
+import { sha256 } from "@noble/hashes/sha256"
 import type { Run, RunInput, CostBreakdown, ApiResponse, HintsBlock } from "@aegntic/sdk"
 import type { Env } from "../types.js"
-import { createRun, getRun, updateRun, listRuns, getBalance, charge } from "../store.js"
+import {
+  createRun,
+  getRun,
+  updateRun,
+  listRuns,
+  getBalance,
+  charge,
+  recordRunEvent,
+} from "../store.js"
+import { canonicalEncode } from "../lib/chain.js"
 import { getEndpoint, getProvider } from "../providers/registry.js"
 
 export const runsRoute = new Hono<Env>()
@@ -111,6 +121,11 @@ async function executeAsync(
   const workspace = run?.workspaceId
   if (!workspace) return
 
+  // Telemetry t0 — wall time from execute start to resolve/reject. Date.now
+  // is fine here: runtime instrumentation inside the gateway process, not a
+  // workflow script.
+  const t0 = Date.now()
+
   try {
     const adapter = getProvider(providerName)
     if (!adapter) throw new Error(`Provider ${providerName} not found`)
@@ -137,12 +152,61 @@ async function executeAsync(
       cost,
       stoppable: false,
     })
+
+    // Telemetry: record the success outcome. ADDITIVE — never alters the
+    // charge lifecycle above. resultHash binds the outcome (SHA-256 of the
+    // canonical result payload); costMicros is a denormalized micro-USD copy
+    // of the charge amount for fast aggregation. Errors here MUST NOT mask
+    // the successful run — swallow to the console.
+    try {
+      const resultHash = Buffer.from(
+        sha256(Buffer.from(canonicalEncode(result.data), "utf8")),
+      ).toString("hex")
+      await recordRunEvent({
+        runId,
+        workspaceId: workspace,
+        provider: providerName,
+        endpoint: endpointPath,
+        latencyMs: Date.now() - t0,
+        success: true,
+        itemCount: result.items,
+        resultHash,
+        costMicros: Math.round(result.cost * 1e4),
+      })
+    } catch (telemetryErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[telemetry] failed to record success event for run ${runId}:`,
+        telemetryErr,
+      )
+    }
   } catch (err) {
     await updateRun(runId, {
       status: "FAILED",
       error: err instanceof Error ? err.message : "Unknown error",
       stoppable: false,
     })
+
+    // Telemetry: record the failure outcome. Sacred invariant still holds —
+    // no charge row is written for failed runs. The telemetry row is the
+    // ONLY persistence on this branch besides the run status patch.
+    try {
+      await recordRunEvent({
+        runId,
+        workspaceId: workspace,
+        provider: providerName,
+        endpoint: endpointPath,
+        latencyMs: Date.now() - t0,
+        success: false,
+        errorMessage: err instanceof Error ? err.message : "Unknown error",
+      })
+    } catch (telemetryErr) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[telemetry] failed to record failure event for run ${runId}:`,
+        telemetryErr,
+      )
+    }
   }
 }
 
