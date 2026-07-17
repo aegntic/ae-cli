@@ -24,3 +24,10 @@ Append-only. Each tweet dated. Hook in first line, proof in thread. Capture scre
 - **T11 (the seam):** "Zero gateway changes to add a real provider. The `ProviderAdapter` interface (execute/estimateCost) was already there from the mock. Open-Meteo dropped in via `addProvider()`. That's the whole marketplace thesis in one file."
 - **T12 (the demo):** "[screenshot: aegntic run openmeteo/weather/current → COMPLETED, temperature_2m 25.3°C, cost $0.0010; then ledger SQL showing charge 0.0010 run_id=8FG6oIIjxP1B] Real API. Real ledger. Real money. One CLI."
 - **T13 (the ask):** "What data tool should we wire next? Apify, PDL, Browserbase are on the list — each behind the same `ProviderAdapter`. Reply with the endpoint you'd pay per-result for."
+
+## [2026-07-17] checkpoint 3 — Console
+- **T14 (the UI):** "The CLI had a sibling. `aegntic` now has a console at /app — paste a workspace key, see live balance (9.9990 USD, 4dp) and run history with status pills. Same gateway. Now it has a face."
+- **T15 (the resilience):** "First console build rendered `BALANCE —` and `No runs`. Cause: Promise.all — one failing request (runs) nuked the good one (balance). Switched to Promise.allSettled + per-section errors. Partial failure is a feature, not a crash."
+- **T16 (the honesty):** "Today's bug was shared. Our dev Postgres got clobbered — a sibling worktree's migrations replaced our `runs` table with `jobs`. Our ledger survived (append-only), `runs` didn't. Lesson: one DB per worktree. We isolated, re-migrated, shipped. Operational honesty > looking clean."
+- **T17 (the seam):** "The console hits the same `/v1/balance` and `/v1/runs` the CLI does. No new backend for the web. The API is the product; the surfaces (CLI, console, MCP) are thin clients over it."
+- **T18 (the demo):** "[screenshot: /app — balance 9.9990 USD gradient hero, available/held, recent runs with a green COMPLETED pill on openmeteo/weather/current @ 0.0010] One balance. Every surface. The console is live."
