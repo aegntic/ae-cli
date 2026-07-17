@@ -124,3 +124,32 @@ Open decisions for the user (these change the plan):
 3. **ruvos signed-ledger now or later** — it's the trust moat but ~600 LOC TS
    reimplementation. R2 (telemetry) is more urgent than the signing layer; defer
    signing to R2-second-half?
+
+## Refinements (ownership context)
+
+Re-assessed once ownership is known (cognitive-os owned by aegntic; ruvos a
+friend's project aegntic contributes to). These upgrade three pieces:
+
+- **cognitive-os → agent-facing protocol, not just voice.** No license barrier
+  (yours). Vendor the 10-layer cognitive stack + 7-step verification chain as
+  ae-cli's differentiator: agents go through intake triage → verification →
+  execution against the gateway, not flat tool calls. This is the
+  "cognitive infrastructure" framing that separates aegntic from a flat
+  registry. Consider dual-licensing (MIT code + CC-BY spec) so it can vendor
+  verbatim. Becomes a Phase R4 deliverable (the agent-facing layer over the
+  MCP/gateway surface).
+- **ruvos ledger crates → sidecar/FFI option.** Contributor relationship means
+  the 3 crates (`rvf-types` + `rvf-manifest` + `rvf-crypto`) can be split into a
+  standalone co-owned `ae-ledger-core` crate called from TS via FFI or a sidecar
+  microservice — **avoids the ~600 LOC TS reimplementation** of the signed-ledger
+  moat. Prefers a Rust sidecar over a TS port if we want post-quantum signing
+  intact. Upstream action: PR a top-level MIT LICENSE file to ruvos (referenced
+  in README/Cargo.toml but missing).
+- **cldcde entries = the launch catalog.** The 9 `ae-ltd-*` skills + 25 plugins
+  + 4 MCP servers are aegntic-branded (yours), not reference data — they ARE the
+  seeded marketplace at launch. Strengthens R3 (pgvector catalog seeds with
+  owned, live entries, not placeholders).
+
+Net: plan unchanged; cognitive-os promoted from "voice" to "agent-protocol
+differentiator," ruvos gets a sidecar path that dodges the TS port, cldcde seed
+upgraded to "launch catalog."
