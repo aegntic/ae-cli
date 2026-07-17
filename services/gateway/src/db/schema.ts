@@ -9,7 +9,19 @@ import {
   integer,
   uniqueIndex,
   index,
+  customType,
 } from "drizzle-orm/pg-core"
+
+// tsvector — Postgres native full-text-search type. Drizzle has no first-class
+// helper, so we declare a thin customType. The tools.search_tsv column is
+// maintained by a BEFORE INSERT/UPDATE trigger (see 0003_tools_catalog.sql);
+// it cannot be GENERATED ALWAYS AS because array_to_string is STABLE, not
+// IMMUTABLE. This type just lets selects/inserts type-check on the TS side.
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector"
+  },
+})
 
 /**
  * Canonical persistence schema for the aegntic gateway.
@@ -169,8 +181,61 @@ export const runEvents = pgTable(
   }),
 )
 
+/**
+ * TOOLS CATALOG — persisted, growable marketplace surface.
+ *
+ * Replaces the in-memory provider registry as the source of truth for
+ * discover/inspect. v1 = Postgres full-text search over provider+path+
+ * description+tags (the search_tsv column). v2 will add pgvector semantic
+ * search over an embedding column; that needs an embedding API and is out of
+ * scope here.
+ *
+ * Row shape mirrors the SDK Endpoint contract so the catalog is a drop-in
+ * metadata source for discover/inspect. EXECUTION still goes through the
+ * in-memory adapter registry (registry.getProvider(name).execute()) — the
+ * catalog row is metadata only. kind=native means the adapter is registered
+ * in-process; kind=external|reserved for future cldcde-backed skills.
+ *
+ * id is the canonical slug `${provider}/${path}`. Idempotent seed upserts on
+ * id so descriptions/schemas refresh on every boot without manual migration.
+ */
+export const tools = pgTable(
+  "tools",
+  {
+    id: text("id").primaryKey(),
+    provider: text("provider").notNull(),
+    path: text("path").notNull(),
+    description: text("description").notNull(),
+    inputSchema: jsonb("input_schema").notNull(),
+    costModel: jsonb("cost_model").notNull(),
+    verified: boolean("verified").notNull().default(false),
+    tags: text("tags").array().notNull().default([]),
+    kind: text("kind").notNull().default("native"),
+    // Full-text indexable tsvector over provider+path+description+tags.
+    // Maintained by tools_search_tsv_trigger (BEFORE INSERT/UPDATE) declared
+    // in 0003_tools_catalog.sql — NOT GENERATED ALWAYS AS because
+    // array_to_string is STABLE, not IMMUTABLE, which Postgres rejects for
+    // STORED generated columns. Selects use raw SQL; inserts NEVER set this
+    // column (the trigger computes it).
+    searchTsv: tsvector("search_tsv"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    providerPathIdx: uniqueIndex("tools_provider_path_idx").on(t.provider, t.path),
+    // GIN over search_tsv is declared in the hand-written migration (drizzle
+    // cannot emit GIN-on-tsvector cleanly across versions and the column is
+    // maintained by a trigger, not by drizzle's column model).
+  }),
+)
+
 export type WorkspaceRow = typeof workspaces.$inferSelect
 export type ApiKeyRow = typeof apiKeys.$inferSelect
 export type RunRow = typeof runs.$inferSelect
 export type LedgerRow = typeof balanceLedger.$inferSelect
 export type RunEventRow = typeof runEvents.$inferSelect
+export type ToolRow = typeof tools.$inferSelect
