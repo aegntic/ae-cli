@@ -1,11 +1,17 @@
 import type { ProviderAdapter, Endpoint } from "@aegntic/sdk"
 import { mockProvider } from "./mock.js"
 import { openMeteoProvider } from "./openmeteo.js"
+import { hackerNewsProvider } from "./hackernews.js"
+import { coinGeckoProvider } from "./coingecko.js"
+import { restCountriesProvider } from "./restcountries.js"
 
 const providers = new Map<string, ProviderAdapter>()
 
 providers.set(mockProvider.name, mockProvider)
 providers.set(openMeteoProvider.name, openMeteoProvider)
+providers.set(hackerNewsProvider.name, hackerNewsProvider)
+providers.set(coinGeckoProvider.name, coinGeckoProvider)
+providers.set(restCountriesProvider.name, restCountriesProvider)
 
 export function addProvider(adapter: ProviderAdapter): void {
   providers.set(adapter.name, adapter)
