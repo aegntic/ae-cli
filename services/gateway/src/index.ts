@@ -20,7 +20,7 @@ try {
 }
 
 const app = createApp()
-const port = Number(process.env.PORT) || 3100
+const port = Number(process.env.PORT) || 3101
 
 console.log(`aegntic gateway listening on :${port}`)
 

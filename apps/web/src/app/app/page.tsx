@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
  */
 
 const GATEWAY =
-  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "http://localhost:3100";
+  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "http://localhost:3101";
 
 const KEY_STORAGE = "aegntic.apiKey";
 
