@@ -37,7 +37,9 @@ seed()
 
 console.log(`aegntic gateway listening on :${port}`)
 
-serve({ fetch: app.fetch, port })
+if (process.env.NODE_ENV !== "test") {
+  serve({ fetch: app.fetch, port })
+}
 
 export default app
 // Hot-reload trigger comment 4

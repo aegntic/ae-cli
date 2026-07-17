@@ -4,6 +4,7 @@ import { jobs, tools, balanceLedger } from "../db/schema.js"
 import { eq, and, sum, desc } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import type { Env } from "../types.js"
+import { registry } from "../adapters/index.js"
 
 export const runsRoute = new Hono<Env>()
 
@@ -124,70 +125,61 @@ runsRoute.post("/runs", async (c) => {
   })
 
   const runTask = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 5000))
+    try {
+      const adapter = registry.getAdapter(provider)
+      const executeResult = await adapter.execute(endpoint, input)
 
-    const checkJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
-    if (checkJob.length === 0 || checkJob[0].status === "STOPPED") {
-      activeTasks.delete(jobId)
-      return
-    }
-
-    const body = (input as any)?.body || {}
-    const limit = body.maxItems || body.maxResults || body.limit || 5
-    const resultsArray = []
-
-    if (endpoint === "/apidojo/tweet-scraper") {
-      const searchTerms = body.searchTerms || ["AI"]
-      for (let i = 0; i < limit; i++) {
-        resultsArray.push({
-          id: `tweet_${nanoid(8)}`,
-          text: `Interesting thoughts on ${searchTerms[i % searchTerms.length]} - tweet number ${i + 1}!`,
-          author: `@user_${nanoid(4)}`,
-          likes: Math.floor(Math.random() * 500),
-          createdAt: new Date().toISOString(),
-        })
+      const checkJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
+      if (checkJob.length === 0 || checkJob[0].status === "STOPPED") {
+        activeTasks.delete(jobId)
+        return
       }
-    } else {
-      const keywords = body.keywords || "tech"
-      for (let i = 0; i < limit; i++) {
-        resultsArray.push({
-          id: `linkedin_${nanoid(8)}`,
-          postText: `Super excited to share our new thoughts about ${keywords}!`,
-          postedBy: `Professional ${nanoid(4)}`,
-          commentsCount: Math.floor(Math.random() * 20),
-          createdAt: new Date().toISOString(),
-        })
-      }
-    }
 
-    const actualCostCents = estimateCost(tool, input)
+      const actualCostCents = estimateCost(tool, { ...input, body: { ...((input as any)?.body || {}), maxItems: executeResult.items } })
 
-    const ledgerId = `ledger_${nanoid(16)}`
-    await db.insert(balanceLedger).values({
-      id: ledgerId,
-      workspaceId,
-      deltaCents: -actualCostCents,
-      type: "charge",
-      description: `Charge for run ${jobId} against ${provider}${endpoint}`,
-      jobId,
-    })
-
-    await db
-      .update(jobs)
-      .set({
-        status: "COMPLETED",
-        result: resultsArray as any,
-        resultUri: `https://api.aegntic.ai/v1/runs/${jobId}/results.json`,
-        cost: {
-          value: actualCostCents / 100,
-          currency: "USD",
-          items: resultsArray.length,
-          unitPrice: (tool.costModel as any).unitPrice / 100,
-        } as any,
-        stoppable: false,
-        updatedAt: new Date(),
+      const ledgerId = `ledger_${nanoid(16)}`
+      await db.insert(balanceLedger).values({
+        id: ledgerId,
+        workspaceId,
+        deltaCents: -actualCostCents,
+        type: "charge",
+        description: `Charge for run ${jobId} against ${provider}${endpoint}`,
+        jobId,
       })
-      .where(eq(jobs.id, jobId))
+
+      await db
+        .update(jobs)
+        .set({
+          status: "COMPLETED",
+          result: executeResult.data as any,
+          resultUri: `https://api.aegntic.ai/v1/runs/${jobId}/results.json`,
+          cost: {
+            value: actualCostCents / 100,
+            currency: "USD",
+            items: executeResult.items,
+            unitPrice: (tool.costModel as any).unitPrice / 100,
+          } as any,
+          stoppable: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(jobs.id, jobId))
+    } catch (err: any) {
+      const checkJob = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1)
+      if (checkJob.length > 0 && checkJob[0].status === "STOPPED") {
+        activeTasks.delete(jobId)
+        return
+      }
+
+      await db
+        .update(jobs)
+        .set({
+          status: "FAILED",
+          error: err.message || "Execution failed",
+          stoppable: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(jobs.id, jobId))
+    }
 
     activeTasks.delete(jobId)
   }

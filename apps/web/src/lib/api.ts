@@ -1,114 +1,180 @@
-import type {
-  Endpoint,
-  DiscoverResponse,
-  InspectResponse,
-  Run,
-  RunInput,
-  BalanceResponse,
-  ApiKey,
-  ApiKeyCreated,
-} from "@aegntic/sdk"
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3100";
 
-export type {
-  Endpoint,
-  DiscoverResponse,
-  InspectResponse,
-  Run,
-  RunInput,
-  BalanceResponse,
-  ApiKey,
-  ApiKeyCreated,
-} from "@aegntic/sdk"
+export interface Endpoint {
+  provider: string;
+  path: string;
+  description: string;
+  inputSchema: InputSchema;
+  costModel: CostModel;
+  verified: boolean;
+  relevanceScore?: number;
+}
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"
+export interface InputSchema {
+  body?: Record<string, SchemaField>;
+  bodyType?: "json" | "form" | "multipart";
+  queryParams?: Record<string, SchemaField>;
+  pathParams?: Record<string, SchemaField>;
+}
 
-export class ApiError extends Error {
-  status: number
-  constructor(message: string, status: number) {
-    super(message)
-    this.name = "ApiError"
-    this.status = status
-  }
+export interface SchemaField {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  description?: string;
+  required?: boolean;
+  default?: unknown;
+}
+
+export interface CostModel {
+  type: "per_result" | "per_call" | "flat";
+  unitPrice: number;
+  currency: "USD";
+}
+
+export type RunStatus =
+  | "READY"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED"
+  | "BLOCKED"
+  | "STOPPED"
+  | "TIME_OUT";
+
+export interface Run {
+  id: string;
+  workspaceId: string;
+  provider: string;
+  endpoint: string;
+  input: RunInput;
+  status: RunStatus;
+  result?: unknown;
+  resultUri?: string;
+  cost?: CostBreakdown;
+  error?: string;
+  stoppable: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RunInput {
+  body?: Record<string, unknown>;
+  queryParams?: Record<string, string>;
+  pathParams?: Record<string, string>;
+}
+
+export interface CostBreakdown {
+  value: number;
+  currency: "USD";
+  items: number;
+  unitPrice: number;
+}
+
+export interface ApiKey {
+  label: string;
+  prefix: string;
+  active: boolean;
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
+export interface ApiKeyCreated extends ApiKey {
+  key: string;
+}
+
+export interface BalanceResponse {
+  balance: number;
+  currency: "USD";
+  held: number;
+  available: number;
+}
+
+export interface DiscoverResponse {
+  results: Endpoint[];
+  total: number;
+  query: string;
+}
+
+export interface InspectResponse {
+  endpoint: Endpoint;
+  examples?: RunInput[];
+}
+
+export interface HintsBlock {
+  nextCommands?: string[];
+  relatedEndpoints?: string[];
+  caveats?: string[];
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  hints?: HintsBlock;
+  requestId: string;
 }
 
 async function request<T>(
   path: string,
   apiKey: string,
-  options: { method?: "GET" | "POST" | "DELETE"; body?: unknown } = {}
+  init?: RequestInit
 ): Promise<T> {
-  const { method = "GET", body } = options
-  const url = `${API_URL}${path}`
-
-  const res = await fetch(url, {
-    method,
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
     headers: {
-      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      ...init?.headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    cache: "no-store",
-  })
-
+  });
   if (!res.ok) {
-    let message = `Request failed (${res.status})`
-    try {
-      const err = await res.json()
-      if (err && typeof err.error === "string") message = err.error
-    } catch {
-      /* ignore parse errors */
-    }
-    throw new ApiError(message, res.status)
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error ?? `Request failed: ${res.status}`);
   }
-
-  const json = await res.json()
-  return json.data as T
+  return res.json();
 }
 
-export const api = {
-  discover(q: string, apiKey: string): Promise<DiscoverResponse> {
-    const params = new URLSearchParams({ q })
-    return request<DiscoverResponse>(`/v1/discover?${params.toString()}`, apiKey)
-  },
+export async function discover(apiKey: string, q: string) {
+  return request<ApiResponse<DiscoverResponse>>(
+    `/discover?q=${encodeURIComponent(q)}`,
+    apiKey
+  );
+}
 
-  inspect(provider: string, endpoint: string, apiKey: string): Promise<InspectResponse> {
-    const params = new URLSearchParams({ provider, endpoint })
-    return request<InspectResponse>(`/v1/inspect?${params.toString()}`, apiKey)
-  },
+export async function inspect(
+  apiKey: string,
+  provider: string,
+  endpoint: string
+) {
+  return request<ApiResponse<InspectResponse>>(
+    `/inspect?provider=${encodeURIComponent(provider)}&endpoint=${encodeURIComponent(endpoint)}`,
+    apiKey
+  );
+}
 
-  listRuns(limit = 20, apiKey: string): Promise<Run[]> {
-    const params = new URLSearchParams({ limit: String(limit) })
-    return request<Run[]>(`/v1/runs?${params.toString()}`, apiKey)
-  },
+export async function listRuns(apiKey: string, limit = 50) {
+  return request<ApiResponse<Run[]>>(`/runs?limit=${limit}`, apiKey);
+}
 
-  getRun(id: string, apiKey: string): Promise<Run> {
-    return request<Run>(`/v1/runs/${encodeURIComponent(id)}`, apiKey)
-  },
+export async function getRun(apiKey: string, id: string) {
+  return request<ApiResponse<Run>>(`/runs/${id}`, apiKey);
+}
 
-  getBalance(apiKey: string): Promise<BalanceResponse> {
-    return request<BalanceResponse>("/v1/balance", apiKey)
-  },
+export async function getBalance(apiKey: string) {
+  return request<ApiResponse<BalanceResponse>>("/balance", apiKey);
+}
 
-  listKeys(apiKey: string): Promise<ApiKey[]> {
-    return request<ApiKey[]>("/v1/keys", apiKey)
-  },
+export async function listKeys(apiKey: string) {
+  return request<ApiResponse<ApiKey[]>>("/keys", apiKey);
+}
 
-  createKey(label: string, apiKey: string): Promise<ApiKeyCreated> {
-    return request<ApiKeyCreated>("/v1/keys", apiKey, {
-      method: "POST",
-      body: { label },
-    })
-  },
+export async function createKey(apiKey: string, label: string) {
+  return request<ApiResponse<ApiKeyCreated>>("/keys", apiKey, {
+    method: "POST",
+    body: JSON.stringify({ label }),
+  });
+}
 
-  deleteKey(label: string, apiKey: string): Promise<void> {
-    return request<void>(`/v1/keys/${encodeURIComponent(label)}`, apiKey, {
-      method: "DELETE",
-    })
-  },
-
-  run(provider: string, endpoint: string, input: RunInput, apiKey: string): Promise<Run> {
-    return request<Run>("/v1/runs", apiKey, {
-      method: "POST",
-      body: { provider, endpoint, input },
-    })
-  },
+export async function deleteKey(apiKey: string, label: string) {
+  return request<{ deleted: boolean; label: string }>(
+    `/keys/${encodeURIComponent(label)}`,
+    apiKey,
+    { method: "DELETE" }
+  );
 }

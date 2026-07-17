@@ -1,203 +1,206 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { api, ApiError, type ApiKey, type ApiKeyCreated } from "@/lib/api"
-import { useApiKey } from "@/components/ApiKeyContext"
-import CopyButton from "@/components/CopyButton"
-
-function formatDate(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return "—"
-  return d.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { useEffect, useState, useCallback } from "react";
+import { listKeys, createKey, deleteKey, type ApiKey, type ApiKeyCreated } from "@/lib/api";
+import { useApiKey } from "@/components/ApiKeyContext";
 
 export default function KeysPage() {
-  const { apiKey } = useApiKey()
-  const [keys, setKeys] = useState<ApiKey[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [label, setLabel] = useState("")
-  const [creating, setCreating] = useState(false)
-  const [created, setCreated] = useState<ApiKeyCreated | null>(null)
-  const [confirming, setConfirming] = useState<string | null>(null)
+  const { apiKey } = useApiKey();
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newLabel, setNewLabel] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [justCreated, setJustCreated] = useState<ApiKeyCreated | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  async function load() {
+  const fetchKeys = useCallback(async () => {
     if (!apiKey) {
-      setError("Enter your API key in the sidebar first.")
-      return
+      setLoading(false);
+      return;
     }
-    setLoading(true)
-    setError(null)
     try {
-      const data = await api.listKeys(apiKey)
-      setKeys(data)
+      const res = await listKeys(apiKey);
+      setKeys(res.data);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load keys.")
+      setError(err instanceof Error ? err.message : "Failed to load keys");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [apiKey]);
 
   useEffect(() => {
-    load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey])
+    fetchKeys();
+  }, [fetchKeys]);
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    const trimmed = label.trim()
-    if (!trimmed || !apiKey) return
-    setCreating(true)
-    setError(null)
-    setCreated(null)
+  const handleCreate = async () => {
+    if (!newLabel.trim() || !apiKey) return;
+
+    setCreating(true);
     try {
-      const createdKey = await api.createKey(trimmed, apiKey)
-      setCreated(createdKey)
-      setLabel("")
-      await load()
+      const res = await createKey(apiKey, newLabel.trim());
+      setJustCreated(res.data);
+      setNewLabel("");
+      await fetchKeys();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create key.")
+      setError(err instanceof Error ? err.message : "Failed to create key");
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
-  }
+  };
 
-  async function handleDelete(target: string) {
-    if (!apiKey) return
-    setError(null)
+  const handleDelete = async (label: string) => {
+    if (!apiKey) return;
+
     try {
-      await api.deleteKey(target, apiKey)
-      setConfirming(null)
-      await load()
+      await deleteKey(apiKey, label);
+      setDeleteConfirm(null);
+      await fetchKeys();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete key.")
+      setError(err instanceof Error ? err.message : "Failed to delete key");
     }
-  }
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold tracking-tight">API Keys</h1>
-      <p className="mt-1 text-sm text-text-secondary">
-        Manage keys that authenticate requests to the gateway.
-      </p>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">API Keys</h1>
+
+      {justCreated && (
+        <div className="mb-6 rounded-xl border border-green/20 bg-green/5 p-5">
+          <h2 className="mb-2 text-sm font-semibold text-green">
+            Key created successfully
+          </h2>
+          <p className="mb-3 text-xs text-text-muted">
+            Copy this key now. It will not be shown again.
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 rounded-lg bg-bg px-3 py-2 font-mono text-xs text-text-primary">
+              {justCreated.key}
+            </code>
+            <button
+              onClick={() => handleCopy(justCreated.key)}
+              className="shrink-0 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6 rounded-xl border border-border bg-bg-card p-5">
+        <h2 className="mb-3 text-sm font-semibold">Create new key</h2>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            placeholder="Key label (e.g. production, dev)"
+            className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+          />
+          <button
+            onClick={handleCreate}
+            disabled={!newLabel.trim() || creating}
+            className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {creating ? "Creating..." : "Create"}
+          </button>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
+        </div>
+      )}
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-500">
           {error}
         </div>
       )}
 
-      <form
-        onSubmit={handleCreate}
-        className="mt-6 flex flex-col gap-3 rounded-xl border border-border bg-bg-card p-5 sm:flex-row"
-      >
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Key label (e.g. production)"
-          className="flex-1 rounded-lg border border-border bg-bg-elevated px-3 py-2 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-accent"
-        />
-        <button
-          type="submit"
-          disabled={creating || !label.trim()}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {creating ? "Creating..." : "Create new key"}
-        </button>
-      </form>
-
-      {created && (
-        <div className="mt-4 rounded-xl border border-green/20 bg-green/10 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green">Key created — copy it now.</p>
-              <p className="mt-1 break-all font-mono text-xs text-text-secondary">
-                {created.key}
-              </p>
-            </div>
-            <CopyButton text={created.key} />
-          </div>
-          <p className="mt-3 text-xs text-text-muted">
-            For your security, this key is shown only once.
-          </p>
+      {!loading && !error && keys.length === 0 && (
+        <div className="py-16 text-center text-sm text-text-muted">
+          No API keys yet. Create one above.
         </div>
       )}
 
-      <div className="mt-6 space-y-3">
-        {loading && (
-          <div className="animate-pulse space-y-3">
-            {[0, 1].map((i) => (
-              <div key={i} className="h-16 rounded-xl border border-border bg-bg-card" />
-            ))}
-          </div>
-        )}
-
-        {!loading && keys.length === 0 && (
-          <div className="rounded-xl border border-border bg-bg-card px-4 py-10 text-center text-sm text-text-muted">
-            No API keys yet.
-          </div>
-        )}
-
-        {keys.map((k) => (
-          <div
-            key={k.label}
-            className="flex items-center justify-between gap-4 rounded-xl border border-border bg-bg-card px-5 py-4"
-          >
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-text-primary">{k.label}</span>
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${
-                    k.active
-                      ? "border-green/20 bg-green/10 text-green"
-                      : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
-                  }`}
+      {!loading && keys.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-bg-elevated">
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-muted">Label</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-muted">Prefix</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-muted">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-muted">Created</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-text-muted">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((key) => (
+                <tr
+                  key={key.label}
+                  className="border-b border-border-subtle last:border-0"
                 >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${k.active ? "bg-green" : "bg-zinc-400"}`}
-                  />
-                  {k.active ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <p className="mt-1 font-mono text-xs text-text-muted">
-                {k.prefix.slice(0, 8)}…
-                <span className="ml-3 text-text-muted/70">{formatDate(k.createdAt)}</span>
-              </p>
-            </div>
-
-            {confirming === k.label ? (
-              <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDelete(k.label)}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20"
-                >
-                  Confirm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirming(null)}
-                  className="rounded-lg border border-border px-3 py-1.5 text-xs text-text-secondary transition-colors hover:text-text-primary"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirming(k.label)}
-                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-red-500/30 hover:text-red-400"
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+                  <td className="px-4 py-3 font-medium text-text-primary">
+                    {key.label}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-text-muted">
+                    {key.prefix}...
+                  </td>
+                  <td className="px-4 py-3">
+                    {key.active ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-green">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-muted">Inactive</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-text-muted">
+                    {new Date(key.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {deleteConfirm === key.label ? (
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleDelete(key.label)}
+                          className="rounded-md bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(null)}
+                          className="rounded-md px-2.5 py-1 text-xs text-text-muted transition-colors hover:text-text-secondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirm(key.label)}
+                        className="rounded-md px-2.5 py-1 text-xs text-text-muted transition-colors hover:text-red-500"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
-  )
+  );
 }

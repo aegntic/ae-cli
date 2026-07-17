@@ -1,222 +1,227 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { api, ApiError, type Endpoint } from "@/lib/api"
-import { useApiKey } from "@/components/ApiKeyContext"
-
-function formatCost(endpoint: Endpoint): string {
-  const { unitPrice, type } = endpoint.costModel
-  const dollars = unitPrice / 100
-  const per = type === "per_result" ? "per result" : type === "per_call" ? "per call" : "flat"
-  return `$${dollars.toFixed(dollars % 1 === 0 ? 2 : 3)} ${per}`
-}
+import { useEffect, useState, useCallback } from "react";
+import { discover, type Endpoint } from "@/lib/api";
+import { useApiKey } from "@/components/ApiKeyContext";
 
 export default function DiscoverPage() {
-  const { apiKey } = useApiKey()
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState<Endpoint[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [searched, setSearched] = useState(false)
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [running, setRunning] = useState<string | null>(null)
-  const [runMessage, setRunMessage] = useState<string | null>(null)
+  const { apiKey } = useApiKey();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Endpoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (!apiKey) {
-      setError("Enter your API key in the sidebar first.")
-      return
-    }
-    setLoading(true)
-    setError(null)
-    setRunMessage(null)
-    try {
-      const res = await api.discover(query, apiKey)
-      setResults(res.results)
-      setSearched(true)
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to discover tools.")
-      setResults([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  const handleSearch = useCallback(async () => {
+    if (!query.trim() || !apiKey) return;
 
-  async function handleRun(endpoint: Endpoint) {
-    if (!apiKey) {
-      setError("Enter your API key in the sidebar first.")
-      return
-    }
-    setRunning(`${endpoint.provider}${endpoint.path}`)
-    setRunMessage(null)
+    setLoading(true);
+    setError(null);
+    setSearched(true);
     try {
-      const run = await api.run(endpoint.provider, endpoint.path, {}, apiKey)
-      setRunMessage(`Run started: ${run.id} — view it under Runs.`)
+      const res = await discover(apiKey, query);
+      setResults(res.data.results);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to start run.")
+      setError(err instanceof Error ? err.message : "Search failed");
+      setResults([]);
     } finally {
-      setRunning(null)
+      setLoading(false);
     }
-  }
+  }, [query, apiKey]);
+
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      if (query.trim()) handleSearch();
+    }, 400);
+    return () => clearTimeout(debounce);
+  }, [query, handleSearch]);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold tracking-tight">Discover</h1>
-      <p className="mt-1 text-sm text-text-secondary">
-        Search the catalog of tools your agent can run.
-      </p>
+    <div className="mx-auto max-w-4xl">
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">Discover Tools</h1>
 
-      <form onSubmit={handleSearch} className="mt-6">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-            >
-              <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.6" />
-              <path d="m14 14 3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search tools..."
-              className="w-full rounded-lg border border-border bg-bg-elevated py-2.5 pl-10 pr-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-accent"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? "Searching..." : "Search"}
-          </button>
+      <div className="relative mb-8">
+        <svg
+          viewBox="0 0 24 24"
+          className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path strokeLinecap="round" d="m21 21-4.35-4.35" />
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search tools..."
+          className="w-full rounded-xl border border-border bg-bg-card py-3.5 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+        />
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
-      </form>
+      )}
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-500">
           {error}
         </div>
       )}
 
-      {runMessage && (
-        <div className="mt-4 rounded-lg border border-green/20 bg-green/10 px-4 py-3 text-sm text-green">
-          {runMessage}
+      {!loading && !error && searched && results.length === 0 && (
+        <div className="py-16 text-center text-sm text-text-muted">
+          No tools found for &ldquo;{query}&rdquo;
         </div>
       )}
 
-      <div className="mt-6 space-y-3">
-        {loading && (
-          <div className="animate-pulse space-y-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-24 rounded-xl border border-border bg-bg-card" />
-            ))}
-          </div>
-        )}
+      {!loading && results.length > 0 && (
+        <div className="space-y-3">
+          {results.map((ep) => {
+            const key = `${ep.provider}/${ep.path}`;
+            const isExpanded = expanded === key;
 
-        {searched && !loading && results.length === 0 && (
-          <div className="rounded-xl border border-border bg-bg-card px-4 py-10 text-center text-sm text-text-muted">
-            No tools found for &ldquo;{query}&rdquo;.
-          </div>
-        )}
-
-        {results.map((endpoint) => {
-          const key = `${endpoint.provider}${endpoint.path}`
-          const isOpen = expanded === key
-          return (
-            <div
-              key={key}
-              className="overflow-hidden rounded-xl border border-border bg-bg-card transition-colors hover:border-border-subtle"
-            >
-              <button
-                type="button"
-                onClick={() => setExpanded(isOpen ? null : key)}
-                className="flex w-full items-start gap-4 px-5 py-4 text-left"
+            return (
+              <div
+                key={key}
+                className="rounded-xl border border-border bg-bg-card transition-colors hover:border-border"
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-text-primary">
-                      {endpoint.provider}
-                      <span className="text-text-muted">{endpoint.path}</span>
-                    </span>
-                    {endpoint.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-green/20 bg-green/10 px-2 py-0.5 text-xs font-medium text-green">
-                        ✓ Verified
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 truncate text-sm text-text-secondary">
-                    {endpoint.description}
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                    <span className="font-mono text-accent">{formatCost(endpoint)}</span>
-                    {typeof endpoint.relevanceScore === "number" && (
-                      <span>
-                        Relevance {Math.round(endpoint.relevanceScore * 100)}%
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  className={`h-5 w-5 shrink-0 text-text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
+                <button
+                  onClick={() => setExpanded(isExpanded ? null : key)}
+                  className="flex w-full items-start gap-4 p-5 text-left"
                 >
-                  <path d="m5 7 5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-sm font-bold text-accent">
+                    {ep.provider[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-medium text-text-primary">
+                        {ep.provider}/{ep.path}
+                      </span>
+                      {ep.verified && (
+                        <span className="inline-flex items-center rounded-full bg-green/10 px-1.5 py-0.5 text-[10px] font-medium text-green">
+                          verified
+                        </span>
+                      )}
+                      {ep.relevanceScore != null && (
+                        <span className="text-xs text-text-muted">
+                          {Math.round(ep.relevanceScore * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-text-secondary line-clamp-2">
+                      {ep.description}
+                    </p>
+                    <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
+                      <span className="rounded-md bg-bg px-2 py-0.5 font-mono">
+                        ${ep.costModel.unitPrice.toFixed(4)}/{ep.costModel.type === "per_result" ? "result" : "call"}
+                      </span>
+                      <span>{ep.costModel.type}</span>
+                    </div>
+                  </div>
+                  <svg
+                    viewBox="0 0 24 24"
+                    className={`mt-1 h-4 w-4 shrink-0 text-text-muted transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
 
-              {isOpen && (
-                <div className="border-t border-border px-5 py-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                {isExpanded && (
+                  <div className="border-t border-border-subtle p-5">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
                       Input Schema
                     </h3>
-                    <button
-                      type="button"
-                      onClick={() => handleRun(endpoint)}
-                      disabled={running === key}
-                      className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                    >
-                      {running === key ? "Running..." : "Run this"}
-                    </button>
-                  </div>
-
-                  {endpoint.inputSchema.body ? (
-                    <div className="space-y-2">
-                      {Object.entries(endpoint.inputSchema.body).map(([name, field]) => (
-                        <div
-                          key={name}
-                          className="flex items-center justify-between rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm"
-                        >
-                          <div className="min-w-0">
-                            <span className="font-mono text-text-primary">{name}</span>
-                            {field.required && (
-                              <span className="ml-2 text-xs text-red-400">required</span>
-                            )}
-                            {field.description && (
-                              <p className="truncate text-xs text-text-muted">
-                                {field.description}
-                              </p>
-                            )}
-                          </div>
-                          <span className="ml-3 shrink-0 rounded border border-border px-2 py-0.5 font-mono text-xs text-text-secondary">
-                            {field.type}
-                          </span>
-                        </div>
-                      ))}
+                    <SchemaBlock ep={ep} />
+                    <div className="mt-4 flex gap-2">
+                      <button className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent/50">
+                        Run this
+                      </button>
                     </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SchemaBlock({ ep }: { ep: Endpoint }) {
+  const { inputSchema } = ep;
+  const hasParams =
+    inputSchema.queryParams || inputSchema.pathParams || inputSchema.body;
+
+  if (!hasParams) {
+    return (
+      <p className="text-sm text-text-muted">No input parameters required.</p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {inputSchema.queryParams && (
+        <ParamTable title="Query Parameters" fields={inputSchema.queryParams} />
+      )}
+      {inputSchema.pathParams && (
+        <ParamTable title="Path Parameters" fields={inputSchema.pathParams} />
+      )}
+      {inputSchema.body && (
+        <ParamTable title={`Body${inputSchema.bodyType ? ` (${inputSchema.bodyType})` : ""}`} fields={inputSchema.body} />
+      )}
+    </div>
+  );
+}
+
+function ParamTable({
+  title,
+  fields,
+}: {
+  title: string;
+  fields: Record<string, { type: string; description?: string; required?: boolean; default?: unknown }>;
+}) {
+  return (
+    <div>
+      <h4 className="mb-1.5 text-xs font-medium text-text-secondary">{title}</h4>
+      <div className="rounded-lg border border-border-subtle overflow-hidden">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border-subtle bg-bg">
+              <th className="px-3 py-2 text-left font-medium text-text-muted">Name</th>
+              <th className="px-3 py-2 text-left font-medium text-text-muted">Type</th>
+              <th className="px-3 py-2 text-left font-medium text-text-muted">Required</th>
+              <th className="px-3 py-2 text-left font-medium text-text-muted">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(fields).map(([name, field]) => (
+              <tr key={name} className="border-b border-border-subtle last:border-0">
+                <td className="px-3 py-2 font-mono text-text-primary">{name}</td>
+                <td className="px-3 py-2 text-text-secondary">{field.type}</td>
+                <td className="px-3 py-2 text-text-secondary">
+                  {field.required ? (
+                    <span className="text-amber">yes</span>
                   ) : (
-                    <p className="text-sm text-text-muted">No input parameters required.</p>
+                    "no"
                   )}
-                </div>
-              )}
-            </div>
-          )
-        })}
+                </td>
+                <td className="px-3 py-2 text-text-muted">
+                  {field.description ?? "\u2014"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
-  )
+  );
 }
