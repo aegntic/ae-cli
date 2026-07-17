@@ -61,3 +61,22 @@ Body:
 > The repo stays private until Launch. The build log is public. Follow along.
 
 Assets: terminal recording of `aegntic run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.
+
+## [2026-07-17] checkpoint 3 — Console
+
+**Headline:** The marketplace has a face. There is now a web console — and it exposed two lessons worth sharing.
+
+Body:
+> Until today, aegntic was a CLI. Powerful, but a developer tool. Checkpoint 3 gives it a console at `/app`: paste a workspace API key, and you see your live balance and your run history — status, cost, provider — rendered against the exact same gateway the CLI uses. No new backend. The API is the product; the surfaces are thin clients over it.
+>
+> Shipping it surfaced two things.
+>
+> **1. Partial failure is a feature.** The first build fetched balance and runs with `Promise.all`. When the runs request failed, it took the balance with it — the page showed `BALANCE —` even though the balance call had succeeded. We switched to `Promise.allSettled` with per-section error state, so a broken runs endpoint no longer erases a valid balance. In a system with many dependencies, graceful degradation is not optional.
+>
+> **2. We got clobbered, and it was a shared-DB problem.** Our runs endpoint started returning 500: `relation "runs" does not exist`. The cause was operational, not code: a sibling worktree on the same machine ran its own migrations against our shared dev Postgres, replacing our `runs` table with its `jobs` schema. Our append-only ledger survived intact — that is the point of an append-only ledger — but the runs table did not. The fix was isolation: one Postgres database per worktree. We documented it and moved on.
+>
+> Both lessons are in the build log. The console is live, rendering real data from a real gateway backed by a real ledger.
+>
+> Next: deploy it, wire a credentialed provider, and build out the rest of the console. The repo is private until Launch; the build log is public.
+
+Assets: screenshot of `/app` console (balance 9.9990 USD gradient hero, available/held, recent-runs table with green COMPLETED pill on openmeteo/weather/current @ 0.0010); screenshot of the Promise.all → allSettled diff.
