@@ -2,6 +2,7 @@ import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
 
 const NAV_LINKS = [
+  { label: "Reliability", href: "/leaderboard" },
   { label: "Tools", href: "/tools" },
   { label: "Docs", href: "https://docs.aegntic.ai" },
 ];
@@ -458,6 +459,9 @@ function Footer() {
             <div className="flex flex-col gap-2 text-sm text-text-secondary">
               <Link href="/" className="transition-colors hover:text-text-primary">
                 Home
+              </Link>
+              <Link href="/leaderboard" className="transition-colors hover:text-text-primary">
+                Reliability
               </Link>
               <Link href="/tools" className="transition-colors hover:text-text-primary">
                 Tools
