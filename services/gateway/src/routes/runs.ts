@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { nanoid } from "nanoid"
 import { sha256 } from "@noble/hashes/sha256"
-import type { Run, RunInput, CostBreakdown, ApiResponse, HintsBlock } from "@aegntic/sdk"
+import type { Run, RunInput, CostBreakdown, ApiResponse, HintsBlock, Endpoint } from "@aegntic/sdk"
 import type { Env } from "../types.js"
 import {
   createRun,
@@ -14,6 +14,7 @@ import {
 } from "../store.js"
 import { canonicalEncode } from "../lib/chain.js"
 import { getEndpoint, getProvider } from "../providers/registry.js"
+import { getCatalogEndpoint } from "../catalog.js"
 
 export const runsRoute = new Hono<Env>()
 
@@ -28,7 +29,14 @@ runsRoute.post("/runs", async (c) => {
     return c.json({ error: "Fields 'provider' and 'endpoint' are required" }, 400)
   }
 
-  const ep = getEndpoint(provider, endpoint)
+  // Source of truth for "what endpoints exist" is the persisted tools catalog
+  // (single inventory for discover/inspect/run). Fall back to the in-memory
+  // adapter registry if the catalog row is missing — the adapter remains the
+  // authority on what it can EXECUTE, so this keeps the run path resilient
+  // when seeding is incomplete without ever diverging from catalog metadata
+  // in steady state.
+  let ep: Endpoint | undefined = await getCatalogEndpoint(provider, endpoint)
+  if (!ep) ep = getEndpoint(provider, endpoint)
   if (!ep) {
     return c.json({ error: `Endpoint ${provider}/${endpoint} not found` }, 404)
   }

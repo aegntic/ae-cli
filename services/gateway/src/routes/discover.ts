@@ -1,15 +1,17 @@
 import { Hono } from "hono"
 import type { Context } from "hono"
 import { nanoid } from "nanoid"
-import { searchProviders } from "../providers/registry.js"
+import { searchCatalog } from "../catalog.js"
 import type { Env } from "../types.js"
 import type { DiscoverResponse, HintsBlock, ApiResponse } from "@aegntic/sdk"
 
 export const discoverRoute = new Hono<Env>()
 
 // Discovery is an idempotent read; accept both GET (CLI default) and POST
-// (agents/SDKs that prefer not to encode a query body in the URL).
-const handleDiscover = (c: Context) => {
+// (agents/SDKs that prefer not to encode a query body in the URL). Backed by
+// the persisted tools catalog (Postgres full-text search with ILIKE fallback)
+// — replaces the in-memory registry search.
+const handleDiscover = async (c: Context) => {
   const q = c.req.query("q") ?? ""
   const limit = Math.min(Number(c.req.query("limit")) || 10, 50)
   const minScore = Number(c.req.query("minScore")) || 0
@@ -18,7 +20,7 @@ const handleDiscover = (c: Context) => {
     return c.json({ error: "Query parameter 'q' is required" }, 400)
   }
 
-  const results = searchProviders(q)
+  const results = (await searchCatalog(q, limit, minScore))
     .filter((e) => (e.relevanceScore ?? 0) >= minScore)
     .slice(0, limit)
 
