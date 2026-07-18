@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-/**
- * Public reliability leaderboard — the crawlable GEO asset.
- *
- * Server component (SSR) so Perplexity / ChatGPT / Gemini crawlers see the
- * real numbers in the HTML. Fetches the gateway's public /leaderboard JSON
- * at request time and revalidates every 5 minutes (reliability doesn't need
- * real-time, and the cache cuts gateway load). Build-safe: any fetch failure
- * renders a graceful "data temporarily unavailable" shell instead of crashing
- * the build or runtime.
- */
-
-export const revalidate = 300; // seconds — ISR, 5 min
+export const revalidate = 300;
 
 const GATEWAY =
   process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://aegntic-gateway.fly.dev";
@@ -66,19 +55,20 @@ async function fetchLeaderboard(): Promise<Leaderboard | null> {
     if (!res.ok) return null;
     return (await res.json()) as Leaderboard;
   } catch {
-    // Network down, gateway unreachable, build-time fetch failed — render shell.
     return null;
   }
 }
 
-// Success-rate color thresholds.
-//   green : >= 0.95
-//   amber : >= 0.80 — < 0.95
-//   red   : < 0.80
-function rateClasses(rate: number): string {
-  if (rate >= 0.95) return "text-[var(--color-green)]";
-  if (rate >= 0.8) return "text-[var(--color-amber)]";
-  return "text-red-400";
+function rateColor(rate: number): string {
+  if (rate >= 0.95) return "bg-toy-green";
+  if (rate >= 0.8) return "bg-toy-yellow";
+  return "bg-toy-red";
+}
+
+function rateText(rate: number): string {
+  if (rate >= 0.95) return "text-toy-green";
+  if (rate >= 0.8) return "text-toy-yellow";
+  return "text-toy-red";
 }
 
 function rateLabel(rate: number): string {
@@ -88,7 +78,6 @@ function rateLabel(rate: number): string {
 }
 
 function pct(rate: number): string {
-  // 0.6666... → "66.7%"
   return `${(rate * 100).toFixed(1)}%`;
 }
 
@@ -100,7 +89,6 @@ function ms(latency: number): string {
 }
 
 function timeAgo(iso: string): string {
-  // The gateway emits e.g. "2026-07-17 20:20:56.071504+00" — Date parses it.
   const t = new Date(iso).getTime();
   if (!Number.isFinite(t)) return "—";
   const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
@@ -120,11 +108,12 @@ export default async function LeaderboardPage() {
   const data = await fetchLeaderboard();
 
   return (
-    <main className="min-h-screen bg-bg text-text-primary noise-bg">
-      <header className="sticky top-0 z-50 border-b border-border-subtle bg-bg/80 backdrop-blur-xl">
+    <main className="min-h-screen bg-bg text-text-primary">
+      {/* Nav — identical to landing */}
+      <header className="sticky top-0 z-50 swiss-line-b bg-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md gradient-accent text-xs font-bold text-white">
+            <div className="toy-chip flex h-7 w-7 items-center justify-center rounded-xl bg-black text-xs font-bold text-white">
               Ae
             </div>
             <span>aegntic</span>
@@ -133,26 +122,28 @@ export default async function LeaderboardPage() {
             <Link href="/leaderboard" className="text-text-primary">
               Reliability
             </Link>
-            <Link href="/tools" className="transition-colors hover:text-text-primary">
-              Tools
+            <Link href="/app" className="transition-colors hover:text-text-primary">
+              Console
             </Link>
             <Link
               href="/app"
-              className="rounded-lg bg-text-primary px-3 py-1.5 text-xs font-medium text-bg transition-opacity hover:opacity-90"
+              className="toy-button bg-black px-3 py-1.5 text-xs font-medium text-white"
             >
-              Console &rarr;
+              Get started →
             </Link>
           </nav>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl px-6 py-12 md:py-16">
-        {/* H1 — question/answer shaped for GEO; answer front-loaded */}
+        {/* Breadcrumb */}
         <div className="text-xs font-mono uppercase tracking-[0.2em] text-text-muted mb-4 animate-fade-in-up">
           aegntic / leaderboard
         </div>
+
+        {/* H1 */}
         <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl animate-fade-in-up delay-100">
-          <span className="gradient-text">Which data tools actually work?</span>
+          <span className="text-accent">Which data tools actually work?</span>
           <br />
           <span className="text-text-primary">Live reliability scores.</span>
         </h1>
@@ -160,19 +151,15 @@ export default async function LeaderboardPage() {
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-text-secondary md:text-lg animate-fade-in-up delay-200">
           Live success rates and latency aggregated from{" "}
           <span className="text-text-primary font-medium">real provider calls</span> routed
-          through aegntic. Tools with fewer than 3 calls are omitted — small-sample rates
-          are noise, not signal.
+          through aegntic. Tools with fewer than 3 calls are omitted.
         </p>
 
-        {/* Quotable factual paragraph — placed high so LLMs extract it */}
         <p className="mt-5 max-w-2xl text-sm leading-relaxed text-text-muted animate-fade-in-up delay-300">
-          The table below shows verified data tools with their success rate over the most
-          recent calls, p50 and p95 latency in milliseconds, total call count, and time
-          since the last call. Every number is measured from actual API responses — not
-          self-reported by the provider, not synthetic. The leaderboard is regenerated on
-          each request and cached for 5 minutes.
+          Every number is measured from actual API responses — not self-reported, not synthetic.
+          The leaderboard is regenerated on each request and cached for 5 minutes.
         </p>
 
+        {/* Table */}
         <div className="mt-10 animate-fade-in-up delay-400">
           {data ? (
             data.tools.length > 0 ? (
@@ -185,26 +172,26 @@ export default async function LeaderboardPage() {
           )}
         </div>
 
-        {/* CTA + how-it-works */}
+        {/* CTA cards */}
         <section className="mt-14 grid gap-4 md:grid-cols-2">
           <Link
             href="/app"
-            className="group rounded-xl border border-border bg-bg-card p-6 transition-all hover:border-accent/40 hover:bg-bg-card-hover"
+            className="group rounded-2xl border-2 border-black bg-white p-6 toy-shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:toy-shadow"
           >
-            <div className="text-xs font-medium uppercase tracking-wider text-accent">
+            <div className="text-xs font-semibold uppercase tracking-wider text-accent">
               For operators
             </div>
             <h2 className="mt-1 text-lg font-semibold">Open the console</h2>
             <p className="mt-2 text-sm text-text-muted">
               Inspect, run, and meter tool calls with a workspace API key.
             </p>
-            <div className="mt-4 flex items-center gap-1 text-sm text-accent">
-              Go to console <span className="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+            <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-accent">
+              Go to console <span className="transition-transform group-hover:translate-x-0.5">→</span>
             </div>
           </Link>
 
-          <div className="rounded-xl border border-border bg-bg-card p-6">
-            <div className="text-xs font-medium uppercase tracking-wider text-text-muted">
+          <div className="rounded-2xl border-2 border-black bg-white p-6 toy-shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               How reliability is measured
             </div>
             <h2 className="mt-1 text-lg font-semibold">Methodology</h2>
@@ -213,14 +200,13 @@ export default async function LeaderboardPage() {
               network error, or malformed response). Success rate ={" "}
               <span className="font-mono text-text-secondary">successful / total</span>{" "}
               over the rolling window. p50/p95 are latency percentiles. Tools with{" "}
-              <span className="font-mono text-text-secondary">&lt;3</span> calls are omitted
-              as low-sample rates are not statistically meaningful.
+              <span className="font-mono text-text-secondary">&lt;3</span> calls are omitted.
             </p>
           </div>
         </section>
 
         {data?.disclaimer && (
-          <p className="mt-12 text-xs leading-relaxed text-text-muted border-t border-border-subtle pt-6">
+          <p className="mt-12 text-xs leading-relaxed text-text-muted swiss-line pt-6">
             {data.disclaimer}
           </p>
         )}
@@ -239,18 +225,17 @@ export default async function LeaderboardPage() {
 }
 
 function LeaderboardTable({ data }: { data: Leaderboard }) {
-  // Sort: highest success rate first, ties broken by total calls desc.
   const rows = [...data.tools].sort((a, b) => {
     if (b.successRate !== a.successRate) return b.successRate - a.successRate;
     return b.totalCalls - a.totalCalls;
   });
 
   return (
-    <div className="rounded-xl border border-border bg-bg-card overflow-hidden">
+    <div className="rounded-2xl border-2 border-black bg-white overflow-hidden toy-shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs font-mono uppercase tracking-wider text-text-muted border-b border-border">
+            <tr className="text-left text-xs font-mono uppercase tracking-wider text-text-muted swiss-line-b">
               <th className="px-4 py-3 font-normal">provider / endpoint</th>
               <th className="px-4 py-3 font-normal">status</th>
               <th className="px-4 py-3 font-normal text-right">success</th>
@@ -264,7 +249,7 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
             {rows.map((t) => (
               <tr
                 key={`${t.provider}/${t.endpoint}`}
-                className="border-b border-border-subtle last:border-0 hover:bg-bg-elevated transition-colors"
+                className="swiss-line-b last:border-0 hover:bg-bg transition-colors"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -272,10 +257,7 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
                     <span className="text-text-muted">/</span>
                     <span className="text-text-secondary">{t.endpoint}</span>
                     {t.verified && (
-                      <span
-                        title="verified adapter"
-                        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[var(--color-green)]/40 bg-[var(--color-green)]/10 text-[10px] text-[var(--color-green)]"
-                      >
+                      <span className="toy-chip inline-flex h-4 w-4 items-center justify-center rounded-full bg-toy-green text-[10px] text-white">
                         ✓
                       </span>
                     )}
@@ -285,13 +267,11 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`text-xs ${rateClasses(t.successRate)}`}
-                  >
+                  <span className={`toy-chip inline-block text-[10px] px-2 py-0.5 rounded-full text-white ${rateColor(t.successRate)}`}>
                     {rateLabel(t.successRate)}
                   </span>
                 </td>
-                <td className={`px-4 py-3 text-right ${rateClasses(t.successRate)}`}>
+                <td className={`px-4 py-3 text-right font-semibold ${rateText(t.successRate)}`}>
                   {pct(t.successRate)}
                 </td>
                 <td className="px-4 py-3 text-right text-text-secondary">
@@ -317,16 +297,16 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-border rounded-xl p-12 text-center">
+    <div className="border-2 border-dashed border-black rounded-2xl p-12 text-center bg-white">
       <div className="text-sm text-text-secondary mb-1">No tools with enough calls yet</div>
       <div className="text-xs font-mono text-text-muted">
         tools appear here once they accumulate ≥3 real calls
       </div>
       <Link
         href="/app"
-        className="mt-6 inline-flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent-dim"
+        className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent transition-colors hover:text-accent-dim"
       >
-        Run a tool to populate the board <span>&rarr;</span>
+        Run a tool to populate the board <span>→</span>
       </Link>
     </div>
   );
@@ -334,7 +314,7 @@ function EmptyState() {
 
 function UnavailableState() {
   return (
-    <div className="border border-dashed border-border rounded-xl p-12 text-center">
+    <div className="border-2 border-dashed border-black rounded-2xl p-12 text-center bg-white">
       <div className="text-sm text-text-secondary mb-1">
         Reliability data temporarily unavailable
       </div>
