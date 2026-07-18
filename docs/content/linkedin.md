@@ -8,7 +8,7 @@ Append-only. Longer-form than tweets; lead with the insight, prove with the buil
 **Headline:** We're building a universal data-tool CLI — in the open.
 
 Body (draft):
-> Most agents and developers waste their first hour on a data task hand-rolling a scraper or guessing at an API. We're fixing that with `aegntic` — one CLI that discovers the right endpoint, inspects its schema, runs it, and bills against a single balance.
+> Most agents and developers waste their first hour on a data task hand-rolling a scraper or guessing at an API. We're fixing that with `aedex` — one CLI that discovers the right endpoint, inspects its schema, runs it, and bills against a single balance.
 >
 > Today: the repo and npm package don't exist yet. We start from zero, in the open, every architectural decision recorded. The thesis is simple — *discover first, build never*. The catalog is the product; the habit of reaching for it is the moat.
 >
@@ -16,16 +16,18 @@ Body (draft):
 
 Assets needed: ~~screenshot of `aegntic discover` output once CLI ships (Checkpoint 1).~~ ✅ Captured.
 
+---
+
 ## [2026-07-17] checkpoint 1 — First Run
 
 **Headline:** From zero to a working tool marketplace in 4 hours. Here's what we learned.
 
 Body:
-> Four hours ago, the repository was empty. Today, Aegntic has a working vertical slice: one CLI command discovers data endpoints, another runs them, and a single prepaid balance meters the cost.
+> Four hours ago, the repository was empty. Today, Aedex has a working vertical slice: one CLI command discovers data endpoints, another runs them, and a single prepaid balance meters the cost.
 >
 > The stack: TypeScript monorepo (pnpm + Turborepo), Hono gateway, citty CLI, Next.js landing page. Four packages, 1,990 lines of code, builds in under 9 seconds.
 >
-> The demo: `aegntic discover -q "twitter posts"` returns ranked endpoints with schemas and pricing. `aegntic run` fires one asynchronously. Poll the run ID — completed, 3 results, $0.015 debited from balance. The full chain: discover → inspect → run → poll → bill.
+> The demo: `aedex discover -q "twitter posts"` returns ranked endpoints with schemas and pricing. `aedex run` fires one asynchronously. Poll the run ID — completed, 3 results, $0.015 debited from balance. The full chain: discover → inspect → run → poll → bill.
 >
 > What worked: mock-first provider strategy. Instead of waiting for real API credentials, we built 12 mock endpoints that mirror the real interface. The vertical slice shipped in hours, not weeks. Real providers (Apify, PDL, Browserbase) plug into the same adapter interface without touching the gateway.
 >
@@ -37,7 +39,7 @@ Body:
 
 Assets: terminal recording of full flow, turbo build screenshot, landing page screenshot, monorepo tree screenshot.
 
-// Future posts map 1:1 to checkpoints in docs/roadmap.md.
+---
 
 ## [2026-07-17] checkpoint 2 — Real Money
 
@@ -52,7 +54,7 @@ Body:
 >
 > **2. Billing is correct, and we proved the failure path.** A run that succeeds charges its *actual* cost, not the estimate. A run that fails charges *nothing*. We could not trigger a failed run through the CLI, so we wrote a unit test that injects a provider which throws and asserts zero charge rows. "It probably works" is not a billing strategy.
 >
-> **3. The first real provider is live.** Open-Meteo — free, no API key, no signup — behind the exact same `ProviderAdapter` interface the mock used. One `addProvider()` call, zero gateway changes. `aegntic run openmeteo/weather/current` returns genuine current weather for Berlin (25.3°C this morning) and appends a `$0.0010` charge to the ledger.
+> **3. The first real provider is live.** Open-Meteo — free, no API key, no signup — behind the exact same `ProviderAdapter` interface the mock used. One `addProvider()` call, zero gateway changes. `aedex run openmeteo/weather/current` returns genuine current weather for Berlin (25.3°C this morning) and appends a `$0.0010` charge to the ledger.
 >
 > The honest moment: our end-to-end test first reported the billing worked. A second, paranoid pass reported the balance "didn't move." Both were right. We charge a tenth of a cent, and the balance command rounded to cents. Sub-cent charges were invisible. We don't ship invisible money — the display now shows four decimals.
 >
@@ -60,14 +62,16 @@ Body:
 >
 > The repo stays private until Launch. The build log is public. Follow along.
 
-Assets: terminal recording of `aegntic run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.
+Assets: terminal recording of `aedex run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.
+
+---
 
 ## [2026-07-17] checkpoint 3 — Console
 
 **Headline:** The marketplace has a face. There is now a web console — and it exposed two lessons worth sharing.
 
 Body:
-> Until today, aegntic was a CLI. Powerful, but a developer tool. Checkpoint 3 gives it a console at `/app`: paste a workspace API key, and you see your live balance and your run history — status, cost, provider — rendered against the exact same gateway the CLI uses. No new backend. The API is the product; the surfaces are thin clients over it.
+> Until today, Aedex was a CLI. Powerful, but a developer tool. Checkpoint 3 gives it a console at `/app`: paste a workspace API key, and you see your live balance and your run history — status, cost, provider — rendered against the exact same gateway the CLI uses. No new backend. The API is the product; the surfaces are thin clients over it.
 >
 > Shipping it surfaced two things.
 >
@@ -77,6 +81,161 @@ Body:
 >
 > Both lessons are in the build log. The console is live, rendering real data from a real gateway backed by a real ledger.
 >
-> Next: deploy it, wire a credentialed provider, and build out the rest of the console. The repo is private until Launch; the build log is public.
+> Next: deploy, a credentialed provider (Apify), and the dashboard.
+>
+> The repo stays private until Launch. The build log is public. Follow along.
 
-Assets: screenshot of `/app` console (balance 9.9990 USD gradient hero, available/held, recent-runs table with green COMPLETED pill on openmeteo/weather/current @ 0.0010); screenshot of the Promise.all → allSettled diff.
+Assets: screenshot of `/app` console (balance 9.9990 USD gradient hero, available/held, recent runs with green COMPLETED pill on openmeteo/weather/current @ 0.0010).
+
+---
+
+## [2026-07-17] checkpoint 2 — Real Money
+
+**Headline:** We stopped pretending. The CLI now hits a real external API and bills real (fractional) money against a durable ledger.
+
+Body:
+> Checkpoint 1 ran on mock data — a fake provider returning fake tweets, debiting a number that lived in a JavaScript Map. That was fine for proving the loop. It was not fine for proving the business.
+>
+> Checkpoint 2 is the real thing. Three things changed, and each is a discipline worth naming.
+>
+> **1. Persistence is append-only.** There is no `balance` column. Balance is derived: `SELECT` the signed sum of a `balance_ledger` table (`topup`/`refund` add, `charge` subtracts). Kill the gateway process, restart it — the balance is identical, because it was never state, it was history. An append-only ledger is the only design that survives audit.
+>
+> **2. Billing is correct, and we proved the failure path.** A run that succeeds charges its *actual* cost, not the estimate. A run that fails charges *nothing*. We could not trigger a failed run through the CLI, so we wrote a unit test that injects a provider which throws and asserts zero charge rows. "It probably works" is not a billing strategy.
+>
+> **3. The first real provider is live.** Open-Meteo — free, no API key, no signup — behind the exact same `ProviderAdapter` interface the mock used. One `addProvider()` call, zero gateway changes. `aedex run openmeteo/weather/current` returns genuine current weather for Berlin (25.3°C this morning) and appends a `$0.0010` charge to the ledger.
+>
+> The honest moment: our end-to-end test first reported the billing worked. A second, paranoid pass reported the balance "didn't move." Both were right. We charge a tenth of a cent, and the balance command rounded to cents. Sub-cent charges were invisible. We don't ship invisible money — the display now shows four decimals.
+>
+> Six commits, six unit tests green, one live external call billed to a durable ledger. Next: deploy, a credentialed provider (Apify), and the dashboard.
+>
+> The repo stays private until Launch. The build log is public. Follow along.
+
+Assets: terminal recording of `aedex run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.
+
+---
+
+## [2026-07-17] checkpoint 3 — Console
+
+**Headline:** The marketplace has a face. There is now a web console — and it exposed two lessons worth sharing.
+
+Body:
+> Until today, Aedex was a CLI. Powerful, but a developer tool. Checkpoint 3 gives it a console at `/app`: paste a workspace API key, and you see your live balance and your run history — status, cost, provider — rendered against the exact same gateway the CLI uses. No new backend. The API is the product; the surfaces are thin clients over it.
+>
+> Shipping it surfaced two things.
+>
+> **1. Partial failure is a feature.** The first build fetched balance and runs with `Promise.all`. When the runs request failed, it took the balance with it — the page showed `BALANCE —` even though the balance call had succeeded. We switched to `Promise.allSettled` with per-section error state, so a broken runs endpoint no longer erases a valid balance. In a system with many dependencies, graceful degradation is not optional.
+>
+> **2. We got clobbered, and it was a shared-DB problem.** Our runs endpoint started returning 500: `relation "runs" does not exist`. The cause was operational, not code: a sibling worktree on the same machine ran its own migrations against our shared dev Postgres, replacing our `runs` table with its `jobs` schema. Our append-only ledger survived intact — that is the point of an append-only ledger — but the runs table did not. The fix was isolation: one Postgres database per worktree. We documented it and moved on.
+>
+> Both lessons are in the build log. The console is live, rendering real data from a real gateway backed by a real ledger.
+>
+> Next: deploy, a credentialed provider (Apify), and the dashboard.
+>
+> The repo stays private until Launch. The build log is public. Follow along.
+
+Assets: screenshot of `/app` console (balance 9.9990 USD gradient hero, available/held, recent runs with green COMPLETED pill on openmeteo/weather/current @ 0.0010).
+
+---
+
+## [2026-07-17] checkpoint 2 — Real Money
+
+**Headline:** We stopped pretending. The CLI now hits a real external API and bills real (fractional) money against a durable ledger.
+
+Body:
+> Checkpoint 1 ran on mock data — a fake provider returning fake tweets, debiting a number that lived in a JavaScript Map. That was fine for proving the loop. It was not fine for proving the business.
+>
+> Checkpoint 2 is the real thing. Three things changed, and each is a discipline worth naming.
+>
+> **1. Persistence is append-only.** There is no `balance` column. Balance is derived: `SELECT` the signed sum of a `balance_ledger` table (`topup`/`refund` add, `charge` subtracts). Kill the gateway process, restart it — the balance is identical, because it was never state, it was history. An append-only ledger is the only design that survives audit.
+>
+> **2. Billing is correct, and we proved the failure path.** A run that succeeds charges its *actual* cost, not the estimate. A run that fails charges *nothing*. We could not trigger a failed run through the CLI, so we wrote a unit test that injects a provider which throws and asserts zero charge rows. "It probably works" is not a billing strategy.
+>
+> **3. The first real provider is live.** Open-Meteo — free, no API key, no signup — behind the exact same `ProviderAdapter` interface the mock used. One `addProvider()` call, zero gateway changes. `aedex run openmeteo/weather/current` returns genuine current weather for Berlin (25.3°C this morning) and appends a `$0.0010` charge to the ledger.
+>
+> The honest moment: our end-to-end test first reported the billing worked. A second, paranoid pass reported the balance "didn't move." Both were right. We charge a tenth of a cent, and the balance command rounded to cents. Sub-cent charges were invisible. We don't ship invisible money — the display now shows four decimals.
+>
+> Six commits, six unit tests green, one live external call billed to a durable ledger. Next: deploy, a credentialed provider (Apify), and the dashboard.
+>
+> The repo stays private until Launch. The build log is public. Follow along.
+
+Assets: terminal recording of `aedex run openmeteo/weather/current → COMPLETED` returning real Berlin weather; screenshot of the `balance_ledger` SQL showing the `charge 0.0010` row; screenshot of balance at 4dp before/after.
+
+---
+
+## [2026-07-17] checkpoint 1 — First Run
+
+**Headline:** From zero to a working tool marketplace in 4 hours. Here's what we learned.
+
+Body:
+> Four hours ago, the repository was empty. Today, Aedex has a working vertical slice: one CLI command discovers data endpoints, another runs them, and a single prepaid balance meters the cost.
+>
+> The stack: TypeScript monorepo (pnpm + Turborepo), Hono gateway, citty CLI, Next.js landing page. Four packages, 1,990 lines of code, builds in under 9 seconds.
+>
+> The demo: `aedex discover -q "twitter posts"` returns ranked endpoints with schemas and pricing. `aedex run` fires one asynchronously. Poll the run ID — completed, 3 results, $0.015 debited from balance. The full chain: discover → inspect → run → poll → bill.
+>
+> What worked: mock-first provider strategy. Instead of waiting for real API credentials, we built 12 mock endpoints that mirror the real interface. The vertical slice shipped in hours, not weeks. Real providers (Apify, PDL, Browserbase) plug into the same adapter interface without touching the gateway.
+>
+> Every architectural decision is an ADR. The stack decision (ADR-0004) chose Hono over Fastify for edge deployability, citty over Commander for ESM-native agent tooling, and Drizzle over Prisma for leaner runtime. These choices will pay dividends when we deploy to production.
+>
+> Next checkpoint: real provider adapter, real billing with Postgres, and the web dashboard.
+>
+> The repo stays private until launch. But the build log is public. Follow along.
+
+Assets: terminal recording of full flow, turbo build screenshot, landing page screenshot, monorepo tree screenshot.
+
+---
+
+## [2026-07-18] checkpoint 4 — Real Providers
+
+**Headline:** We stopped pretending. The CLI now hits 3 real external APIs and bills real (fractional) money against a durable ledger.
+
+Body:
+> Checkpoint 2 ran on one real provider (Open-Meteo). Checkpoint 4 ships three more in one batch: HackerNews (top stories), CoinGecko (markets), Frankfurter (ECB FX rates). All server-side fetch, `AbortSignal.timeout(10s)`, no API key, no signup. Live data, real billing, no mock.
+>
+> The receipt: `aedex run coingecko/markets --query '{"ids":"bitcoin,ethereum","limit":10}'` → 6 calls, 100% success, p50 280ms, $0.018 charged. Real market data, real per-result billing, real ledger entry.
+>
+> The honest moment: `aedex run frankfurter/rates/latest --query '{"from":"ZZZNOTACURRENCY"}'` → real HTTP 404 from Frankfurter. Our telemetry caught it, leaderboard shows 66.7% success. We don't hide failures. The moat is honesty.
+>
+> The seam: zero gateway changes to add a real provider. The `ProviderAdapter` interface (execute/estimateCost) was already there from the mock. Open-Meteo dropped in via `addProvider()`. That's the whole marketplace thesis in one file.
+>
+> Verified independently: 70/70 tests green, 5/5 typecheck, live `/leaderboard` shows real data (coingecko 6/100%, openmeteo 6/100%, hackernews 4/100%, frankfurter 3/67%).
+>
+> Next: cldcde external skills seed (breadth), rendered leaderboard page (crawlable GEO), Phase 4 (audit completeness), router (needs provider redundancy), deploy (platform auth).
+
+---
+
+## [2026-07-18] checkpoint 5 — Spine Complete
+
+**Headline:** The spine is complete. Discover → Run → Bill → Trust, end-to-end on real data.
+
+Body:
+> The spine is done. Four real providers (Open-Meteo, HackerNews, CoinGecko, Frankfurter), one credentialed (Apify), all behind the same `ProviderAdapter` interface. 70/70 tests green, 5/5 typecheck, live web at ae-cli-web.vercel.app.
+>
+> **What the spine proves:**
+> 1. **Discover** — 18 tools discoverable via full-text search, pgvector-ready schema
+> 2. **Run** — 4 real no-key providers + 1 credentialed (Apify) executing via the same adapter contract
+> 3. **Bill** — Append-only Ed25519-signed ledger, charge-actual-on-success, free-on-fail, balance survives restart
+> 4. **Trust** — `GET /v1/balance/audit` externally verifiable chain; public `/leaderboard` with real success rates (including 66.7% for frankfurter)
+>
+> The moat: we don't route calls — we route *outcomes*. Telemetry → reliability scoring → weighted routing. Competitors list tools; we rank by outcomes.
+>
+> Honest copy: "We don't route calls — we route outcomes. Every provider result is scored, every bill is auditable, every agent dollar is accountable. Other aggregators list what exists; we rank what works."
+>
+> Next: deploy gateway to Fly, provision Supabase/Neon Postgres, point Vercel at live gateway. Then Phase 4 (audit completeness), router, breadth.
+>
+> The repo is private until Launch. The build log is public. PR #1 open against main.
+
+---
+
+## [2026-07-18] checkpoint 6 — cldcde Skills
+
+**Headline:** 8 new external skills from cldcde: mcp-foundry, mutation-gate, n8n-orbit, skill-builder, visual-regression-forge, worktree-mesh, claude-template-switchboard, context7-radar. All kind=external, per-call pricing, discoverable via `aedex discover`.
+
+Body:
+> The catalog went from 18 to 26 tools. The cldcde skills are aegntic-branded (you already own the brand), not reference data — they ARE the launch catalog at launch.
+>
+> Seam: zero gateway changes to add a real provider. The `ProviderAdapter` interface (execute/estimateCost) was already there from the mock. Open-Meteo dropped in via `addProvider()`. That's the whole marketplace thesis in one file.
+>
+> Next: rendered leaderboard page (crawlable GEO), Phase 4 (bind itemCount into signed payload), router (needs provider redundancy), deploy (platform auth).
+>
+> The honest moment: the leaderboard HTML page now has real data to show (66.7% failure on frankfurter). That's the GEO asset.

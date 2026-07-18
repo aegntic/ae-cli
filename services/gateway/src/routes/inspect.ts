@@ -23,8 +23,8 @@ inspectRoute.get("/inspect", async (c) => {
 
   const hints: HintsBlock = {
     nextCommands: [
-      `aegntic run ${provider}/${endpoint} --input '${JSON.stringify(examples[0])}'`,
-      `aegntic discover?q=${encodeURIComponent(ep.description.split(" ").slice(0, 3).join(" "))}`,
+      `aedex run ${provider}/${endpoint} --input '${JSON.stringify(examples[0])}'`,
+      `aedex discover?q=${encodeURIComponent(ep.description.split(" ").slice(0, 3).join(" "))}`,
     ],
   }
 

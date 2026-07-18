@@ -113,7 +113,7 @@ runsRoute.post("/runs/:id/stop", async (c) => {
   await updateRun(id, { status: "STOPPED", stoppable: false })
 
   const hints: HintsBlock = {
-    nextCommands: [`aegntic run ${run.provider}/${run.endpoint} --input '${JSON.stringify(run.input)}'`],
+    nextCommands: [`aedex run ${run.provider}/${run.endpoint} --input '${JSON.stringify(run.input)}'`],
   }
 
   return c.json({ ...(await getRun(id)), hints })

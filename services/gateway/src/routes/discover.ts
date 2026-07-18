@@ -27,8 +27,8 @@ const handleDiscover = async (c: Context) => {
   const hints: HintsBlock = {
     nextCommands: results.length > 0
       ? [
-          `aegntic inspect --provider ${results[0].provider} --endpoint ${results[0].path}`,
-          `aegntic run ${results[0].provider}/${results[0].path} --input '{}'`,
+          `aedex inspect --provider ${results[0].provider} --endpoint ${results[0].path}`,
+          `aedex run ${results[0].provider}/${results[0].path} --input '{}'`,
         ]
       : ["Try a broader search term"],
     relatedEndpoints: results.slice(0, 3).map((e) => `${e.provider}/${e.path}`),

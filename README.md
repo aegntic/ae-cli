@@ -1,22 +1,20 @@
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ### Hello world 👋🏻
 
-# aegntic — @aegntic-ai/cli
+# aedex — Aegntic Decentralized Exchange CLI
 
 **One CLI. One balance. Every data tool.**
 
-`aegntic discover -q "scrape linkedin"` → ranked endpoints → `aegntic run <tool>` → live results → signed ledger charge.
+`aedex discover -q "scrape linkedin"` → ranked endpoints → `aedex run <tool>` → live results → signed ledger charge.
 
 ---
-
 ## The Wedge
 
 Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at data APIs. Hundreds of providers exist (Apify, enrichment, search) but discovery is fragmented and execution is provider-specific glue.
 
-**aegntic reverses the loop:** the catalog *is* the product. Agents that `discover first` never hand-roll — that habit is the business.
+**aedex reverses the loop:** the catalog *is* the product. Agents that `discover first` never hand-roll — that habit is the business.
 
 ---
-
 ## Status: Checkpoint 2 ✅ | Checkpoint 3 🏗️ | Launch 🔒
 
 | Checkpoint | Status | Evidence |
@@ -34,18 +32,18 @@ Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at dat
 
 ```bash
 # One-time setup
-aegntic setup                    # writes ~/.config/aegntic/config.json
-aegntic keys add --label dev     # mints aegntic_live_<nanoid>, saves locally
+aedex setup                    # writes ~/.config/aedex/config.json
+aedex keys add --label dev     # mints aedex_live_<nanoid>, saves locally
 
 # Discover & run (real providers, real billing)
-aegntic discover -q "weather"           # → openmeteo/weather/current
-aegntic inspect openmeteo/weather/current
-aegntic run openmeteo/weather/current --query '{"latitude":52.52,"longitude":13.41}'
-aegntic runs get <run-id>               # poll until COMPLETED
-aegntic balance                         # 4dp precision ($9.9840)
+aedex discover -q "weather"           # → openmeteo/weather/current
+aedex inspect openmeteo/weather/current
+aedex run openmeteo/weather/current --query '{"latitude":52.52,"longitude":13.41}'
+aedex runs get <run-id>               # poll until COMPLETED
+aedex balance                         # 4dp precision ($9.9840)
 ```
 
-**Providers live:** `openmeteo`, `hackernews`, `coingecko`, `frankfurter` (18 tools, 6 providers).  
+**Providers live:** `openmeteo`, `hackernews`, `coingecko`, `frankfurter`, `apify` (18 tools, 6 providers).  
 **Catalog search:** pgvector semantic + full-text fallback.  
 **Billing:** Prepaid balance, per-result (`cost = items × unit × 1.25`), append-only ledger, balance derived (no mutable column), survives restart.  
 **Audit:** `GET /v1/balance/audit` → Ed25519 hash-chain verification.
@@ -71,7 +69,7 @@ aegntic balance                         # 4dp precision ($9.9840)
 ## Repo Layout
 
 ```
-packages/cli        # `aegntic` command (discover/inspect/run/runs/balance/keys/setup)
+packages/cli        # `aedex` command (discover/inspect/run/runs/balance/keys/setup)
 packages/sdk        # Typed client shared by CLI + web
 services/gateway    # Hono API: provider adapters, runs, billing, auth, MCP server
 apps/web            # Next.js: landing + /app console + /leaderboard (public)
@@ -84,8 +82,8 @@ docs/               # PRD, ADRs, roadmap, build-log, content (YT/LinkedIn/tweets
 
 ```bash
 # 1. Start Postgres (dedicated per worktree!)
-docker run -d --name aegntic-pg \
-  -e POSTGRES_USER=aegntic -e POSTGRES_PASSWORD=*** -e POSTGRES_DB=aegntic \
+docker run -d --name aedex-pg \
+  -e POSTGRES_USER=aedex -e POSTGRES_PASSWORD=*** -e POSTGRES_DB=aedex \
   -p 5435:5432 postgres:16-alpine
 
 # 2. Install & build
@@ -94,7 +92,7 @@ pnpm run build
 
 # 3. Gateway (port 3101)
 cd services/gateway
-cp .env.example .env   # set DATABASE_URL=postgresql://aegntic:***@localhost:5435/aegntic
+cp .env.example .env   # set DATABASE_URL=postgresql://aedex:***@localhost:5435/aedex
 pnpm run dev
 
 # 4. CLI (separate terminal)
@@ -132,4 +130,13 @@ MIT. Provider adapters + billing internals may move to source-available pre-laun
 
 ---
 
-**aegntic.ai** — Discover first. Run second. Bill last.
+## Socials
+
+**Web Live:** https://ae-cli-web.vercel.app  
+**GitHub:** https://github.com/aegntic/aedex  
+**Twitter/X:** @aedex_ai  
+**LinkedIn:** aegntic
+
+---
+
+**aedex.ai** — Discover first. Run second. Bill last.
