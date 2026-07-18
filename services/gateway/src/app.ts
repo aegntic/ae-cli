@@ -8,6 +8,7 @@ import { runsRoute } from "./routes/runs.js"
 import { balanceRoute } from "./routes/balance.js"
 import { keysRoute } from "./routes/keys.js"
 import { reliabilityRoute } from "./routes/reliability.js"
+import { stripeRoute, handleStripeWebhook } from "./routes/stripe.js"
 import { authMiddleware } from "./middleware/auth.js"
 import {
   getReliabilityStats,
@@ -15,16 +16,6 @@ import {
 } from "./reliability.js"
 import type { Env } from "./types.js"
 
-/**
- * Build the Hono app. Extracted from index.ts so tests can drive it via
- * app.request() without binding a port. index.ts calls this + serve().
- *
- * Auth boundary: every route under `/v1/*` sits behind authMiddleware. The
- * two public routes — `/health` and `/leaderboard` — are registered BEFORE
- * the auth middleware so they answer with no Authorization header. The
- * public leaderboard is the citable GEO asset; it applies a minimum-calls
- * threshold so low-sample tools don't publish misleading 100% rates.
- */
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>()
 
@@ -62,6 +53,9 @@ export function createApp(): Hono<Env> {
     })
   })
 
+  // Stripe webhook — PUBLIC (no auth), Stripe sends its own signature.
+  app.post("/v1/stripe/webhook", handleStripeWebhook)
+
   app.use("/v1/*", authMiddleware)
   app.route("/v1", discoverRoute)
   app.route("/v1", inspectRoute)
@@ -69,6 +63,7 @@ export function createApp(): Hono<Env> {
   app.route("/v1", balanceRoute)
   app.route("/v1", keysRoute)
   app.route("/v1", reliabilityRoute)
+  app.route("/v1", stripeRoute)
 
   return app
 }
