@@ -1,3 +1,7 @@
+// Load .env from CWD before any other import so credentials such as
+// AEGNTIC_APIFY_TOKEN reach process.env before the provider registry and
+// catalog seed run on boot. Must stay the first side-effecting import.
+import "dotenv/config"
 import { serve } from "@hono/node-server"
 import { createApp } from "./app.js"
 import { seedDefaults } from "./db/seed.js"
