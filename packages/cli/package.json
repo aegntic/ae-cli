@@ -1,9 +1,10 @@
 {
-  "name": "@aegntic/cli",
+  "name": "aedex",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "aegntic": "dist/index.js"
+    "aedex": "dist/index.js",
+    "ae": "dist/index.js"
   },
   "main": "dist/index.js",
   "scripts": {

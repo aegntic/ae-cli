@@ -1,8 +1,8 @@
 {
-  "name": "aegntic",
+  "name": "aedex",
   "private": true,
   "version": "0.0.0",
-  "description": "Aegntic CLI monorepo — discover, inspect, and run hundreds of data tools. One CLI, one balance, every data tool.",
+  "description": "Aedex CLI monorepo — the Aegntic Decentralized Exchange CLI. Discover, inspect, and run data endpoints, and run data tools. One CLI, one balance, every data tool.",
   "license": "MIT",
   "packageManager": "pnpm@9.15.4",
   "engines": { "node": ">=20" },
