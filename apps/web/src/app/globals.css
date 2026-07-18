@@ -1,24 +1,60 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * aegntic / web — pixar-ios-toy reskin (blumenkopf DNA)
+ *
+ * Source inspiration: blumenkopf.spatzek.studio (editorial light template)
+ *   paper #E8EBEC · ink #000 · 3px black line dividers · orange #E67E22 accent
+ *
+ * Adaptation for aegntic:
+ *   - GRADIENT-FREE by construction. No `gradient-*` utilities exist.
+ *   - Pixar-toy solid palette (red/yellow/green/blue/lavender) for chips.
+ *   - iOS-gloss plastic highlight via SOLID rgba overlays (no linear-gradient).
+ *   - Soft drop shadows for chunky 3D depth.
+ *   - Existing dark-era token NAMES (--color-bg, --color-text-primary, etc.)
+ *     are preserved so legacy class references still compile; their VALUES
+ *     are flipped to the light/paper system.
+ * ────────────────────────────────────────────────────────────────────────── */
+
 @theme {
-  --color-bg: #0a0a0b;
-  --color-bg-elevated: #111113;
-  --color-bg-card: #161618;
-  --color-bg-card-hover: #1c1c1f;
-  --color-border: #222225;
-  --color-border-subtle: #1a1a1d;
-  --color-text-primary: #fafafa;
-  --color-text-secondary: #a1a1aa;
-  --color-text-muted: #71717a;
-  --color-accent: #3B82F6;
-  --color-accent-dim: #2563eb;
-  --color-accent-glow: rgba(59, 130, 246, 0.15);
-  --color-green: #22c55e;
-  --color-amber: #f59e0b;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* ── Light system (was dark) ─────────────────────────────────────────── */
+  --color-bg: #E8EBEC;              /* paper (was #0a0a0b) */
+  --color-bg-elevated: #FFFFFF;     /* pure white card  (was #111113) */
+  --color-bg-card: #FFFFFF;         /* card surface     (was #161618) */
+  --color-bg-card-hover: #F5F5F4;   /* hover surface    (was #1c1c1f) */
+
+  --color-border: #000000;          /* ink line (was #222225) — 3px Swiss motif */
+  --color-border-subtle: #D4D5D6;   /* hairline (was #1a1a1d) */
+
+  --color-text-primary: #000000;    /* ink (was #fafafa) */
+  --color-text-secondary: #5C5C5C;  /* muted editorial (was #a1a1aa) */
+  --color-text-muted: #8A8A8A;      /* lighter muted (was #71717a) */
+
+  /* ── Blumenkopf editorial accents ───────────────────────────────────── */
+  --color-accent: #E67E22;          /* orange (was blue #3B82F6) */
+  --color-accent-dim: #C0651D;      /* darker orange */
+  --color-accent-glow: rgba(230, 126, 34, 0.18);
+  --color-olive: #7D8A74;
+  --color-clay: #C75D4B;
+
+  /* ── Pixar-toy solid palette (NO gradients, ever) ───────────────────── */
+  --color-toy-red: #E63946;
+  --color-toy-yellow: #F4D35E;
+  --color-toy-green: #06A77D;
+  --color-toy-blue: #4361EE;
+  --color-toy-lavender: #9D4EDD;
+
+  /* ── Status colors (kept compatible with dashboard status badges) ───── */
+  --color-green: #06A77D;           /* was #22c55e — shifted to toy-green */
+  --color-amber: #F4D35E;           /* was #f59e0b — shifted to toy-yellow */
+  --color-red: #E63946;             /* NEW — was missing */
+
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
+/* ──────────────────────────────────────────────────────────────────────── */
 html {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
@@ -27,79 +63,67 @@ html {
 
 body {
   font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
+
+::selection {
+  background: #000;
+  color: var(--color-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Animations ───────────────────────────────────────────────────────── */
 
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+@keyframes line-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
-
+@keyframes wordmark-in {
+  from { opacity: 0; transform: translateY(0.4em); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50%      { transform: translateY(-6px); }
 }
-
 @keyframes typing {
   from { width: 0; }
-  to { width: 100%; }
+  to   { width: 100%; }
 }
-
 @keyframes blink-caret {
   from, to { border-color: transparent; }
-  50% { border-color: var(--color-accent); }
+  50%      { border-color: var(--color-accent); }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(59, 130, 246, 0.08) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
+.animate-fade-in-up   { animation: fade-in-up 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards; opacity: 0; }
+.animate-fade-in      { animation: fade-in 0.5s ease-out forwards; opacity: 0; }
+.animate-marquee-x    { animation: marquee-x 22s linear infinite; }
+.animate-line-grow    { animation: line-grow 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-wordmark-in  { animation: wordmark-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-float        { animation: float 4s ease-in-out infinite; }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
@@ -109,62 +133,176 @@ body {
 .delay-600 { animation-delay: 600ms; }
 .delay-700 { animation-delay: 700ms; }
 
-.gradient-text {
-  background: linear-gradient(135deg, #fafafa 0%, #a1a1aa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ─── Pixar-iOS-toy gloss utilities (NO gradients, all solid) ────────────
+ * The "glossy plastic" highlight is achieved with a SOLID rgba overlay
+ * shaped via border-radius — never a linear-gradient. This is what makes
+ * chips look like 3D Apple Vision Pro / Elemental toy objects.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* Chunky 3D toy shadow — soft, low-opacity, large blur */
+.toy-shadow {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.08),
+    0 4px 0 rgba(0, 0, 0, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.07),
+    0 24px 48px rgba(0, 0, 0, 0.04);
+}
+.toy-shadow-sm {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.10),
+    0 3px 0 rgba(0, 0, 0, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.06);
+}
+.toy-shadow-lg {
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.08),
+    0 8px 0 rgba(0, 0, 0, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.10),
+    0 40px 80px rgba(0, 0, 0, 0.05);
 }
 
-.gradient-accent {
-  background: linear-gradient(135deg, #3B82F6 0%, #8b5cf6 100%);
-}
-
-.glow-border {
+/* Glossy plastic top-half highlight — solid rgba, curved bottom edge */
+.gloss {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
-.glow-border::before {
+.gloss::before {
   content: "";
   position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.1), transparent);
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.glow-border:hover::before {
-  opacity: 1;
-}
-
-.noise-bg {
-  position: relative;
-}
-.noise-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  inset: 0 0 auto 0;
+  height: 45%;
+  background: rgba(255, 255, 255, 0.40);
+  border-radius: 999px 999px 50% 50% / 999px 999px 100% 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+  mix-blend-mode: soft-light;
+}
+/* Specular hotspot — a single bright spot in the upper-left, no gradient */
+.gloss::after {
+  content: "";
+  position: absolute;
+  top: 6%;
+  left: 12%;
+  width: 30%;
+  height: 25%;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 2;
 }
 
+/* Combined toy chip — plastic block with shine + drop shadow */
+.toy-chip {
+  border-radius: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.toy-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 50%;
+  background: rgba(255, 255, 255, 0.38);
+  border-radius: 1.25rem 1.25rem 50% 50% / 1.25rem 1.25rem 100% 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.toy-chip::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  left: 14%;
+  width: 28%;
+  height: 22%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Chunky 3D pressable button — looks like a Pixar toy button */
+.toy-button {
+  position: relative;
+  border-radius: 1rem;
+  border: 2px solid #000;
+  font-weight: 600;
+  transition: transform 0.12s cubic-bezier(0.33, 1, 0.68, 1),
+              box-shadow 0.12s cubic-bezier(0.33, 1, 0.68, 1);
+  box-shadow:
+    0 4px 0 #000,
+    0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.toy-button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 5px 0 #000,
+    0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.toy-button:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #000,
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Editorial Swiss line — 3px solid black divider */
+.swiss-line {
+  border-top: 3px solid #000;
+}
+.swiss-line-b {
+  border-bottom: 3px solid #000;
+}
+
+/* Marquee track (orange banner / ticker) */
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* Scroll-gated reveal */
+.gate {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+              transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.gate.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Masked wordmark reveal (vertical wipe) */
+.mask-reveal {
+  overflow: hidden;
+  display: block;
+}
+.mask-reveal > * {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mask-reveal.is-in > * {
+  transform: translateY(0);
+}
+
+/* ─── Code block (light editorial, no dark glow) ───────────────────────── */
 .code-block {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.7;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
-}
+/* ─── Scrollbar ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
+  background: #000;
+  border-radius: 6px;
+  border: 3px solid var(--color-bg);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
