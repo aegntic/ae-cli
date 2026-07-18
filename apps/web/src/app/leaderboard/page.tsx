@@ -15,7 +15,7 @@ import Link from "next/link";
 export const revalidate = 300; // seconds — ISR, 5 min
 
 const GATEWAY =
-  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "http://localhost:3101";
+  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://aegntic-gateway.fly.dev";
 
 type LeaderboardTool = {
   provider: string;
