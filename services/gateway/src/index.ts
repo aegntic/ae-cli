@@ -6,6 +6,7 @@ import { serve } from "@hono/node-server"
 import { createApp } from "./app.js"
 import { seedDefaults } from "./db/seed.js"
 import { seedCatalog } from "./db/seed-catalog.js"
+import { seedCldcdeSkills } from "./db/seed-cldcde.js"
 
 // Ensure the dev workspace + test key + free credit exist (idempotent).
 await seedDefaults()
@@ -21,6 +22,16 @@ try {
 } catch (err) {
   // eslint-disable-next-line no-console
   console.error("[catalog] seed failed; routes will serve from registry:", err)
+}
+
+// Seed cldcde external skills into the catalog (idempotent upsert).
+try {
+  const result = await seedCldcdeSkills()
+  // eslint-disable-next-line no-console
+  console.log(`[catalog] cldcde: inserted ${result.inserted}, updated ${result.updated} external skills`)
+} catch (err) {
+  // eslint-disable-next-line no-console
+  console.error("[catalog] cldcde seed failed:", err)
 }
 
 const app = createApp()
