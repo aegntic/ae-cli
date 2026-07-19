@@ -1,15 +1,18 @@
 # aedex × Stitch (DESIGN.md)
 
-Four Google [DESIGN.md](https://github.com/google-labs-code/design.md)-compliant design systems for [Stitch](https://stitch.withgoogle.com), one per direction. All validated: **0 errors, 0 WCAG contrast warnings**.
+Google [DESIGN.md](https://github.com/google-labs-code/design.md)-compliant design systems for [Stitch](https://stitch.withgoogle.com), one per direction. All validated: **0 errors, 0 WCAG contrast warnings**.
 
 | File | Direction | Thesis |
 |---|---|---|
-| `obsidian-network.md` | **Obsidian Network (user's pick)** | Polished obsidian + heavy veined marble buttons + bronze, with a living network graph of agent-bots wired to tool-nodes. Sleek futuristic industrial. The product IS a network, so the graph is the page spine. |
-| `editorial-ledger.md` | Editorial Ledger | Paper + ink + Swiss rules + serif numbers. The medium (printed receipt) is the message (trustworthy accounting). |
-| `pixar-toy.md` | Pixar Toy | Warm cream, chunky plastic depth, toy palette as the categorization language. Friendly power-tool. |
-| `refined-dark.md` | Refined Dark Infra | Near-black, single viridian accent, mono for all data. Cold, precise, engineered. |
+| `aegntic-toy.md` | **Aegntic Toy (chosen — fusion)** | Pixar-toy's chunky structure (bold ink outlines, hard offset plastic shadows, 3rem radius, heavy Space Grotesk, spring) wearing the aegntic.ai brand palette (icy paper `#f0f6f8`, teal `#00b39f`, obsidian `#0c1016`, white cards). Toy energy = chunk + weight, not a rainbow. |
+| `obsidian-network.md` | Obsidian Network | Polished obsidian + marble buttons + bronze + a living bot→tool network graph. Sleek futuristic industrial (dark). |
+| `editorial-ledger.md` | Editorial Ledger | Paper + ink + Swiss rules + serif numbers. Trustworthy-accounting metaphor. |
+| `pixar-toy.md` | Pixar Toy | Warm cream + rainbow toy palette. Friendly power-tool (pre-brand-alignment). |
+| `refined-dark.md` | Refined Dark Infra | Near-black + viridian + mono. Cold/precise. |
 
-**Chosen direction: Obsidian Network.** Matching mockup at `docs/design/mockups/obsidian-network.html` — open in a browser to see the marble buttons, the bronze bot→tool-node graph, and the pulsing teal signal wires.
+**Chosen direction: Aegntic Toy** — pixar-toy's chunk the user liked, aligned to the real aegntic.ai brand (tokens pulled from the live site's CSS). Mockup: `docs/design/mockups/aegntic-toy.html`. Vision-verified 9/10.
+
+Brand tokens inherited from aegntic.ai: accent `#00b39f` (teal), surfaces `#0c1016` (obsidian) + ramp, bg `#f0f6f8` (icy paper), Space Grotesk display + Inter body, 3rem radius, spring eases.
 
 ## How to use in Stitch
 
