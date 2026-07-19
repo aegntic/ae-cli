@@ -85,23 +85,25 @@
 
   <section class="hero">
     <div class="wrap">
-      <div class="tag"><span class="d"></span>12 providers live · billing on</div>
+      <div class="tag"><span class="d"></span>6 providers live · 18 tools · billing on</div>
       <h1>Connect your agent to <span class="wave">every tool</span> <span class="pop">it needs.</span></h1>
       <p class="sub">Discover, run, and meter data tools through one friendly API. Signed-ledger billing so every cent is accounted — infrastructure that finally feels human.</p>
 
       <div class="duo">
         <div class="code toy-lg">
           <span class="tab">try it</span>
-<pre><span class="c-cmd">aedex run</span> coingecko/price <span class="c-str">'{"symbol":"BTC"}'</span>
+<pre><span class="c-cmd">aedex discover</span> -q <span class="c-str">"weather"</span>
+  <span class="c-out">⚡ [openmeteo] weather/current ✓</span>
 
-  <span class="c-out">→ 67,412.18 USD
-  → $0.0004 · signed ✓</span></pre>
+<span class="c-cmd">aedex run</span> openmeteo/weather/current \
+  <span class="c-str">'{"latitude":52.52,"longitude":13.41}'</span>
+  <span class="c-out">→ $0.0002 · signed ✓</span></pre>
         </div>
         <div class="stat toy-lg">
-          <div class="num">98.7%</div>
-          <div class="lbl">success rate, live</div>
-          <div class="meta">142ms p50 · 3,401 calls<br>rolling 7-day window</div>
-          <div class="pills"><span class="mini g">healthy</span><span class="mini y">degraded</span><span class="mini r">down</span></div>
+          <div class="num">18</div>
+          <div class="lbl">tools indexed, 6 providers</div>
+          <div class="meta">per-result billing<br>failed runs free · 4dp ledger</div>
+          <div class="pills"><span class="mini g">verified</span><span class="mini y">native</span><span class="mini r">refund</span></div>
         </div>
       </div>
 

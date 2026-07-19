@@ -88,16 +88,20 @@
 
       <div class="duo">
         <div class="code">
-          <div class="prompt">$ aedex discover "btc price"</div>
-<pre><span class="tok-cmd">aedex run</span> coingecko/price <span class="tok-flag">--query</span> <span class="tok-str">'{"symbol":"BTC"}'</span>
+          <div class="prompt">$ aedex discover -q "weather"</div>
+<pre>⚡ [openmeteo] weather/current  (Score: 0.87)
+   Description: Current weather for a lat/lon
+   Price Model: per_result (2 cents per result)
+   ✓ Verified
 
-  → 67,412.18 USD
-  → cost $0.0004 · signed 9f3a…c1e2</pre>
+<span class="tok-cmd">aedex run</span> openmeteo/weather/current \
+  <span class="tok-flag">--query</span> <span class="tok-str">'{"latitude":52.52,"longitude":13.41}'</span>
+  → charge $0.0002 · signed ed25519 · 9f3a…c1e2</pre>
         </div>
         <div class="stat">
-          <div class="big">98.7<sup>%</sup></div>
-          <div class="meta">success · 142ms p50 · 3,401 calls<br>rolling 7-day, all providers</div>
-          <div class="footnote">Measured from live calls — not marketing.</div>
+          <div class="big">18<sup> tools</sup></div>
+          <div class="meta">6 providers · per-result billing<br>failed runs free · 4dp ledger</div>
+          <div class="footnote">Public reliability leaderboard is live — rows publish as calls accrue (min 3 / tool).</div>
         </div>
       </div>
     </div>
@@ -107,15 +111,14 @@
 
   <section class="providers">
     <div class="wrap">
-      <div class="label">Indexed providers — 12 adapters live</div>
+      <div class="label">Indexed providers — 6 live · 18 tools</div>
       <div class="chips">
         <span class="chip"><span class="dot good"></span>openmeteo</span>
         <span class="chip"><span class="dot good"></span>coingecko</span>
         <span class="chip"><span class="dot good"></span>hackernews</span>
         <span class="chip"><span class="dot good"></span>frankfurter</span>
-        <span class="chip"><span class="dot warn"></span>apify/serp</span>
-        <span class="chip"><span class="dot good"></span>cldcde/skills</span>
-        <span class="chip"><span class="dot bad"></span>e2e/mock-7</span>
+        <span class="chip"><span class="dot good"></span>apify</span>
+        <span class="chip"><span class="dot good"></span>cldcde</span>
       </div>
 
       <p class="promise">“What you can measure, you can route. What you can sign, you can trust.” The leaderboard is the product; the ledger is the proof.</p>

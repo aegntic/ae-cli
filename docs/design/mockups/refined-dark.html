@@ -93,18 +93,19 @@
         <div class="panel code">
           <div class="bar"><span class="dt"></span><span class="dt"></span><span class="dt"></span>&nbsp;&nbsp;~ / terminal</div>
           <div class="body">
-<pre><span class="x-cmd">$ aedex run</span> coingecko/price <span class="x-flag">--query</span> <span class="x-str">'{"symbol":"BTC"}'</span>
+<pre><span class="x-cmd">$ aedex discover</span> -q <span class="x-str">"weather"</span>
+<span class="x-out">⚡ [openmeteo] weather/current  Score: 0.87  ✓</span>
 
-<span class="x-out">→ 67,412.18 USD
-→ 142ms · $0.0004 · sig 9f3a…c1e2</span></pre>
+<span class="x-cmd">$ aedex run</span> openmeteo/weather/current <span class="x-flag">--query</span> <span class="x-str">'{"latitude":52.52,"longitude":13.41}'</span>
+<span class="x-out">→ charge $0.0002 · ed25519 · sig 9f3a…c1e2</span></pre>
           </div>
         </div>
         <div class="panel stat">
-          <div class="k">SUCCESS_RATE / 7d</div>
-          <div class="v">98.7<span class="u">%</span></div>
+          <div class="k">CATALOG / indexed</div>
+          <div class="v">18<span class="u"> tools</span></div>
           <div class="grid">
-            <div class="cell"><div class="k2">p50</div><div class="v2">142ms</div></div>
-            <div class="cell"><div class="k2">calls</div><div class="v2">3,401</div></div>
+            <div class="cell"><div class="k2">providers</div><div class="v2">6</div></div>
+            <div class="cell"><div class="k2">billing</div><div class="v2">per-result</div></div>
           </div>
         </div>
       </div>
@@ -119,13 +120,13 @@
 
   <section class="providers">
     <div class="wrap">
-      <div class="label">/ indexed providers — status from last probe</div>
+      <div class="label">/ indexed providers — 6 registered, 18 tools</div>
       <div class="grid-prov">
         <div class="pcard"><span class="d good"></span><span class="n">openmeteo</span></div>
         <div class="pcard"><span class="d good"></span><span class="n">coingecko</span></div>
         <div class="pcard"><span class="d good"></span><span class="n">hackernews</span></div>
         <div class="pcard"><span class="d good"></span><span class="n">frankfurter</span></div>
-        <div class="pcard"><span class="d warn"></span><span class="n">apify/serp</span></div>
+        <div class="pcard"><span class="d good"></span><span class="n">apify</span></div>
         <div class="pcard"><span class="d good"></span><span class="n">cldcde</span></div>
       </div>
     </div>
