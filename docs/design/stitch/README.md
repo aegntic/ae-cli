@@ -1,12 +1,15 @@
 # aedex × Stitch (DESIGN.md)
 
-Three Google [DESIGN.md](https://github.com/google-labs-code/design.md)-compliant design systems for [Stitch](https://stitch.withgoogle.com), one per direction. All validated: **0 errors, 0 WCAG contrast warnings**.
+Four Google [DESIGN.md](https://github.com/google-labs-code/design.md)-compliant design systems for [Stitch](https://stitch.withgoogle.com), one per direction. All validated: **0 errors, 0 WCAG contrast warnings**.
 
 | File | Direction | Thesis |
 |---|---|---|
-| `editorial-ledger.md` | Editorial Ledger (recommended lean) | Paper + ink + Swiss rules + serif numbers. The medium (printed receipt) is the message (trustworthy accounting). |
+| `obsidian-network.md` | **Obsidian Network (user's pick)** | Polished obsidian + heavy veined marble buttons + bronze, with a living network graph of agent-bots wired to tool-nodes. Sleek futuristic industrial. The product IS a network, so the graph is the page spine. |
+| `editorial-ledger.md` | Editorial Ledger | Paper + ink + Swiss rules + serif numbers. The medium (printed receipt) is the message (trustworthy accounting). |
 | `pixar-toy.md` | Pixar Toy | Warm cream, chunky plastic depth, toy palette as the categorization language. Friendly power-tool. |
 | `refined-dark.md` | Refined Dark Infra | Near-black, single viridian accent, mono for all data. Cold, precise, engineered. |
+
+**Chosen direction: Obsidian Network.** Matching mockup at `docs/design/mockups/obsidian-network.html` — open in a browser to see the marble buttons, the bronze bot→tool-node graph, and the pulsing teal signal wires.
 
 ## How to use in Stitch
 
