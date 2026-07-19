@@ -48,8 +48,8 @@ stripeRoute.post("/stripe/checkout", async (c) => {
         workspaceId: workspace.id,
         amount: String(amount),
       },
-      success_url: `${process.env.WEB_URL ?? "https://ae-cli-web.vercel.app"}/app?topup=success`,
-      cancel_url: `${process.env.WEB_URL ?? "https://ae-cli-web.vercel.app"}/app?topup=cancelled`,
+      success_url: `${process.env.WEB_URL ?? "https://aedex.ing"}/app?topup=success`,
+      cancel_url: `${process.env.WEB_URL ?? "https://aedex.ing"}/app?topup=cancelled`,
     })
 
     const response: ApiResponse<{ url: string; sessionId: string }> = {

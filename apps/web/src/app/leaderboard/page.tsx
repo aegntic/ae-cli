@@ -4,7 +4,7 @@ import Link from "next/link";
 export const revalidate = 300;
 
 const GATEWAY =
-  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://aegntic-gateway.fly.dev";
+  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://gateway.aedex.ing";
 
 type LeaderboardTool = {
   provider: string;

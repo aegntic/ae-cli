@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const GATEWAY =
-  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://aegntic-gateway.fly.dev";
+  process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://gateway.aedex.ing";
 
 const KEY_STORAGE = "aegntic.apiKey";
 
