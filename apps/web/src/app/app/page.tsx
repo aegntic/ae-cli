@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { API_KEY_STORAGE } from "@/lib/api";
 
 const GATEWAY =
   process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "https://gateway.aedex.ing";
 
-const KEY_STORAGE = "aegntic.apiKey";
+const KEY_STORAGE = API_KEY_STORAGE;
 
 type Balance = {
   balance: number;

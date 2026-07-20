@@ -15,14 +15,14 @@ Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at dat
 **aedex reverses the loop:** the catalog *is* the product. Agents that `discover first` never hand-roll — that habit is the business.
 
 ---
-## Status: Checkpoint 2 ✅ | Checkpoint 3 🏗️ | Launch 🔒
+## Status: Checkpoint 2 ✅ | Checkpoint 3 ✅ (local) | Launch 🔒 (hardened)
 
 | Checkpoint | Status | Evidence |
 |---|---|---|
 | **P1 Vertical Slice** | ✅ | `discover → inspect → run → poll → balance` end-to-end |
 | **P2 Real Money** | ✅ | Live Open-Meteo runs, append-only ledger, failed runs free |
-| **P3 Dashboard Live** | 🏗️ | `/app` console: keys, balance (4dp), run history, auto-poll |
-| **P4 Launch** | 🔒 | Security gate (gitleaks + opensource-sanitizer) → public flip |
+| **P3 Console** | ✅ | `/dashboard` (discover/runs/keys/balance) + `/app` single-view, shared gateway client, public reliability leaderboard |
+| **P4 Launch** | 🔒 | Hardened: per-key rate limit, restricted CORS, signed ledger, secret scan clean → deploy creds → public flip |
 
 **Current HEAD:** `feat/unified-signed-persistence` — signed hash-chain ledger + 3 real providers (HackerNews, CoinGecko, Frankfurter) + honest reliability leaderboard on real telemetry.
 
@@ -133,7 +133,7 @@ MIT. Provider adapters + billing internals may move to source-available pre-laun
 ## Socials
 
 **Web Live:** https://ae-cli-web.vercel.app  
-**GitHub:** https://github.com/aegntic/aedex  
+**GitHub:** https://github.com/aegntic/ae-cli  
 **Twitter/X:** @aedex_ai  
 **LinkedIn:** aegntic
 
