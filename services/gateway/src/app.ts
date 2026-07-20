@@ -10,6 +10,7 @@ import { keysRoute } from "./routes/keys.js"
 import { reliabilityRoute } from "./routes/reliability.js"
 import { stripeRoute, handleStripeWebhook } from "./routes/stripe.js"
 import { authMiddleware } from "./middleware/auth.js"
+import { rateLimitMiddleware } from "./middleware/ratelimit.js"
 import {
   getReliabilityStats,
   PUBLIC_LEADERBOARD_MIN_CALLS,
@@ -19,7 +20,11 @@ import type { Env } from "./types.js"
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>()
 
-  app.use("*", cors())
+  // Restrict CORS to the configured web origin (default = local dev server).
+  // Prod sets CORS_ORIGIN to the Vercel web URL. Bearer-token auth means a wide
+  // origin is low-risk, but we still narrow it to the known frontend.
+  const allowedOrigin = process.env.CORS_ORIGIN ?? "http://localhost:3000"
+  app.use("*", cors({ origin: allowedOrigin }))
   app.use("*", logger())
 
   app.get("/health", (c) => c.json({ status: "ok", version: "0.1.0" }))
@@ -57,6 +62,10 @@ export function createApp(): Hono<Env> {
   app.post("/v1/stripe/webhook", handleStripeWebhook)
 
   app.use("/v1/*", authMiddleware)
+  // Rate limit runs AFTER auth so it buckets per workspace.id. The Stripe
+  // webhook is registered above as a terminal route, so it is NOT subject to
+  // auth or rate limiting (Stripe authenticates via signature).
+  app.use("/v1/*", rateLimitMiddleware)
   app.route("/v1", discoverRoute)
   app.route("/v1", inspectRoute)
   app.route("/v1", runsRoute)

@@ -7,9 +7,19 @@ import { appendLedgerEntry } from "../lib/ledger.js"
 
 export const stripeRoute = new Hono<Env>()
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2025-07-30.basil" as Stripe.LatestApiVersion,
-})
+// Lazy Stripe client. Constructing `new Stripe("")` throws in stripe-node v22,
+// which would crash module load (and every createApp import) when the key is
+// unset. Both handlers guard with an explicit STRIPE_SECRET_KEY/WEBHOOK_SECRET
+// check before calling stripe(), so the client is only ever built with a key.
+let _stripe: Stripe | null = null
+function stripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
+      apiVersion: "2025-07-30.basil" as Stripe.LatestApiVersion,
+    })
+  }
+  return _stripe
+}
 
 /**
  * POST /v1/stripe/checkout
@@ -28,7 +38,7 @@ stripeRoute.post("/stripe/checkout", async (c) => {
   }
 
   try {
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe().checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -83,7 +93,7 @@ export async function handleStripeWebhook(c: any) {
   let event: Stripe.Event
   try {
     const rawBody = await c.req.text()
-    event = await stripe.webhooks.constructEventAsync(
+    event = await stripe().webhooks.constructEventAsync(
       rawBody,
       sig,
       webhookSecret,
