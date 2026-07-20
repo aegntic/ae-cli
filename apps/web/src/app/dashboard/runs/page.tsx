@@ -39,7 +39,7 @@ export default function RunsPage() {
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-accent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
 
@@ -58,7 +58,7 @@ export default function RunsPage() {
       {!loading && runs.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <div className="overflow-hidden rounded-2xl border-2 border-black bg-white toy-shadow-sm">
+            <div className="overflow-hidden rounded-2xl border-2 border-border bg-bg-elevated toy-shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="swiss-line-b bg-bg">
@@ -100,10 +100,10 @@ export default function RunsPage() {
 
           <div className="lg:col-span-2">
             {selectedRun ? (
-              <div className="sticky top-6 rounded-2xl border-2 border-black bg-white p-5 toy-shadow-sm">
+              <div className="sticky top-6 rounded-2xl border-2 border-border bg-bg-elevated p-5 toy-shadow-sm">
                 {detailLoading && (
                   <div className="flex items-center justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-accent" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
                   </div>
                 )}
                 <div className="mb-4 flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function RunsPage() {
                   {selectedRun.input && (
                     <div>
                       <h3 className="mb-1.5 font-medium text-text-muted">Input</h3>
-                      <pre className="overflow-x-auto rounded-xl bg-bg border-2 border-black p-3 text-text-secondary">
+                      <pre className="overflow-x-auto rounded-xl bg-bg border-2 border-border p-3 text-text-secondary">
                         {JSON.stringify(selectedRun.input, null, 2)}
                       </pre>
                     </div>
@@ -139,7 +139,7 @@ export default function RunsPage() {
                   {selectedRun.result != null && (
                     <div>
                       <h3 className="mb-1.5 font-medium text-text-muted">Result</h3>
-                      <pre className="max-h-64 overflow-x-auto rounded-xl bg-bg border-2 border-black p-3 text-text-secondary">
+                      <pre className="max-h-64 overflow-x-auto rounded-xl bg-bg border-2 border-border p-3 text-text-secondary">
                         {JSON.stringify(selectedRun.result, null, 2)}
                       </pre>
                     </div>
@@ -147,7 +147,7 @@ export default function RunsPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border-2 border-dashed border-black bg-white p-8 text-center text-sm text-text-muted">
+              <div className="rounded-2xl border-2 border-dashed border-border bg-bg-elevated p-8 text-center text-sm text-text-muted">
                 Select a run to view details
               </div>
             )}

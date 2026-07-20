@@ -1,56 +1,53 @@
 @import "tailwindcss";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * aegntic / web — pixar-ios-toy reskin (blumenkopf DNA)
+ * aedex / web — aegntic.ai brand identity (dark editorial, teal + coral)
  *
- * Source inspiration: blumenkopf.spatzek.studio (editorial light template)
- *   paper #E8EBEC · ink #000 · 3px black line dividers · orange #E67E22 accent
+ * Matched to aegntic.ai: dark charcoal surfaces (#0c1016 / #11181c),
+ * teal accent #00b39f, coral #e28a87, Space Grotesk display + Inter body,
+ * the "ae" wordmark logo, soft rounded cards.
  *
- * Adaptation for aegntic:
- *   - GRADIENT-FREE by construction. No `gradient-*` utilities exist.
- *   - Pixar-toy solid palette (red/yellow/green/blue/lavender) for chips.
- *   - iOS-gloss plastic highlight via SOLID rgba overlays (no linear-gradient).
- *   - Soft drop shadows for chunky 3D depth.
- *   - Existing dark-era token NAMES (--color-bg, --color-text-primary, etc.)
- *     are preserved so legacy class references still compile; their VALUES
- *     are flipped to the light/paper system.
+ * All utility CLASS NAMES are preserved from the prior light "toy" system so
+ * existing component markup compiles unchanged — only the token VALUES flip
+ * to the dark/teal system. The gloss/chip/shadow utilities still read as
+ * "plastic" depth on a dark surface.
  * ────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  /* ── Light system (was dark) ─────────────────────────────────────────── */
-  --color-bg: #E8EBEC;              /* paper (was #0a0a0b) */
-  --color-bg-elevated: #FFFFFF;     /* pure white card  (was #111113) */
-  --color-bg-card: #FFFFFF;         /* card surface     (was #161618) */
-  --color-bg-card-hover: #F5F5F4;   /* hover surface    (was #1c1c1f) */
+  /* ── Dark surface system ─────────────────────────────────────────────── */
+  --color-bg: #0c1016;              /* page (charcoal) */
+  --color-bg-elevated: #11181c;     /* raised panel */
+  --color-bg-card: #141b21;         /* card surface */
+  --color-bg-card-hover: #1a232a;   /* hover surface */
 
-  --color-border: #000000;          /* ink line (was #222225) — 3px Swiss motif */
-  --color-border-subtle: #D4D5D6;   /* hairline (was #1a1a1d) */
+  --color-border: #232c34;          /* ink line on dark */
+  --color-border-subtle: #1a222a;   /* hairline */
 
-  --color-text-primary: #000000;    /* ink (was #fafafa) */
-  --color-text-secondary: #5C5C5C;  /* muted editorial (was #a1a1aa) */
-  --color-text-muted: #8A8A8A;      /* lighter muted (was #71717a) */
+  --color-text-primary: #e7eef0;    /* near-white */
+  --color-text-secondary: #a5abad;  /* muted */
+  --color-text-muted: #6f767c;      /* lighter muted */
 
-  /* ── Blumenkopf editorial accents ───────────────────────────────────── */
-  --color-accent: #E67E22;          /* orange (was blue #3B82F6) */
-  --color-accent-dim: #C0651D;      /* darker orange */
-  --color-accent-glow: rgba(230, 126, 34, 0.18);
-  --color-olive: #7D8A74;
-  --color-clay: #C75D4B;
+  /* ── aegntic.ai accents ──────────────────────────────────────────────── */
+  --color-accent: #1fb6ff;          /* electric cyan-blue (robot-arm glow) */
+  --color-accent-dim: #0e84c4;      /* deeper electric blue */
+  --color-accent-glow: rgba(31, 182, 255, 0.22);
+  --color-coral: #e28a87;           /* coral secondary */
+  --color-olive: #7d8a74;
+  --color-clay: #c75d4b;
 
-  /* ── Pixar-toy solid palette (NO gradients, ever) ───────────────────── */
-  --color-toy-red: #E63946;
-  --color-toy-yellow: #F4D35E;
-  --color-toy-green: #06A77D;
-  --color-toy-blue: #4361EE;
-  --color-toy-lavender: #9D4EDD;
+  /* ── Status palette (works on dark) ──────────────────────────────────── */
+  --color-toy-green: #1fbf9f;
+  --color-toy-yellow: #f2c94c;
+  --color-toy-red: #ef6b6b;
+  --color-toy-blue: #4ea8ff;
+  --color-toy-lavender: #b07ee8;
 
-  /* ── Status colors (kept compatible with dashboard status badges) ───── */
-  --color-green: #06A77D;           /* was #22c55e — shifted to toy-green */
-  --color-amber: #F4D35E;           /* was #f59e0b — shifted to toy-yellow */
-  --color-red: #E63946;             /* NEW — was missing */
+  --color-green: #1fbf9f;
+  --color-amber: #f2c94c;
+  --color-red: #ef6b6b;
 
-  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
@@ -63,15 +60,15 @@ html {
 
 body {
   font-family: var(--font-sans);
-  font-feature-settings: "ss01", "cv11";
+  font-feature-settings: "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #000;
-  color: var(--color-bg);
+  background: var(--color-accent);
+  color: #04141a;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -109,14 +106,6 @@ body {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-6px); }
 }
-@keyframes typing {
-  from { width: 0; }
-  to   { width: 100%; }
-}
-@keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50%      { border-color: var(--color-accent); }
-}
 
 .animate-fade-in-up   { animation: fade-in-up 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards; opacity: 0; }
 .animate-fade-in      { animation: fade-in 0.5s ease-out forwards; opacity: 0; }
@@ -133,35 +122,28 @@ body {
 .delay-600 { animation-delay: 600ms; }
 .delay-700 { animation-delay: 700ms; }
 
-/* ─── Pixar-iOS-toy gloss utilities (NO gradients, all solid) ────────────
- * The "glossy plastic" highlight is achieved with a SOLID rgba overlay
- * shaped via border-radius — never a linear-gradient. This is what makes
- * chips look like 3D Apple Vision Pro / Elemental toy objects.
- * ──────────────────────────────────────────────────────────────────────── */
+/* ─── Depth utilities (gloss/chip/shadow) — tuned for dark surfaces ─────── */
 
-/* Chunky 3D toy shadow — soft, low-opacity, large blur */
+/* Soft layered shadow for cards floating on charcoal */
 .toy-shadow {
   box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.08),
-    0 4px 0 rgba(0, 0, 0, 0.06),
-    0 12px 24px rgba(0, 0, 0, 0.07),
-    0 24px 48px rgba(0, 0, 0, 0.04);
+    0 1px 0 rgba(0, 0, 0, 0.30),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.32);
 }
 .toy-shadow-sm {
   box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.10),
-    0 3px 0 rgba(0, 0, 0, 0.06),
-    0 6px 14px rgba(0, 0, 0, 0.06);
+    0 1px 0 rgba(0, 0, 0, 0.30),
+    0 3px 10px rgba(0, 0, 0, 0.30);
 }
 .toy-shadow-lg {
   box-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.08),
-    0 8px 0 rgba(0, 0, 0, 0.05),
-    0 20px 40px rgba(0, 0, 0, 0.10),
-    0 40px 80px rgba(0, 0, 0, 0.05);
+    0 2px 0 rgba(0, 0, 0, 0.30),
+    0 10px 30px rgba(0, 0, 0, 0.40),
+    0 40px 80px rgba(0, 0, 0, 0.30);
 }
 
-/* Glossy plastic top-half highlight — solid rgba, curved bottom edge */
+/* Glossy plastic top-half highlight — reads as sheen on dark */
 .gloss {
   position: relative;
   overflow: hidden;
@@ -172,13 +154,11 @@ body {
   position: absolute;
   inset: 0 0 auto 0;
   height: 45%;
-  background: rgba(255, 255, 255, 0.40);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 999px 999px 50% 50% / 999px 999px 100% 100%;
   pointer-events: none;
   z-index: 1;
-  mix-blend-mode: soft-light;
 }
-/* Specular hotspot — a single bright spot in the upper-left, no gradient */
 .gloss::after {
   content: "";
   position: absolute;
@@ -186,14 +166,14 @@ body {
   left: 12%;
   width: 30%;
   height: 25%;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.10);
   border-radius: 50%;
   filter: blur(8px);
   pointer-events: none;
   z-index: 2;
 }
 
-/* Combined toy chip — plastic block with shine + drop shadow */
+/* Plastic chip block */
 .toy-chip {
   border-radius: 1.25rem;
   position: relative;
@@ -205,7 +185,7 @@ body {
   position: absolute;
   inset: 0 0 auto 0;
   height: 50%;
-  background: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 1.25rem 1.25rem 50% 50% / 1.25rem 1.25rem 100% 100%;
   pointer-events: none;
   z-index: 1;
@@ -217,47 +197,47 @@ body {
   left: 14%;
   width: 28%;
   height: 22%;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 50%;
   filter: blur(10px);
   pointer-events: none;
   z-index: 2;
 }
 
-/* Chunky 3D pressable button — looks like a Pixar toy button */
+/* Chunky pressable button — teal-accented */
 .toy-button {
   position: relative;
   border-radius: 1rem;
-  border: 2px solid #000;
+  border: 1px solid var(--color-border);
   font-weight: 600;
   transition: transform 0.12s cubic-bezier(0.33, 1, 0.68, 1),
-              box-shadow 0.12s cubic-bezier(0.33, 1, 0.68, 1);
+              box-shadow 0.12s cubic-bezier(0.33, 1, 0.68, 1),
+              border-color 0.12s ease;
   box-shadow:
-    0 4px 0 #000,
-    0 6px 16px rgba(0, 0, 0, 0.15);
+    0 1px 0 rgba(0, 0, 0, 0.30),
+    0 4px 14px rgba(0, 0, 0, 0.30);
 }
 .toy-button:hover {
   transform: translateY(-1px);
+  border-color: var(--color-accent);
   box-shadow:
-    0 5px 0 #000,
-    0 8px 20px rgba(0, 0, 0, 0.18);
+    0 2px 0 rgba(0, 0, 0, 0.30),
+    0 8px 22px var(--color-accent-glow);
 }
 .toy-button:active {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 #000,
-    0 2px 6px rgba(0, 0, 0, 0.12);
+  transform: translateY(2px);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.30);
 }
 
-/* Editorial Swiss line — 3px solid black divider */
+/* Editorial divider — subtle bright line on dark */
 .swiss-line {
-  border-top: 3px solid #000;
+  border-top: 1px solid var(--color-border);
 }
 .swiss-line-b {
-  border-bottom: 3px solid #000;
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* Marquee track (orange banner / ticker) */
+/* Marquee track */
 .marquee-track {
   display: inline-flex;
   white-space: nowrap;
@@ -276,7 +256,7 @@ body {
   transform: translateY(0);
 }
 
-/* Masked wordmark reveal (vertical wipe) */
+/* Masked wordmark reveal */
 .mask-reveal {
   overflow: hidden;
   display: block;
@@ -290,19 +270,19 @@ body {
   transform: translateY(0);
 }
 
-/* ─── Code block (light editorial, no dark glow) ───────────────────────── */
+/* Code block */
 .code-block {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   line-height: 1.7;
 }
 
-/* ─── Scrollbar ────────────────────────────────────────────────────────── */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--color-bg); }
 ::-webkit-scrollbar-thumb {
-  background: #000;
+  background: var(--color-border);
   border-radius: 6px;
   border: 3px solid var(--color-bg);
 }
-::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent-dim); }

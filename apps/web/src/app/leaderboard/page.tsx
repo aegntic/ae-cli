@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 export const revalidate = 300;
 
@@ -113,10 +114,7 @@ export default async function LeaderboardPage() {
       <header className="sticky top-0 z-50 swiss-line-b bg-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            <div className="toy-chip flex h-7 w-7 items-center justify-center rounded-xl bg-black text-xs font-bold text-white">
-              Ae
-            </div>
-            <span>aegntic</span>
+            <Logo height={24} />
           </Link>
           <nav className="flex items-center gap-6 text-sm text-text-secondary">
             <Link href="/leaderboard" className="text-text-primary">
@@ -127,7 +125,7 @@ export default async function LeaderboardPage() {
             </Link>
             <Link
               href="/app"
-              className="toy-button bg-black px-3 py-1.5 text-xs font-medium text-white"
+              className="toy-button bg-accent px-3 py-1.5 text-xs font-medium text-white"
             >
               Get started →
             </Link>
@@ -176,7 +174,7 @@ export default async function LeaderboardPage() {
         <section className="mt-14 grid gap-4 md:grid-cols-2">
           <Link
             href="/app"
-            className="group rounded-2xl border-2 border-black bg-white p-6 toy-shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:toy-shadow"
+            className="group rounded-2xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:toy-shadow"
           >
             <div className="text-xs font-semibold uppercase tracking-wider text-accent">
               For operators
@@ -190,7 +188,7 @@ export default async function LeaderboardPage() {
             </div>
           </Link>
 
-          <div className="rounded-2xl border-2 border-black bg-white p-6 toy-shadow-sm">
+          <div className="rounded-2xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm">
             <div className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               How reliability is measured
             </div>
@@ -231,7 +229,7 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
   });
 
   return (
-    <div className="rounded-2xl border-2 border-black bg-white overflow-hidden toy-shadow-sm">
+    <div className="rounded-2xl border-2 border-border bg-bg-elevated overflow-hidden toy-shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -297,7 +295,7 @@ function LeaderboardTable({ data }: { data: Leaderboard }) {
 
 function EmptyState() {
   return (
-    <div className="border-2 border-dashed border-black rounded-2xl p-12 text-center bg-white">
+    <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center bg-bg-elevated">
       <div className="text-sm text-text-secondary mb-1">No tools with enough calls yet</div>
       <div className="text-xs font-mono text-text-muted">
         tools appear here once they accumulate ≥3 real calls
@@ -314,7 +312,7 @@ function EmptyState() {
 
 function UnavailableState() {
   return (
-    <div className="border-2 border-dashed border-black rounded-2xl p-12 text-center bg-white">
+    <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center bg-bg-elevated">
       <div className="text-sm text-text-secondary mb-1">
         Reliability data temporarily unavailable
       </div>

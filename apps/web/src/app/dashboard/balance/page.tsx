@@ -30,7 +30,7 @@ export default function BalancePage() {
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-accent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
 
@@ -43,25 +43,25 @@ export default function BalancePage() {
       {!loading && !error && balance && (
         <>
           {/* Balance hero card */}
-          <div className="mb-6 rounded-2xl border-2 border-black bg-white p-8 text-center toy-shadow">
+          <div className="mb-6 rounded-2xl border-2 border-border bg-bg-elevated p-8 text-center toy-shadow">
             <p className="mb-2 text-sm text-text-muted">Current Balance</p>
             <p className="text-5xl font-bold tracking-tight text-accent">
               ${balance.balance.toFixed(2)}
             </p>
             <div className="mx-auto mt-6 grid max-w-sm grid-cols-3 gap-4">
-              <div className="rounded-xl border-2 border-black bg-bg p-3">
+              <div className="rounded-xl border-2 border-border bg-bg p-3">
                 <p className="text-xs text-text-muted">Balance</p>
                 <p className="mt-1 font-mono text-sm font-medium text-text-primary">
                   ${balance.balance.toFixed(2)}
                 </p>
               </div>
-              <div className="rounded-xl border-2 border-black bg-bg p-3">
+              <div className="rounded-xl border-2 border-border bg-bg p-3">
                 <p className="text-xs text-text-muted">Held</p>
                 <p className="mt-1 font-mono text-sm font-medium text-toy-yellow">
                   ${balance.held.toFixed(2)}
                 </p>
               </div>
-              <div className="rounded-xl border-2 border-black bg-bg p-3">
+              <div className="rounded-xl border-2 border-border bg-bg p-3">
                 <p className="text-xs text-text-muted">Available</p>
                 <p className="mt-1 font-mono text-sm font-medium text-toy-green">
                   ${balance.available.toFixed(2)}
@@ -69,7 +69,7 @@ export default function BalancePage() {
               </div>
             </div>
             <button
-              className="mt-6 toy-button rounded-xl bg-black px-6 py-2.5 text-sm font-medium text-white"
+              className="mt-6 toy-button rounded-xl bg-accent px-6 py-2.5 text-sm font-medium text-white"
               onClick={() => alert("Stripe integration coming soon.")}
             >
               Top up balance
@@ -77,7 +77,7 @@ export default function BalancePage() {
           </div>
 
           {/* Cost history */}
-          <div className="rounded-2xl border-2 border-black bg-white p-5 toy-shadow-sm">
+          <div className="rounded-2xl border-2 border-border bg-bg-elevated p-5 toy-shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Recent Cost History</h2>
               <span className="text-xs text-text-muted">Total: ${totalSpent.toFixed(4)}</span>
@@ -90,7 +90,7 @@ export default function BalancePage() {
                 {recentRuns.slice(0, 10).map((run) => (
                   <div
                     key={run.id}
-                    className="flex items-center justify-between rounded-xl border-2 border-black bg-bg px-4 py-2.5 text-xs"
+                    className="flex items-center justify-between rounded-xl border-2 border-border bg-bg px-4 py-2.5 text-xs"
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-text-primary">

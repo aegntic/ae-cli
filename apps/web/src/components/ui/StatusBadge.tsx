@@ -2,11 +2,11 @@ import type { RunStatus } from "@/lib/api";
 
 const STATUS_STYLES: Record<RunStatus, string> = {
   COMPLETED: "bg-toy-green text-white",
-  RUNNING: "bg-toy-yellow text-black",
+  RUNNING: "bg-toy-yellow text-text-primary",
   FAILED: "bg-toy-red text-white",
   BLOCKED: "bg-toy-lavender text-white",
-  READY: "bg-bg-elevated text-text-secondary border-2 border-black",
-  STOPPED: "bg-bg-elevated text-text-muted border-2 border-black",
+  READY: "bg-bg-elevated text-text-secondary border-2 border-border",
+  STOPPED: "bg-bg-elevated text-text-muted border-2 border-border",
   TIME_OUT: "bg-toy-orange text-white",
 };
 

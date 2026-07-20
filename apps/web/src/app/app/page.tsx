@@ -26,10 +26,10 @@ type Run = {
 
 const STATUS_STYLE: Record<string, string> = {
   COMPLETED: "bg-toy-green text-white",
-  RUNNING: "bg-toy-yellow text-black",
-  READY: "bg-bg-elevated text-text-secondary border-2 border-black",
+  RUNNING: "bg-toy-yellow text-text-primary",
+  READY: "bg-bg-elevated text-text-secondary border-2 border-border",
   FAILED: "bg-toy-red text-white",
-  STOPPED: "bg-bg-elevated text-text-muted border-2 border-black",
+  STOPPED: "bg-bg-elevated text-text-muted border-2 border-border",
 };
 
 function money(n: number, currency: string) {
@@ -132,7 +132,7 @@ export default function ConsolePage() {
     return (
       <main className="min-h-screen flex items-center justify-center px-6 bg-bg">
         <div className="w-full max-w-md animate-fade-in-up">
-          <div className="rounded-2xl border-2 border-black bg-white p-8 toy-shadow">
+          <div className="rounded-2xl border-2 border-border bg-bg-elevated p-8 toy-shadow">
             <div className="text-xs font-mono uppercase tracking-[0.2em] text-text-muted mb-3">
               aegntic / console
             </div>
@@ -152,11 +152,11 @@ export default function ConsolePage() {
                 onChange={(e) => setDraftKey(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveKey()}
                 placeholder="aegntic_live_…"
-                className="flex-1 bg-bg border-2 border-black rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-accent transition-colors"
+                className="flex-1 bg-bg border-2 border-border rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-accent transition-colors"
               />
               <button
                 onClick={saveKey}
-                className="toy-button px-5 py-3 bg-black text-white text-sm font-medium"
+                className="toy-button px-5 py-3 bg-accent text-white text-sm font-medium"
               >
                 Connect
               </button>
@@ -182,7 +182,7 @@ export default function ConsolePage() {
           <button
             onClick={() => void refresh()}
             disabled={loading}
-            className="text-xs font-mono px-3 py-2 rounded-xl border-2 border-black text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 bg-white"
+            className="text-xs font-mono px-3 py-2 rounded-xl border-2 border-border text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 bg-bg-elevated"
           >
             {loading ? "refreshing…" : "refresh"}
           </button>
@@ -236,14 +236,14 @@ export default function ConsolePage() {
           </div>
         )}
         {runs.length === 0 ? (
-          <div className="border-2 border-dashed border-black rounded-2xl p-10 text-center bg-white">
+          <div className="border-2 border-dashed border-border rounded-2xl p-10 text-center bg-bg-elevated">
             <div className="text-sm text-text-secondary mb-1">No runs yet</div>
             <div className="text-xs font-mono text-text-muted">
               try <span className="text-accent">aegntic run openmeteo/weather/current --query &#123;&quot;lat&quot;:&quot;52.52&quot;,&quot;lon&quot;:&quot;13.405&quot;&#125;</span>
             </div>
           </div>
         ) : (
-          <div className="border-2 border-black rounded-2xl overflow-hidden bg-white toy-shadow-sm">
+          <div className="border-2 border-border rounded-2xl overflow-hidden bg-bg-elevated toy-shadow-sm">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs font-mono uppercase tracking-wider text-text-muted swiss-line-b">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
+import { Logo } from "@/components/Logo";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * aegntic / landing page — pixar-ios-toy reskin (blumenkopf DNA)
@@ -117,10 +118,7 @@ function Nav() {
     <header className="sticky top-0 z-50 swiss-line-b bg-bg/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 md:px-10 py-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <div className="toy-chip flex h-9 w-9 items-center justify-center bg-black text-sm font-bold text-white">
-            Ae
-          </div>
-          <span>aegntic</span>
+          <Logo height={28} />
         </Link>
         <nav className="hidden items-center gap-8 text-sm text-text-secondary md:flex">
           {NAV_LINKS.map((l) => (
@@ -135,7 +133,7 @@ function Nav() {
         </nav>
         <Link
           href="/app"
-          className="toy-button bg-black px-4 py-2 text-sm font-semibold text-white"
+          className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white"
         >
           Get started →
         </Link>
@@ -152,7 +150,7 @@ function Hero() {
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Live badge */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-black bg-white px-4 py-1.5 text-xs text-text-secondary animate-fade-in-up toy-shadow-sm">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-border bg-bg-elevated px-4 py-1.5 text-xs text-text-secondary animate-fade-in-up toy-shadow-sm">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-toy-green opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-toy-green" />
@@ -183,8 +181,8 @@ function Hero() {
 
         {/* Code preview window */}
         <div className="mt-12 animate-fade-in-up delay-300">
-          <div className="mx-auto max-w-xl rounded-2xl border-2 border-black bg-white toy-shadow">
-            <div className="rounded-t-2xl border-b-2 border-black px-5 py-3 flex items-center gap-2">
+          <div className="mx-auto max-w-xl rounded-2xl border-2 border-border bg-bg-elevated toy-shadow">
+            <div className="rounded-t-2xl border-b-2 border-border px-5 py-3 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-toy-red" />
               <div className="h-3 w-3 rounded-full bg-toy-yellow" />
               <div className="h-3 w-3 rounded-full bg-toy-green" />
@@ -231,7 +229,7 @@ function Hero() {
         {/* Skill link */}
         <p className="mt-8 text-sm text-text-muted animate-fade-in-up delay-400">
           Give this to your agent —{" "}
-          <code className="rounded border-2 border-black bg-white px-2 py-0.5 font-mono text-xs text-text-secondary">
+          <code className="rounded border-2 border-border bg-bg-elevated px-2 py-0.5 font-mono text-xs text-text-secondary">
             $ set up https://aegntic.ai/SKILL.md
           </code>{" "}
           — and let it take it from there.
@@ -253,7 +251,7 @@ function ToolGrid() {
             return (
               <div
                 key={tool.name}
-                className="group relative flex flex-col items-center gap-3 rounded-2xl border-2 border-black bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
+                className="group relative flex flex-col items-center gap-3 rounded-2xl border-2 border-border bg-bg-elevated p-5 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
               >
                 {/* 3D plastic chip */}
                 <div
@@ -300,15 +298,15 @@ function HowItWorks() {
           {STEPS.map((step) => (
             <div
               key={step.num}
-              className="relative rounded-2xl border-2 border-black bg-white p-6 toy-shadow-sm"
+              className="relative rounded-2xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm"
             >
               <div className="mb-4 flex items-center gap-3">
-                <span className="toy-chip flex h-10 w-10 items-center justify-center rounded-2xl bg-toy-yellow text-sm font-bold text-black">
+                <span className="toy-chip flex h-10 w-10 items-center justify-center rounded-2xl bg-toy-yellow text-sm font-bold text-text-primary">
                   {step.num}
                 </span>
                 <h3 className="text-lg font-semibold">{step.title}</h3>
               </div>
-              <div className="rounded-xl border-2 border-black bg-bg p-4">
+              <div className="rounded-xl border-2 border-border bg-bg p-4">
                 <code className="code-block text-text-secondary">{step.code}</code>
               </div>
               <p className="mt-3 text-sm text-text-muted">{step.desc}</p>
@@ -326,7 +324,7 @@ function OneBalance() {
   return (
     <section className="px-5 md:px-10 py-20 md:py-28 swiss-line">
       <div className="mx-auto max-w-5xl">
-        <div className="rounded-2xl border-2 border-black bg-white p-8 md:p-14 toy-shadow-lg">
+        <div className="rounded-2xl border-2 border-border bg-bg-elevated p-8 md:p-14 toy-shadow-lg">
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
               <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
@@ -344,7 +342,7 @@ function OneBalance() {
                 <Stat value="1" label="Balance" />
               </div>
             </div>
-            <div className="rounded-2xl border-2 border-black bg-bg p-6">
+            <div className="rounded-2xl border-2 border-border bg-bg p-6">
               <div className="mb-4 flex items-center gap-3 text-sm text-text-muted">
                 <div className="toy-chip flex h-8 w-8 items-center justify-center rounded-xl bg-accent">
                   <svg viewBox="0 0 20 20" className="h-4 w-4 fill-white">
@@ -354,7 +352,7 @@ function OneBalance() {
                 <span className="font-mono text-xs">~/agents/research-bot</span>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-xl border-2 border-black bg-white p-3">
+                <div className="flex items-center justify-between rounded-xl border-2 border-border bg-bg-elevated p-3">
                   <span className="text-sm text-text-secondary">Balance</span>
                   <span className="font-mono text-lg font-semibold text-text-primary">$3.00</span>
                 </div>
@@ -383,7 +381,7 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function UsageRow({ tool, cost }: { tool: string; cost: string }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border-2 border-black bg-white px-3 py-2 text-xs">
+    <div className="flex items-center justify-between rounded-xl border-2 border-border bg-bg-elevated px-3 py-2 text-xs">
       <span className="font-mono text-text-muted">{tool}</span>
       <span className="text-text-muted">{cost}</span>
     </div>
@@ -410,14 +408,14 @@ function ConnectMethods() {
             <Link
               key={method.title}
               href={method.link}
-              className="group relative rounded-2xl border-2 border-black bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
+              className="group relative rounded-2xl border-2 border-border bg-bg-elevated p-6 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
             >
               <div className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
                 {method.subtitle}
               </div>
               <h3 className="mt-1 text-xl font-semibold">{method.title}</h3>
               <p className="mt-2 text-sm text-text-muted">{method.desc}</p>
-              <div className="mt-5 rounded-xl border-2 border-black bg-bg p-3">
+              <div className="mt-5 rounded-xl border-2 border-border bg-bg p-3">
                 <code className="code-block whitespace-pre text-xs text-text-secondary">
                   {method.code}
                 </code>
@@ -458,7 +456,7 @@ function FinalCTA() {
         <p className="mt-3 text-text-secondary">Start with $1 in free credit.</p>
 
         {/* Copy command */}
-        <div className="mx-auto mt-8 max-w-lg rounded-2xl border-2 border-black bg-white p-1 toy-shadow-sm">
+        <div className="mx-auto mt-8 max-w-lg rounded-2xl border-2 border-border bg-bg-elevated p-1 toy-shadow-sm">
           <div className="flex items-center gap-2 rounded-xl bg-bg px-4 py-3">
             <code className="code-block flex-1 text-left text-text-secondary">
               <span className="text-text-muted">$</span>{" "}
@@ -473,7 +471,7 @@ function FinalCTA() {
         <div className="mt-8">
           <Link
             href="/app"
-            className="toy-button inline-flex items-center gap-2 bg-black px-8 py-4 text-sm font-bold text-white"
+            className="toy-button inline-flex items-center gap-2 bg-accent px-8 py-4 text-sm font-bold text-white"
           >
             Get started <span>→</span>
           </Link>
@@ -492,10 +490,7 @@ function Footer() {
         <div className="grid gap-8 md:grid-cols-3">
           <div>
             <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-              <div className="toy-chip flex h-8 w-8 items-center justify-center rounded-xl bg-black text-xs font-bold text-white">
-                Ae
-              </div>
-              <span>aegntic</span>
+              <Logo height={26} />
             </Link>
             <p className="mt-3 max-w-xs text-sm text-text-muted">
               The agent-native router for tool calls. One skill, one balance, every tool your agent

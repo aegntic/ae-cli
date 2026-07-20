@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/Logo";
 
 const NAV = [
   { href: "/dashboard/discover", label: "Discover" },
@@ -29,23 +30,20 @@ export default function Sidebar({
     <>
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-accent/60 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r-2 border-black bg-white transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r-2 border-border bg-bg-elevated transition-transform duration-200 md:static md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
         <div className="swiss-line-b p-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-            <div className="toy-chip flex h-8 w-8 items-center justify-center rounded-xl bg-black text-sm font-bold text-white">
-              Ae
-            </div>
-            <span>Dashboard</span>
+            <Logo height={26} />
           </Link>
         </div>
 
@@ -59,7 +57,7 @@ export default function Sidebar({
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
             placeholder="aeg_xxxxxxxxxxxx"
-            className="w-full rounded-xl border-2 border-black bg-bg px-3 py-2 font-mono text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
+            className="w-full rounded-xl border-2 border-border bg-bg px-3 py-2 font-mono text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
           />
         </div>
 
@@ -74,7 +72,7 @@ export default function Sidebar({
                 onClick={onClose}
                 className={`mb-1 flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-black text-white"
+                    ? "bg-accent text-white"
                     : "text-text-secondary hover:bg-bg hover:text-text-primary"
                 }`}
               >

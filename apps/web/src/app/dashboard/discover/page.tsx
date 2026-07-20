@@ -57,13 +57,13 @@ export default function DiscoverPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search tools..."
-          className="w-full rounded-2xl border-2 border-black bg-white py-3.5 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none toy-shadow-sm"
+          className="w-full rounded-2xl border-2 border-border bg-bg-elevated py-3.5 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none toy-shadow-sm"
         />
       </div>
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-accent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
 
@@ -87,7 +87,7 @@ export default function DiscoverPage() {
             return (
               <div
                 key={key}
-                className="rounded-2xl border-2 border-black bg-white transition-all duration-200 hover:toy-shadow-sm toy-shadow-sm"
+                className="rounded-2xl border-2 border-border bg-bg-elevated transition-all duration-200 hover:toy-shadow-sm toy-shadow-sm"
               >
                 <button
                   onClick={() => setExpanded(isExpanded ? null : key)}
@@ -116,7 +116,7 @@ export default function DiscoverPage() {
                       {ep.description}
                     </p>
                     <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
-                      <span className="rounded-xl border-2 border-black bg-bg px-2 py-0.5 font-mono">
+                      <span className="rounded-xl border-2 border-border bg-bg px-2 py-0.5 font-mono">
                         ${ep.costModel.unitPrice.toFixed(4)}/{ep.costModel.type === "per_result" ? "result" : "call"}
                       </span>
                       <span>{ep.costModel.type}</span>
@@ -140,7 +140,7 @@ export default function DiscoverPage() {
                     </h3>
                     <SchemaBlock ep={ep} />
                     <div className="mt-4 flex gap-2">
-                      <button className="toy-button rounded-xl bg-black px-4 py-2 text-sm font-medium text-white">
+                      <button className="toy-button rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white">
                         Run this
                       </button>
                     </div>
@@ -180,7 +180,7 @@ function ParamTable({
   return (
     <div>
       <h4 className="mb-1.5 text-xs font-medium text-text-secondary">{title}</h4>
-      <div className="rounded-xl border-2 border-black overflow-hidden">
+      <div className="rounded-xl border-2 border-border overflow-hidden">
         <table className="w-full text-xs">
           <thead>
             <tr className="swiss-line-b bg-bg">

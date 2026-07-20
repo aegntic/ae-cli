@@ -70,12 +70,12 @@ export default function KeysPage() {
           <h2 className="mb-2 text-sm font-semibold text-toy-green">Key created successfully</h2>
           <p className="mb-3 text-xs text-text-muted">Copy this key now. It will not be shown again.</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 rounded-xl bg-bg border-2 border-black px-3 py-2 font-mono text-xs text-text-primary">
+            <code className="flex-1 rounded-xl bg-bg border-2 border-border px-3 py-2 font-mono text-xs text-text-primary">
               {justCreated.key}
             </code>
             <button
               onClick={() => handleCopy(justCreated.key)}
-              className="shrink-0 toy-chip rounded-xl bg-black px-3 py-2 text-xs font-semibold text-white"
+              className="shrink-0 toy-chip rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-white"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -83,7 +83,7 @@ export default function KeysPage() {
         </div>
       )}
 
-      <div className="mb-6 rounded-2xl border-2 border-black bg-white p-5 toy-shadow-sm">
+      <div className="mb-6 rounded-2xl border-2 border-border bg-bg-elevated p-5 toy-shadow-sm">
         <h2 className="mb-3 text-sm font-semibold">Create new key</h2>
         <div className="flex gap-2">
           <input
@@ -92,12 +92,12 @@ export default function KeysPage() {
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             placeholder="Key label (e.g. production, dev)"
-            className="flex-1 rounded-xl border-2 border-black bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
+            className="flex-1 rounded-xl border-2 border-border bg-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
           />
           <button
             onClick={handleCreate}
             disabled={!newLabel.trim() || creating}
-            className="shrink-0 toy-button rounded-xl bg-black px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="shrink-0 toy-button rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {creating ? "Creating..." : "Create"}
           </button>
@@ -106,7 +106,7 @@ export default function KeysPage() {
 
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-black border-t-accent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
 
@@ -123,7 +123,7 @@ export default function KeysPage() {
       )}
 
       {!loading && keys.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border-2 border-black bg-white toy-shadow-sm">
+        <div className="overflow-hidden rounded-2xl border-2 border-border bg-bg-elevated toy-shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="swiss-line-b bg-bg">
