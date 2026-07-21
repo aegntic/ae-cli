@@ -88,7 +88,7 @@ export default function StartPage() {
                       <code className="flex-1 px-4 py-2.5 font-mono text-[13px] text-text-secondary">
                         <span className="text-text-muted">$</span> {c.code}
                       </code>
-                      <CopyButton text={c.code} />
+                      <CopyButton text={c.code} eventName="start_cmd_copied" />
                     </div>
                   ))}
                 </div>

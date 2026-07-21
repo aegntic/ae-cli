@@ -371,7 +371,7 @@ function FinalCTA() {
           <code className="flex-1 px-4 py-3 text-left font-mono text-xs text-text-secondary">
             <span className="text-text-muted">$</span> bun add -g @aegntic/aedex
           </code>
-          <CopyButton text="bun add -g @aegntic/aedex" />
+          <CopyButton text="bun add -g @aegntic/aedex" eventName="install_cmd_copied" />
         </div>
       </div>
     </section>
