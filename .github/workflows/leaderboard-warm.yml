@@ -1,0 +1,36 @@
+name: Leaderboard warm
+
+# Keeps the public reliability leaderboard fresh by running a small fixed set
+# of cheap, real data tools through the production gateway every 6h.
+# See docs/ops/leaderboard-warming.md for details and required secrets.
+"on":
+  schedule:
+    # every 6h, off the :00 mark to avoid GitHub's cron-load spikes
+    - cron: "17 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: leaderboard-warm
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Warm leaderboard
+        env:
+          AEDX_BASE_URL: ${{ secrets.AEDX_BASE_URL }}
+          AEDX_API_KEY: ${{ secrets.AEDX_API_KEY }}
+        run: node scripts/warm-leaderboard.mjs
