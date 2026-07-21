@@ -1,0 +1,43 @@
+name: Release
+
+# Tag a version (e.g. `git tag v0.2.0 && git push --tags`) → CI builds the CLI
+# bundle and publishes @aegntic/aedex to npm, then opens a GitHub release with
+# auto-generated notes. Removes the manual esbuild + npm-publish token dance.
+#
+# Requires a repository secret: NPM_TOKEN (npm automation token with publish
+# rights on the @aegntic scope). Add under Settings → Secrets and variables → Actions.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publish-cli:
+    name: Publish @aegntic/aedex
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      # CLI bundles the workspace SDK, so build the SDK first, then the bundle.
+      - run: pnpm --filter @aegntic/sdk build
+      - run: pnpm --filter @aegntic/aedex build
+      - name: Publish
+        working-directory: packages/cli
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

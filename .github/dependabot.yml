@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # JS/TS dependencies across the monorepo (pnpm lockfile at root).
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      next-react:
+        patterns: ["next", "react", "react-dom", "@types/react", "@types/react-dom"]
+      hono:
+        patterns: ["hono", "@hono/*"]
+      tooling:
+        patterns: ["typescript", "vitest", "esbuild", "turbo", "drizzle-kit", "drizzle-orm"]
+      providers:
+        patterns: ["stripe", "argon2", "postgres", "@noble/*"]
+
+  # Keep GitHub Actions versions current (checkout, setup-node, etc).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
