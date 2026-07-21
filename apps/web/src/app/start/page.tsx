@@ -14,8 +14,8 @@ const STEPS = [
     k: "01",
     t: "install",
     sub: "one global install",
-    cmds: [{ label: "install", code: "npm i -g aedex" }],
-    note: "Node 20+. Works in any shell.",
+    cmds: [{ label: "install", code: "bun add -g aedex" }],
+    note: "Bun 1.0+. Works in any shell.",
   },
   {
     k: "02",

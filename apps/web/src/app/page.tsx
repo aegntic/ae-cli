@@ -57,7 +57,7 @@ const FLOW = [
 const CONNECT = [
   { t: "Skill", s: "for agents", c: "$ set up https://aegntic.ai/SKILL.md", h: "https://docs.aegntic.ai/guide/quickstart-skill" },
   { t: "MCP", s: "Claude · Cursor", c: 'mcp.aegntic.ai', h: "https://docs.aegntic.ai/guide/quickstart-mcp" },
-  { t: "CLI", s: "for humans", c: "npm i -g @aegntic-ai/cli", h: "https://docs.aegntic.ai/guide/quickstart-cli" },
+  { t: "CLI", s: "for humans", c: "bun add -g aedex", h: "https://docs.aegntic.ai/guide/quickstart-cli" },
 ];
 
 export default function Home() {
