@@ -28,9 +28,9 @@
   --color-text-muted: #6f767c;      /* lighter muted */
 
   /* ── aegntic.ai accents ──────────────────────────────────────────────── */
-  --color-accent: #1fb6ff;          /* electric cyan-blue (robot-arm glow) */
-  --color-accent-dim: #0e84c4;      /* deeper electric blue */
-  --color-accent-glow: rgba(31, 182, 255, 0.22);
+  --color-accent: #2e9bff;          /* electric azure (robot-arm glow) */
+  --color-accent-dim: #1a6fbf;      /* deeper azure */
+  --color-accent-glow: rgba(46, 155, 255, 0.22);
   --color-coral: #e28a87;           /* coral secondary */
   --color-olive: #7d8a74;
   --color-clay: #c75d4b;
