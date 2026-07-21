@@ -238,25 +238,52 @@ function UsageRow({ tool, cost }: { tool: string; cost: string }) {
 
 /* ─── Tools Ticker (dynamic, replaces static icon grid) ───────────────── */
 
-function ToolsTicker() {
-  const loop = [...TOOLS, ...TOOLS];
+function ToolChip({
+  t,
+  color,
+}: {
+  t: { name: string; letter: string; slug?: string };
+  color: string;
+}) {
   return (
-    <section className="swiss-line border-y-2 border-border py-6 overflow-hidden">
-      <div className="marquee-track animate-marquee-x">
-        {loop.map((t, i) => {
-          const color = TOY_PALETTE[i % TOY_PALETTE.length];
+    <div className="flex items-center gap-3 px-3">
+      <div
+        className="toy-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
+        style={{ backgroundColor: color }}
+      >
+        <ToolIcon slug={t.slug} letter={t.letter} />
+      </div>
+      <span className="whitespace-nowrap text-sm font-medium text-text-secondary">{t.name}</span>
+      <span className="px-2 text-text-muted">·</span>
+    </div>
+  );
+}
+
+function ToolsTicker() {
+  // Three rows, opposite directions + staggered speeds for a logo-cloud parallax.
+  const rows = [
+    { dur: "34s", dir: "normal" as const },
+    { dur: "26s", dir: "reverse" as const },
+    { dur: "30s", dir: "normal" as const },
+  ];
+  return (
+    <section className="swiss-line border-y-2 border-border py-10 overflow-hidden">
+      <div className="space-y-3">
+        {rows.map((r, ri) => {
+          // Offset each row's start so logos don't align column-to-column.
+          const offset = (ri * 3) % TOOLS.length;
+          const ordered = [...TOOLS.slice(offset), ...TOOLS.slice(0, offset)];
+          const loop = [...ordered, ...ordered];
           return (
-            <div key={i} className="flex items-center gap-3 px-3">
+            <div key={ri} className="overflow-hidden">
               <div
-                className="toy-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
-                style={{ backgroundColor: color }}
+                className="marquee-track marquee-row"
+                style={{ animationDuration: r.dur, animationDirection: r.dir }}
               >
-                <ToolIcon slug={t.slug} letter={t.letter} />
+                {loop.map((t, i) => (
+                  <ToolChip key={`${ri}-${i}`} t={t} color={TOY_PALETTE[(i + ri) % TOY_PALETTE.length]} />
+                ))}
               </div>
-              <span className="whitespace-nowrap text-sm font-medium text-text-secondary">
-                {t.name}
-              </span>
-              <span className="px-2 text-text-muted">·</span>
             </div>
           );
         })}

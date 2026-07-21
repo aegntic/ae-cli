@@ -263,6 +263,10 @@ body {
   white-space: nowrap;
   will-change: transform;
 }
+/* Logo-cloud row — duration + direction set inline per row */
+.marquee-row {
+  animation: marquee-x linear infinite;
+}
 
 /* Scroll-gated reveal */
 .gate {
