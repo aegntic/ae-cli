@@ -92,7 +92,7 @@ function Nav() {
             </Link>
           ))}
         </nav>
-        <Link href="/app" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/start" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
           Get started →
         </Link>
       </div>
@@ -129,7 +129,7 @@ function HeroBento() {
             </p>
           </div>
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href="/app" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
+            <Link href="/start" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
               Get started →
             </Link>
             <Link
