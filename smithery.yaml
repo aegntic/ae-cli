@@ -1,0 +1,43 @@
+# Smithery configuration file for the aegntic (aedex) MCP server.
+# Docs: https://smithery.ai/docs/build/project-config
+#
+# The MCP server is a hand-rolled stdio JSON-RPC process at
+# services/gateway/src/mcp/server.ts, compiled by `pnpm --filter @aegntic/gateway build`
+# to services/gateway/dist/mcp/server.js. It is a pure HTTP client over the
+# gateway API (discover / inspect / run / get_run / balance / balance_audit)
+# and has no database dependency.
+#
+# startCommand maps the user-supplied Smithery config (collected via the
+# auto-generated OAuth form below) onto the real invocation:
+#   node services/gateway/dist/mcp/server.js
+# with AEGNTIC_BASE_URL + AEGNTIC_API_KEY injected into env (exactly what the
+# server reads in services/gateway/src/mcp/client.ts -> resolveConfig()).
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    # Smithery renders these into an auth/config form. Limits: 20 fields, 1KB.
+    type: object
+    required:
+      - aegnticApiKey
+    properties:
+      aegnticApiKey:
+        type: string
+        description: >
+          Your aegntic workspace API key (bearer). Required — the MCP tools
+          error clearly if unset. Get one from the aedex console.
+      aegnticBaseUrl:
+        type: string
+        description: >
+          Gateway HTTP base URL. Defaults to the live hosted gateway.
+          Override only if you self-host.
+        default: https://aegntic-gateway.fly.dev
+  commandFunction:
+    # A JS function that produces the CLI command to start the MCP on stdio.
+    # args points at the compiled server inside the gateway package.
+    |-
+    (config) => ({ command: 'node', args: ['services/gateway/dist/mcp/server.js'], env: { AEGNTIC_API_KEY: config.aegnticApiKey, AEGNTIC_BASE_URL: config.aegnticBaseUrl || 'https://aegntic-gateway.fly.dev' } })
+  exampleConfig:
+    aegnticApiKey: YOUR_AEGNTIC_API_KEY
+    aegnticBaseUrl: https://aegntic-gateway.fly.dev
