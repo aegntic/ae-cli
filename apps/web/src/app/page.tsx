@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
 import { Logo } from "@/components/Logo";
+import { ToolIcon } from "@/components/ToolIcon";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * aegntic / landing — editorial bento (cool-grey aegntic-toy)
@@ -24,20 +25,20 @@ const TOY_PALETTE = [
 ] as const;
 
 const TOOLS = [
-  { name: "X / Twitter", letter: "X" },
-  { name: "LinkedIn", letter: "in" },
-  { name: "Reddit", letter: "R" },
-  { name: "Amazon", letter: "A" },
-  { name: "YouTube", letter: "Y" },
-  { name: "Google", letter: "G" },
-  { name: "TikTok", letter: "T" },
-  { name: "Instagram", letter: "I" },
-  { name: "Apify", letter: "A" },
-  { name: "Browserbase", letter: "B" },
-  { name: "People Data Labs", letter: "P" },
-  { name: "OpenWeather", letter: "W" },
-  { name: "Exa", letter: "E" },
-  { name: "QuickNode", letter: "Q" },
+  { name: "X / Twitter", letter: "X", slug: "x" },
+  { name: "LinkedIn", letter: "in", slug: "linkedin" },
+  { name: "Reddit", letter: "R", slug: "reddit" },
+  { name: "Amazon", letter: "A", slug: "amazon" },
+  { name: "YouTube", letter: "Y", slug: "youtube" },
+  { name: "Google", letter: "G", slug: "google" },
+  { name: "TikTok", letter: "T", slug: "tiktok" },
+  { name: "Instagram", letter: "I", slug: "instagram" },
+  { name: "Apify", letter: "A", slug: "apify" },
+  { name: "Browserbase", letter: "B", slug: "browserbase" },
+  { name: "People Data Labs", letter: "P", slug: "peopledatalabs" },
+  { name: "OpenWeather", letter: "W", slug: "openweathermap" },
+  { name: "Exa", letter: "E", slug: "exa" },
+  { name: "QuickNode", letter: "Q", slug: "quicknode" },
 ];
 
 // Real telemetry from the live gateway /leaderboard (coingecko / hackernews / openmeteo).
@@ -201,7 +202,7 @@ function HeroBento() {
           </div>
           <div className="space-y-1.5 font-mono text-[13px] leading-relaxed">
             <div className="text-white/40">
-              $ <span className="text-[#28c840]">aegntic</span>{" "}
+              $ <span className="text-[#2E9BFF]">aegntic</span>{" "}
               <span className="text-[#2E9BFF]">discover</span>{" "}
               <span className="text-white/50">-q</span>{" "}
               <span className="text-[#febc2e]">&quot;weather&quot;</span>
@@ -210,10 +211,10 @@ function HeroBento() {
             <div className="text-white/70 text-xs">
               {"  "}1. <span className="text-white">openmeteo/weather</span>
               <span className="ml-2 text-white/40">$0.001/call</span>
-              <span className="ml-2 text-[#28c840]">✓ verified</span>
+              <span className="ml-2 text-[#2E9BFF]">✓ verified</span>
             </div>
             <div className="pt-2 text-white/40">
-              $ <span className="text-[#28c840]">aegntic</span>{" "}
+              $ <span className="text-[#2E9BFF]">aegntic</span>{" "}
               <span className="text-[#2E9BFF]">run</span>{" "}
               <span className="text-[#febc2e]">openmeteo/weather</span>{" "}
               <span className="text-white/50">--query lat=52.52,lon=13.41</span>
@@ -250,7 +251,7 @@ function ToolsTicker() {
                 className="toy-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
                 style={{ backgroundColor: color }}
               >
-                {t.letter}
+                <ToolIcon slug={t.slug} letter={t.letter} />
               </div>
               <span className="whitespace-nowrap text-sm font-medium text-text-secondary">
                 {t.name}

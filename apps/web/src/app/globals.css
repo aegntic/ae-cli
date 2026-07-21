@@ -40,12 +40,12 @@
   /* ── Pixar-toy solid palette (NO gradients, ever) ───────────────────── */
   --color-toy-red: #E63946;
   --color-toy-yellow: #F4D35E;
-  --color-toy-green: #06A77D;
+  --color-toy-green: #2E9BFF;       /* neon azure — was green; live/status signal */
   --color-toy-blue: #4361EE;
   --color-toy-lavender: #9D4EDD;
 
   /* ── Status colors (kept compatible with dashboard status badges) ───── */
-  --color-green: #06A77D;           /* was #22c55e — shifted to toy-green */
+  --color-green: #2E9BFF;           /* neon azure — was green */
   --color-amber: #F4D35E;           /* was #f59e0b — shifted to toy-yellow */
   --color-red: #E63946;             /* NEW — was missing */
 
