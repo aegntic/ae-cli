@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
 import { Logo } from "@/components/Logo";
+import { ToolIcon } from "@/components/ToolIcon";
 
 /* ──────────────────────────────────────────────────────────────────────────
  * aegntic / landing — editorial bento (cool-grey aegntic-toy)
@@ -17,6 +18,23 @@ const NAV_LINKS = [
   { label: "Reliability", href: "/leaderboard" },
   { label: "Docs", href: "https://docs.aegntic.ai" },
   { label: "Console", href: "/app" },
+];
+
+// Provider brands — clean monochrome logos only (no letter stand-ins).
+// Slugs are Simple Icons; ToolIcon renders nothing if a slug has no icon.
+const TOOLS_MONO = [
+  { name: "X", slug: "x" },
+  { name: "LinkedIn", slug: "linkedin" },
+  { name: "Reddit", slug: "reddit" },
+  { name: "Amazon", slug: "amazon" },
+  { name: "YouTube", slug: "youtube" },
+  { name: "Google", slug: "google" },
+  { name: "TikTok", slug: "tiktok" },
+  { name: "Instagram", slug: "instagram" },
+  { name: "GitHub", slug: "github" },
+  { name: "OpenAI", slug: "openai" },
+  { name: "Hugging Face", slug: "huggingface" },
+  { name: "Vercel", slug: "vercel" },
 ];
 
 // Real telemetry from the live gateway /leaderboard (coingecko / hackernews / openmeteo).
@@ -44,6 +62,7 @@ export default function Home() {
       <Nav />
       <main>
         <HeroBento />
+        <ToolsTicker />
         <Flow />
         <ConnectStrip />
         <FinalCTA />
@@ -210,6 +229,49 @@ function UsageRow({ tool, cost }: { tool: string; cost: string }) {
       <span className="font-mono text-text-muted">{tool}</span>
       <span className="font-mono text-text-secondary">{cost}</span>
     </div>
+  );
+}
+
+function ToolsTicker() {
+  // Clean monochrome logo cloud: 3 rows, opposite directions, staggered speeds.
+  const rows = [
+    { dur: "38s", dir: "normal" as const },
+    { dur: "30s", dir: "reverse" as const },
+    { dur: "34s", dir: "normal" as const },
+  ];
+  return (
+    <section className="swiss-line border-y-2 border-border py-12 overflow-hidden">
+      <div className="mx-auto mb-8 max-w-6xl px-5 md:px-10">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-muted">
+          routes to 1,300+ tools across the providers agents already use
+        </p>
+      </div>
+      <div className="space-y-5">
+        {rows.map((r, ri) => {
+          const offset = (ri * 3) % TOOLS_MONO.length;
+          const ordered = [...TOOLS_MONO.slice(offset), ...TOOLS_MONO.slice(0, offset)];
+          const loop = [...ordered, ...ordered];
+          return (
+            <div key={ri} className="overflow-hidden">
+              <div
+                className="marquee-track marquee-row items-center"
+                style={{ animationDuration: r.dur, animationDirection: r.dir }}
+              >
+                {loop.map((t, i) => (
+                  <span key={`${ri}-${i}`} className="flex items-center gap-2.5 px-5">
+                    <ToolIcon slug={t.slug} size={20} />
+                    <span className="whitespace-nowrap text-sm font-medium text-text-secondary">
+                      {t.name}
+                    </span>
+                    <span className="pl-3 text-text-muted">·</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
