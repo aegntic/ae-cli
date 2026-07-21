@@ -5,7 +5,20 @@
 
 **One CLI. One balance. Every data tool.**
 
-`aedex discover -q "scrape linkedin"` → ranked endpoints → `aedex run <tool>` → live results → signed ledger charge.
+`ae discover -q "scrape linkedin"` → ranked endpoints → `ae run <tool>` → live results → signed ledger charge.
+
+---
+## Install
+
+```bash
+bun add -g @aegntic/aedex     # or: npm i -g @aegntic/aedex
+ae setup                      # configure gateway + workspace
+ae keys add --label dev       # mint an API key (aedex_live_…)
+ae discover -q "weather"      # → ranked endpoints
+```
+
+**Live:** web → https://aedex.ing · gateway → https://aegntic-gateway.fly.dev · reliability board → https://aedex.ing/leaderboard
+**Package:** [`@aegntic/aedex`](https://www.npmjs.com/package/@aegntic/aedex) on npm.
 
 ---
 ## The Wedge
@@ -15,16 +28,16 @@ Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at dat
 **aedex reverses the loop:** the catalog *is* the product. Agents that `discover first` never hand-roll — that habit is the business.
 
 ---
-## Status: Checkpoint 2 ✅ | Checkpoint 3 ✅ (local) | Launch 🔒 (hardened)
+## Status: Checkpoint 2 ✅ | Checkpoint 3 ✅ | Launch 🔒 (deployed, pre-public-flip)
 
 | Checkpoint | Status | Evidence |
 |---|---|---|
 | **P1 Vertical Slice** | ✅ | `discover → inspect → run → poll → balance` end-to-end |
 | **P2 Real Money** | ✅ | Live Open-Meteo runs, append-only ledger, failed runs free |
-| **P3 Console** | ✅ | `/dashboard` (discover/runs/keys/balance) + `/app` single-view, shared gateway client, public reliability leaderboard |
-| **P4 Launch** | 🔒 | Hardened: per-key rate limit, restricted CORS, signed ledger, secret scan clean → deploy creds → public flip |
+| **P3 Console + Board** | ✅ | `/app` + `/dashboard` console, public `/leaderboard` with real telemetry |
+| **P4 Launch** | 🔒 | Hardened (per-key rate limit, restricted CORS, signed ledger, secret-scan clean) + **deployed**: web on aedex.ing, gateway on Fly, `@aegntic/aedex` on npm → public flip pending |
 
-**Current HEAD:** `feat/unified-signed-persistence` — signed hash-chain ledger + 3 real providers (HackerNews, CoinGecko, Frankfurter) + honest reliability leaderboard on real telemetry.
+**Current HEAD:** `feat/unified-signed-persistence` — signed Ed25519 hash-chain ledger, real providers (Open-Meteo, HackerNews, CoinGecko, Frankfurter, Apify), honest reliability leaderboard, bundled `ae` CLI, editorial-bento web on the cool-grey aegntic-toy system (`DESIGN.md`).
 
 ---
 
@@ -32,15 +45,15 @@ Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at dat
 
 ```bash
 # One-time setup
-aedex setup                    # writes ~/.config/aedex/config.json
-aedex keys add --label dev     # mints aedex_live_<nanoid>, saves locally
+ae setup                    # writes ~/.config/aedex/config.json
+ae keys add --label dev     # mints aedex_live_<nanoid>, saves locally
 
 # Discover & run (real providers, real billing)
-aedex discover -q "weather"           # → openmeteo/weather/current
-aedex inspect openmeteo/weather/current
-aedex run openmeteo/weather/current --query '{"latitude":52.52,"longitude":13.41}'
-aedex runs get <run-id>               # poll until COMPLETED
-aedex balance                         # 4dp precision ($9.9840)
+ae discover -q "weather"           # → openmeteo/weather/current
+ae inspect openmeteo/weather/current
+ae run openmeteo/weather/current --query '{"latitude":52.52,"longitude":13.41}'
+ae runs get <run-id>               # poll until COMPLETED
+ae balance                         # 4dp precision ($9.9840)
 ```
 
 **Providers live:** `openmeteo`, `hackernews`, `coingecko`, `frankfurter`, `apify` (18 tools, 6 providers).  
@@ -132,11 +145,13 @@ MIT. Provider adapters + billing internals may move to source-available pre-laun
 
 ## Socials
 
-**Web Live:** https://ae-cli-web.vercel.app  
+**Web Live:** https://aedex.ing  
+**Gateway:** https://aegntic-gateway.fly.dev  
 **GitHub:** https://github.com/aegntic/ae-cli  
+**npm:** @aegntic/aedex  
 **Twitter/X:** @aedex_ai  
 **LinkedIn:** aegntic
 
 ---
 
-**aedex.ai** — Discover first. Run second. Bill last.
+**aedex.ing** — Discover first. Run second. Bill last.
