@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ae Cli"
+  short_description: "Repo-specific patterns and workflows for ae-cli"
+  default_prompt: "Use the ae-cli repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
