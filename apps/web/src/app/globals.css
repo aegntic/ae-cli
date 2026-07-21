@@ -30,10 +30,10 @@
   --color-text-secondary: #565B62;  /* cool slate */
   --color-text-muted: #888E96;      /* lighter cool grey */
 
-  /* ── Blumenkopf editorial accents ───────────────────────────────────── */
-  --color-accent: #E67E22;          /* orange (was blue #3B82F6) */
-  --color-accent-dim: #C0651D;      /* darker orange */
-  --color-accent-glow: rgba(230, 126, 34, 0.18);
+  /* ── Accent (electric azure — your pick; toy structure keeps it) ─────── */
+  --color-accent: #2E9BFF;          /* electric azure */
+  --color-accent-dim: #1A6FBF;      /* deeper azure */
+  --color-accent-glow: rgba(46, 155, 255, 0.20);
   --color-olive: #7D8A74;
   --color-clay: #C75D4B;
 

@@ -202,7 +202,7 @@ function HeroBento() {
           <div className="space-y-1.5 font-mono text-[13px] leading-relaxed">
             <div className="text-white/40">
               $ <span className="text-[#28c840]">aegntic</span>{" "}
-              <span className="text-[#E67E22]">discover</span>{" "}
+              <span className="text-[#2E9BFF]">discover</span>{" "}
               <span className="text-white/50">-q</span>{" "}
               <span className="text-[#febc2e]">&quot;weather&quot;</span>
             </div>
@@ -214,7 +214,7 @@ function HeroBento() {
             </div>
             <div className="pt-2 text-white/40">
               $ <span className="text-[#28c840]">aegntic</span>{" "}
-              <span className="text-[#E67E22]">run</span>{" "}
+              <span className="text-[#2E9BFF]">run</span>{" "}
               <span className="text-[#febc2e]">openmeteo/weather</span>{" "}
               <span className="text-white/50">--query lat=52.52,lon=13.41</span>
             </div>
