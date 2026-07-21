@@ -21,7 +21,7 @@ jobs:
     name: typecheck • build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 9.15.4
@@ -58,7 +58,7 @@ jobs:
       DATABASE_URL: postgres://aegntic:aegntic@localhost:5432/aedex
       AEGNTIC_LEDGER_SIGNING_SEED: "0000000000000000000000000000000000000000000000000000000000000001"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 9.15.4
