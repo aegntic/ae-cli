@@ -142,7 +142,7 @@ export default function ConsolePage() {
             <p className="text-sm text-text-secondary mb-8 leading-relaxed">
               Paste a workspace API key. It stays in your browser and calls the gateway
               directly — mint one with{" "}
-              <code className="font-mono text-accent">aegntic keys add</code>.
+              <code className="font-mono text-accent">ae keys add</code>.
             </p>
             <div className="flex gap-2">
               <input
@@ -239,7 +239,7 @@ export default function ConsolePage() {
           <div className="border-2 border-dashed border-border rounded-2xl p-10 text-center bg-bg-elevated">
             <div className="text-sm text-text-secondary mb-1">No runs yet</div>
             <div className="text-xs font-mono text-text-muted">
-              try <span className="text-accent">aegntic run openmeteo/weather/current --query &#123;&quot;lat&quot;:&quot;52.52&quot;,&quot;lon&quot;:&quot;13.405&quot;&#125;</span>
+              try <span className="text-accent">ae run openmeteo/weather/current --query &#123;&quot;lat&quot;:&quot;52.52&quot;,&quot;lon&quot;:&quot;13.405&quot;&#125;</span>
             </div>
           </div>
         ) : (

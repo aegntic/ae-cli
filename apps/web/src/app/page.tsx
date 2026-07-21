@@ -1,4 +1,15 @@
 import Link from "next/link";
+import {
+  siX,
+  siReddit,
+  siYoutube,
+  siGoogle,
+  siTiktok,
+  siInstagram,
+  siGithub,
+  siHuggingface,
+  siVercel,
+} from "simple-icons";
 import CopyButton from "@/components/CopyButton";
 import { Logo } from "@/components/Logo";
 import { ToolIcon } from "@/components/ToolIcon";
@@ -16,25 +27,22 @@ import { ToolIcon } from "@/components/ToolIcon";
 
 const NAV_LINKS = [
   { label: "Reliability", href: "/leaderboard" },
-  { label: "Docs", href: "https://docs.aegntic.ai" },
+  { label: "Start", href: "/start" },
   { label: "Console", href: "/app" },
 ];
 
-// Provider brands — clean monochrome logos only (no letter stand-ins).
-// Slugs are Simple Icons; ToolIcon renders nothing if a slug has no icon.
+// Provider brands — bundled inline SVGs (simple-icons). LinkedIn/Amazon/OpenAI
+// were removed from simple-icons (trademark), so they're omitted.
 const TOOLS_MONO = [
-  { name: "X", slug: "x" },
-  { name: "LinkedIn", slug: "linkedin" },
-  { name: "Reddit", slug: "reddit" },
-  { name: "Amazon", slug: "amazon" },
-  { name: "YouTube", slug: "youtube" },
-  { name: "Google", slug: "google" },
-  { name: "TikTok", slug: "tiktok" },
-  { name: "Instagram", slug: "instagram" },
-  { name: "GitHub", slug: "github" },
-  { name: "OpenAI", slug: "openai" },
-  { name: "Hugging Face", slug: "huggingface" },
-  { name: "Vercel", slug: "vercel" },
+  { name: "X", path: siX.path },
+  { name: "Reddit", path: siReddit.path },
+  { name: "YouTube", path: siYoutube.path },
+  { name: "Google", path: siGoogle.path },
+  { name: "TikTok", path: siTiktok.path },
+  { name: "Instagram", path: siInstagram.path },
+  { name: "GitHub", path: siGithub.path },
+  { name: "Hugging Face", path: siHuggingface.path },
+  { name: "Vercel", path: siVercel.path },
 ];
 
 // Real telemetry from the live gateway /leaderboard (coingecko / hackernews / openmeteo).
@@ -45,15 +53,15 @@ const RELIABILITY = [
 ];
 
 const FLOW = [
-  { k: "01", t: "discover", c: 'aegntic discover -q "weather"', n: "12 tools ranked by fit + price" },
-  { k: "02", t: "inspect", c: "aegntic inspect openmeteo/weather", n: "schema · price · reliability" },
-  { k: "03", t: "run", c: 'aegntic run openmeteo/weather --query ...', n: "executes · bills per result" },
+  { k: "01", t: "discover", c: 'ae discover -q "weather"', n: "12 tools ranked by fit + price" },
+  { k: "02", t: "inspect", c: "ae inspect openmeteo/weather", n: "schema · price · reliability" },
+  { k: "03", t: "run", c: 'ae run openmeteo/weather --query ...', n: "executes · bills per result" },
 ];
 
 const CONNECT = [
-  { t: "Skill", s: "for agents", c: "$ set up https://aegntic.ai/SKILL.md", h: "https://docs.aegntic.ai/guide/quickstart-skill" },
-  { t: "MCP", s: "Claude · Cursor", c: 'mcp.aegntic.ai', h: "https://docs.aegntic.ai/guide/quickstart-mcp" },
-  { t: "CLI", s: "for humans", c: "bun add -g aedex", h: "https://docs.aegntic.ai/guide/quickstart-cli" },
+  { t: "Skill", s: "for agents", c: "aegntic.ai/SKILL.md", h: "https://aegntic.ai/SKILL.md" },
+  { t: "MCP", s: "Claude · Cursor", c: "stdio · gateway.aedex.ing", h: "/start" },
+  { t: "CLI", s: "for humans", c: "bun add -g ae", h: "/start" },
 ];
 
 export default function Home() {
@@ -263,7 +271,11 @@ function ToolsTicker() {
                     className="group flex cursor-pointer items-center gap-2.5 px-5 transition-transform duration-200 hover:scale-110"
                   >
                     <span className="transition-[filter] duration-200 group-hover:[filter:drop-shadow(0_0_6px_rgba(46,155,255,0.65))]">
-                      <ToolIcon slug={t.slug} size={20} />
+                      <ToolIcon
+                        path={t.path}
+                        size={20}
+                        className="text-text-primary transition-colors duration-200 group-hover:text-accent"
+                      />
                     </span>
                     <span className="whitespace-nowrap text-sm font-medium text-text-secondary transition-colors duration-200 group-hover:text-accent">
                       {t.name}
@@ -357,9 +369,9 @@ function FinalCTA() {
         <p className="mt-3 text-white/80">One skill. One balance. Every tool. Start free.</p>
         <div className="mx-auto mt-8 flex max-w-lg items-center gap-2 rounded-2xl border-2 border-black/20 bg-white p-1">
           <code className="flex-1 px-4 py-3 text-left font-mono text-xs text-text-secondary">
-            <span className="text-text-muted">$</span> set up https://aegntic.ai/SKILL.md
+            <span className="text-text-muted">$</span> bun add -g ae
           </code>
-          <CopyButton text="set up https://aegntic.ai/SKILL.md" />
+          <CopyButton text="bun add -g ae" />
         </div>
       </div>
     </section>
@@ -390,7 +402,7 @@ function Footer() {
               <Link href="/" className="transition-colors hover:text-text-primary">Home</Link>
               <Link href="/leaderboard" className="transition-colors hover:text-text-primary">Reliability</Link>
               <Link href="/app" className="transition-colors hover:text-text-primary">Console</Link>
-              <Link href="https://docs.aegntic.ai" className="transition-colors hover:text-text-primary">Docs</Link>
+              <Link href="/start" className="transition-colors hover:text-text-primary">Start</Link>
             </div>
           </div>
           <div>

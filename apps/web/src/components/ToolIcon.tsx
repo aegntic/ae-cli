@@ -1,25 +1,30 @@
-"use client";
-
-import { useState } from "react";
+import type { SVGProps } from "react";
 
 /**
- * Clean monochrome provider logo (the "modern tech provider logo pack" look).
- * Rendered as dark ink (#0a0a0b) — no colored bubble, no letter fallback.
- * If a slug fails to load it simply renders nothing, so only brands with a
- * real icon appear (no sad letter stand-ins).
+ * Inline brand SVG, bundled from simple-icons. No network — always renders.
+ * fill="currentColor" so the parent's text color controls it (monochrome dark
+ * by default; recolors on hover via group-hover:text-accent).
  */
-export function ToolIcon({ slug, size = 18 }: { slug: string; size?: number }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
+export function ToolIcon({
+  path,
+  size = 20,
+  className = "",
+}: {
+  path: string;
+  size?: number;
+  className?: string;
+}) {
   return (
-    <img
-      src={`https://api.iconify.design/simple-icons/${slug}.svg?color=%230a0a0b`}
-      alt=""
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
       width={size}
       height={size}
-      loading="lazy"
-      onError={() => setFailed(true)}
-      className="shrink-0"
-    />
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d={path} />
+    </svg>
   );
 }

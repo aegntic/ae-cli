@@ -14,7 +14,7 @@ const STEPS = [
     k: "01",
     t: "install",
     sub: "one global install",
-    cmds: [{ label: "install", code: "bun add -g aedex" }],
+    cmds: [{ label: "install", code: "bun add -g ae" }],
     note: "Bun 1.0+. Works in any shell.",
   },
   {
@@ -22,8 +22,8 @@ const STEPS = [
     t: "get a key",
     sub: "workspace + API key",
     cmds: [
-      { label: "write config", code: "aedex setup" },
-      { label: "mint a key", code: "aedex keys add --label web" },
+      { label: "write config", code: "ae setup" },
+      { label: "mint a key", code: "ae keys add --label web" },
     ],
     note: "Prints a key like aedex_live_… — copy it. This is the only secret you need.",
   },
@@ -31,8 +31,8 @@ const STEPS = [
     k: "03",
     t: "run it",
     sub: "first tool, billed per result",
-    cmds: [{ label: "discover + run", code: 'aedex discover -q "weather"' }],
-    note: "Then aedex run openmeteo/weather/current --query … Pays from one prepaid balance.",
+    cmds: [{ label: "discover + run", code: 'ae discover -q "weather"' }],
+    note: "Then ae run openmeteo/weather/current --query … Pays from one prepaid balance.",
   },
 ];
 
