@@ -235,9 +235,9 @@ function UsageRow({ tool, cost }: { tool: string; cost: string }) {
 function ToolsTicker() {
   // Clean monochrome logo cloud: 3 rows, opposite directions, staggered speeds.
   const rows = [
-    { dur: "38s", dir: "normal" as const },
-    { dur: "30s", dir: "reverse" as const },
-    { dur: "34s", dir: "normal" as const },
+    { dur: "22s", dir: "normal" as const },
+    { dur: "17s", dir: "reverse" as const },
+    { dur: "20s", dir: "normal" as const },
   ];
   return (
     <section className="swiss-line border-y-2 border-border py-12 overflow-hidden">
@@ -258,9 +258,14 @@ function ToolsTicker() {
                 style={{ animationDuration: r.dur, animationDirection: r.dir }}
               >
                 {loop.map((t, i) => (
-                  <span key={`${ri}-${i}`} className="flex items-center gap-2.5 px-5">
-                    <ToolIcon slug={t.slug} size={20} />
-                    <span className="whitespace-nowrap text-sm font-medium text-text-secondary">
+                  <span
+                    key={`${ri}-${i}`}
+                    className="group flex cursor-pointer items-center gap-2.5 px-5 transition-transform duration-200 hover:scale-110"
+                  >
+                    <span className="transition-[filter] duration-200 group-hover:[filter:drop-shadow(0_0_6px_rgba(46,155,255,0.65))]">
+                      <ToolIcon slug={t.slug} size={20} />
+                    </span>
+                    <span className="whitespace-nowrap text-sm font-medium text-text-secondary transition-colors duration-200 group-hover:text-accent">
                       {t.name}
                     </span>
                     <span className="pl-3 text-text-muted">·</span>
