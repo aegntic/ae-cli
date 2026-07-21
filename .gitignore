@@ -9,3 +9,10 @@ dist/
 out/
 .open-next/
 .vercel/
+.gstack/
+.factory/
+.beads/
+.playwright-mcp/
+# Gateway deploy dereferences node_modules locally into node_modules-real/
+# before `fly deploy` (pnpm symlink store can't be COPY'd). Generated, not committed.
+node_modules-real/

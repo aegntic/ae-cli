@@ -1,27 +1,28 @@
 {
-  "name": "@aegntic/cli",
+  "name": "@aegntic/aedex",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "aegntic": "dist/index.js"
+    "aedex": "dist/index.js",
+    "ae": "dist/index.js"
   },
   "main": "dist/index.js",
+  "files": ["dist"],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --log-level=warning && chmod +x dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "@aegntic/sdk": "workspace:*",
     "citty": "^0.1.6",
     "consola": "^3.4.0",
-    "pathe": "^2.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0",
+    "pathe": "^2.0.0",
+    "esbuild": "^0.24.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3",
     "vitest": "^3.0.0"
   }
 }

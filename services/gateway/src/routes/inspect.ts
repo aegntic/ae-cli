@@ -1,57 +1,74 @@
 import { Hono } from "hono"
-import { db } from "../db/index.js"
-import { tools } from "../db/schema.js"
-import { and, eq } from "drizzle-orm"
+import { nanoid } from "nanoid"
+import { getCatalogEndpoint } from "../catalog.js"
+import type { Env } from "../types.js"
+import type { InspectResponse, RunInput, HintsBlock, ApiResponse } from "@aegntic/sdk"
 
-export const inspectRoute = new Hono()
+export const inspectRoute = new Hono<Env>()
 
 inspectRoute.get("/inspect", async (c) => {
   const provider = c.req.query("provider")
   const endpoint = c.req.query("endpoint")
 
   if (!provider || !endpoint) {
-    return c.json({ error: "Missing provider or endpoint parameter" }, 400)
+    return c.json({ error: "Query parameters 'provider' and 'endpoint' are required" }, 400)
   }
 
-  const results = await db
-    .select()
-    .from(tools)
-    .where(and(eq(tools.provider, provider), eq(tools.path, endpoint)))
-    .limit(1)
-
-  if (results.length === 0) {
-    return c.json({ error: `Tool not found: ${provider}${endpoint}` }, 404)
+  const ep = await getCatalogEndpoint(provider, endpoint)
+  if (!ep) {
+    return c.json({ error: `Endpoint ${provider}/${endpoint} not found` }, 404)
   }
 
-  const tool = results[0]
+  const examples: RunInput[] = [buildExampleInput(ep.inputSchema)]
 
-  const examples = []
-  if (provider === "apify" && endpoint === "/apidojo/tweet-scraper") {
-    examples.push({
-      body: { searchTerms: ["AI agents"], maxItems: 5 }
-    })
-  } else if (provider === "apify" && endpoint === "/harvestapi/linkedin-post-search") {
-    examples.push({
-      body: { keywords: "nextjs", maxResults: 5 }
-    })
-  } else {
-    examples.push({
-      body: {}
-    })
+  const hints: HintsBlock = {
+    nextCommands: [
+      `aedex run ${provider}/${endpoint} --input '${JSON.stringify(examples[0])}'`,
+      `aedex discover?q=${encodeURIComponent(ep.description.split(" ").slice(0, 3).join(" "))}`,
+    ],
   }
 
-  return c.json({
-    data: {
-      endpoint: {
-        provider: tool.provider,
-        path: tool.path,
-        description: tool.description,
-        inputSchema: tool.inputSchema as any,
-        costModel: tool.costModel as any,
-        verified: tool.verified,
-      },
-      examples,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
+  const response: ApiResponse<InspectResponse> = {
+    data: { endpoint: ep, examples },
+    hints,
+    requestId: nanoid(8),
+  }
+
+  return c.json(response)
 })
+
+function buildExampleInput(schema: InspectResponse["endpoint"]["inputSchema"]): RunInput {
+  const example: RunInput = {}
+
+  if (schema.queryParams) {
+    example.queryParams = {}
+    for (const [key, field] of Object.entries(schema.queryParams)) {
+      if (field.required || field.default !== undefined) {
+        example.queryParams[key] = field.default !== undefined
+          ? String(field.default)
+          : field.type === "number" ? "10" : `example_${key}`
+      }
+    }
+  }
+
+  if (schema.pathParams) {
+    example.pathParams = {}
+    for (const [key, field] of Object.entries(schema.pathParams)) {
+      example.pathParams[key] = field.type === "number" ? "1" : `example_${key}`
+    }
+  }
+
+  if (schema.body) {
+    example.body = {}
+    for (const [key, field] of Object.entries(schema.body)) {
+      if (field.required) {
+        example.body[key] = field.type === "number" ? 42
+          : field.type === "boolean" ? true
+          : field.type === "array" ? []
+          : `example_${key}`
+      }
+    }
+  }
+
+  return example
+}

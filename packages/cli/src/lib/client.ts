@@ -8,6 +8,7 @@ import type {
   Run,
   RunInput,
   ApiKey,
+  ApiKeyCreated,
 } from "@aegntic/sdk"
 
 interface DiscoverOpts {
@@ -64,9 +65,10 @@ export async function inspect(
   provider: string,
   endpoint: string,
 ): Promise<InspectResponse> {
+  const params = new URLSearchParams({ provider, endpoint })
   const res = await request<ApiResponse<InspectResponse>>(
     "GET",
-    `/v1/providers/${provider}/endpoints/${endpoint}`,
+    `/v1/inspect?${params}`,
   )
   return res.data
 }
@@ -78,8 +80,8 @@ export async function createRun(
 ): Promise<Run> {
   const res = await request<ApiResponse<Run>>(
     "POST",
-    `/v1/providers/${provider}/endpoints/${endpoint}/runs`,
-    { input },
+    `/v1/runs`,
+    { provider, endpoint, input },
   )
   return res.data
 }
@@ -99,14 +101,23 @@ export async function listKeys(): Promise<ApiKey[]> {
   return res.data
 }
 
-export async function addKey(
-  key: string,
-  label: string,
-): Promise<ApiKey> {
-  const res = await request<ApiResponse<ApiKey>>(
+export async function createKey(label?: string): Promise<ApiKeyCreated> {
+  // The gateway MINTS the key (aegntic_live_<nanoid>) from {label?} and
+  // returns it once as ApiKeyCreated. The client must not supply a secret.
+  const res = await request<ApiResponse<ApiKeyCreated>>(
     "POST",
     "/v1/keys",
-    { key, label },
+    label ? { label } : undefined,
+  )
+  return res.data
+}
+
+export async function deleteKey(
+  label: string,
+): Promise<{ deleted: boolean; label: string }> {
+  const res = await request<ApiResponse<{ deleted: boolean; label: string }>>(
+    "DELETE",
+    `/v1/keys/${encodeURIComponent(label)}`,
   )
   return res.data
 }

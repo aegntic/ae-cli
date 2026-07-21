@@ -149,7 +149,7 @@ export interface ClientConfig {
 
 // ─── Client Class Implementation ───
 
-export class AegnticClient {
+class AegnticClient {
   private baseUrl: string
   private apiKey: string
   private timeout: number
@@ -269,4 +269,6 @@ export class AegnticClient {
     return this.request<void>(`/v1/keys/${label}`, "DELETE")
   }
 }
+
+export { AegnticClient }
 

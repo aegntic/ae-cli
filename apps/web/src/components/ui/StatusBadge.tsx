@@ -1,20 +1,20 @@
 import type { RunStatus } from "@/lib/api";
 
 const STATUS_STYLES: Record<RunStatus, string> = {
-  COMPLETED: "bg-green/10 text-green",
-  RUNNING: "bg-accent/10 text-accent",
-  FAILED: "bg-red-500/10 text-red-500",
-  BLOCKED: "bg-amber/10 text-amber",
-  READY: "bg-text-muted/10 text-text-muted",
-  STOPPED: "bg-text-muted/10 text-text-muted",
-  TIME_OUT: "bg-amber/10 text-amber",
+  COMPLETED: "bg-toy-green text-white",
+  RUNNING: "bg-toy-yellow text-text-primary",
+  FAILED: "bg-toy-red text-white",
+  BLOCKED: "bg-toy-lavender text-white",
+  READY: "bg-bg-elevated text-text-secondary border-2 border-border",
+  STOPPED: "bg-bg-elevated text-text-muted border-2 border-border",
+  TIME_OUT: "bg-toy-orange text-white",
 };
 
 export default function StatusBadge({ status }: { status: RunStatus }) {
   const style = STATUS_STYLES[status] ?? STATUS_STYLES.READY;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${style}`}
+      className={`toy-chip inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${style}`}
     >
       {status}
     </span>

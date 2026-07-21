@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/Logo";
 
 const NAV = [
   { href: "/dashboard/discover", label: "Discover" },
@@ -29,26 +30,25 @@ export default function Sidebar({
     <>
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-accent/60 backdrop-blur-sm md:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border-subtle bg-bg-elevated transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r-2 border-border bg-bg-elevated transition-transform duration-200 md:static md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="border-b border-border-subtle p-4">
+        {/* Logo */}
+        <div className="swiss-line-b p-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-accent text-sm font-bold text-white">
-              Ae
-            </div>
-            <span>Dashboard</span>
+            <Logo height={26} />
           </Link>
         </div>
 
-        <div className="border-b border-border-subtle p-4">
+        {/* API key input */}
+        <div className="swiss-line-b p-4">
           <label className="mb-1.5 block text-xs font-medium text-text-muted">
             API Key
           </label>
@@ -57,10 +57,11 @@ export default function Sidebar({
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
             placeholder="aeg_xxxxxxxxxxxx"
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2 font-mono text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
+            className="w-full rounded-xl border-2 border-border bg-bg px-3 py-2 font-mono text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
           />
         </div>
 
+        {/* Nav links */}
         <nav className="flex-1 p-3">
           {NAV.map((item) => {
             const active = pathname === item.href;
@@ -69,10 +70,10 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`mb-1 flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`mb-1 flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-accent/10 text-accent"
-                    : "text-text-secondary hover:bg-bg-card hover:text-text-primary"
+                    ? "bg-accent text-white"
+                    : "text-text-secondary hover:bg-bg hover:text-text-primary"
                 }`}
               >
                 {item.label}
@@ -81,12 +82,13 @@ export default function Sidebar({
           })}
         </nav>
 
-        <div className="border-t border-border-subtle p-4">
+        {/* Back link */}
+        <div className="swiss-line-t p-4">
           <Link
             href="/"
             className="text-xs text-text-muted transition-colors hover:text-text-secondary"
           >
-            &larr; Back to site
+            ← Back to site
           </Link>
         </div>
       </aside>

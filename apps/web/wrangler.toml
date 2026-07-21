@@ -1,6 +1,0 @@
-name = "aegntic-web"
-pages_build_output_dir = ".vercel/output/static"
-compatibility_date = "2025-01-01"
-
-[vars]
-NEXT_PUBLIC_API_URL = "https://api.aegntic.ai"

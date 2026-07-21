@@ -1,4 +1,10 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3100";
+// Canonical gateway origin for all web surfaces (console + leaderboard).
+// Vercel: set NEXT_PUBLIC_AEGNTIC_BASE_URL to the gateway Fly URL in project env.
+const BASE = process.env.NEXT_PUBLIC_AEGNTIC_BASE_URL ?? "http://localhost:3101";
+
+// Single localStorage key shared by every console surface (/app single-view
+// and /dashboard/* multi-page) so a saved workspace key works in both.
+export const API_KEY_STORAGE = "aegntic_api_key";
 
 export interface Endpoint {
   provider: string;

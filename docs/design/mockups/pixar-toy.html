@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>aedex — Pixar-Toy direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4F1EA; --ink:#1A1A1A; --ink-soft:#5A5550;
+    --red:#E63946; --yellow:#F4D35E; --green:#06A77D; --blue:#4361EE; --lav:#9D4EDD;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--cream);color:var(--ink);font-family:"Inter Tight",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 40px}
+
+  /* chunky plastic shadow */
+  .toy{box-shadow:4px 4px 0 var(--ink)}
+  .toy-lg{box-shadow:6px 6px 0 var(--ink)}
+
+  header{padding:22px 0}
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .wordmark{font-weight:800;font-size:26px;letter-spacing:-0.03em;display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:10px;background:var(--ink);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;box-shadow:3px 3px 0 var(--red);transform:rotate(-3deg)}
+  nav ul{display:flex;gap:14px;list-style:none;align-items:center}
+  nav a{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:14px}
+  .btn-pill{font:inherit;font-weight:700;font-size:14px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:11px 20px;border-radius:999px;cursor:pointer}
+
+  section.hero{padding:64px 0 48px}
+  .tag{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;box-shadow:3px 3px 0 var(--blue)}
+  .tag .d{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  h1{margin-top:28px;font-weight:800;font-size:74px;line-height:1.0;letter-spacing:-0.035em;max-width:13ch}
+  h1 .pop{color:var(--red)}
+  h1 .wave{display:inline-block;transform:rotate(-2deg);background:var(--yellow);padding:0 10px;border-radius:8px;box-shadow:3px 3px 0 var(--ink)}
+  .sub{margin-top:26px;max-width:54ch;font-size:18px;line-height:1.55;color:var(--ink-soft);font-weight:500}
+
+  .duo{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-top:52px}
+  .code{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px 24px}
+  .code .tab{display:inline-block;background:var(--yellow);border:2px solid var(--ink);border-radius:8px 8px 0 8px;padding:3px 10px;font-weight:700;font-size:12px;margin-bottom:14px;transform:rotate(-1deg)}
+  .code pre{font-family:"JetBrains Mono",monospace;font-size:13.5px;line-height:1.75;color:var(--ink);white-space:pre-wrap;font-weight:500}
+  .c-cmd{color:var(--blue);font-weight:700}
+  .c-str{color:var(--green);font-weight:700}
+  .c-out{color:var(--ink-soft)}
+
+  .stat{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;justify-content:center}
+  .stat .num{font-weight:800;font-size:66px;line-height:1;letter-spacing:-0.04em;color:var(--green)}
+  .stat .lbl{margin-top:8px;font-weight:700;font-size:14px}
+  .stat .meta{margin-top:12px;font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-soft);line-height:1.7;font-weight:500}
+  .stat .pills{margin-top:14px;display:flex;gap:6px}
+  .mini{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;border:2px solid var(--ink)}
+  .mini.g{background:var(--green);color:#fff}
+  .mini.y{background:var(--yellow)}
+  .mini.r{background:var(--red);color:#fff}
+
+  section.providers{padding:56px 0 84px}
+  .label{font-weight:700;font-size:13px;color:var(--ink-soft);margin-bottom:22px}
+  .chips{display:flex;flex-wrap:wrap;gap:14px}
+  .pchip{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-weight:700;font-size:14px}
+  .pchip .ic{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;border:2px solid var(--ink)}
+  .ic.r{background:var(--red)} .ic.y{background:var(--yellow);color:var(--ink)} .ic.g{background:var(--green)} .ic.b{background:var(--blue)} .ic.l{background:var(--lav)}
+
+  .cta-row{margin-top:48px;display:flex;gap:16px;align-items:center}
+  .btn-big{font:inherit;font-weight:800;font-size:17px;color:var(--cream);background:var(--ink);border:2px solid var(--ink);padding:16px 28px;border-radius:14px;cursor:pointer}
+  .btn-big.y{background:var(--yellow);color:var(--ink);transform:rotate(-1.5deg)}
+  .quip{font-weight:600;color:var(--ink-soft);font-size:15px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="wordmark"><span class="logo">ae</span>aedex</div>
+      <nav>
+        <ul>
+          <li><a href="#">Reliability</a></li>
+          <li><a href="#">Console</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><button class="btn-pill">Get started →</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="tag"><span class="d"></span>6 providers live · 18 tools · billing on</div>
+      <h1>Connect your agent to <span class="wave">every tool</span> <span class="pop">it needs.</span></h1>
+      <p class="sub">Discover, run, and meter data tools through one friendly API. Signed-ledger billing so every cent is accounted — infrastructure that finally feels human.</p>
+
+      <div class="duo">
+        <div class="code toy-lg">
+          <span class="tab">try it</span>
+<pre><span class="c-cmd">aedex discover</span> -q <span class="c-str">"weather"</span>
+  <span class="c-out">⚡ [openmeteo] weather/current ✓</span>
+
+<span class="c-cmd">aedex run</span> openmeteo/weather/current \
+  <span class="c-str">'{"latitude":52.52,"longitude":13.41}'</span>
+  <span class="c-out">→ $0.0002 · signed ✓</span></pre>
+        </div>
+        <div class="stat toy-lg">
+          <div class="num">18</div>
+          <div class="lbl">tools indexed, 6 providers</div>
+          <div class="meta">per-result billing<br>failed runs free · 4dp ledger</div>
+          <div class="pills"><span class="mini g">verified</span><span class="mini y">native</span><span class="mini r">refund</span></div>
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn-big">Get an API key</button>
+        <button class="btn-big y">See the leaderboard</button>
+        <span class="quip">no credit card to explore ✦</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="providers">
+    <div class="wrap">
+      <div class="label">★ Your agent already knows these →</div>
+      <div class="chips">
+        <span class="pchip toy"><span class="ic b">◐</span>openmeteo</span>
+        <span class="pchip toy"><span class="ic y">₿</span>coingecko</span>
+        <span class="pchip toy"><span class="ic r">Y</span>hackernews</span>
+        <span class="pchip toy"><span class="ic g">€</span>frankfurter</span>
+        <span class="pchip toy"><span class="ic l">⚡</span>apify/serp</span>
+        <span class="pchip toy"><span class="ic b">◆</span>cldcde</span>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

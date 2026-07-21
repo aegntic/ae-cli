@@ -1,64 +1,48 @@
 import { Hono } from "hono"
-import { db } from "../db/index.js"
-import { tools } from "../db/schema.js"
+import type { Context } from "hono"
+import { nanoid } from "nanoid"
+import { searchCatalog } from "../catalog.js"
+import type { Env } from "../types.js"
+import type { DiscoverResponse, HintsBlock, ApiResponse } from "@aegntic/sdk"
 
-export const discoverRoute = new Hono()
+export const discoverRoute = new Hono<Env>()
 
-discoverRoute.get("/discover", async (c) => {
-  const q = c.req.query("q") || ""
-  const limitStr = c.req.query("limit")
-  const minScoreStr = c.req.query("minScore")
+// Discovery is an idempotent read; accept both GET (CLI default) and POST
+// (agents/SDKs that prefer not to encode a query body in the URL). Backed by
+// the persisted tools catalog (Postgres full-text search with ILIKE fallback)
+// — replaces the in-memory registry search.
+const handleDiscover = async (c: Context) => {
+  const q = c.req.query("q") ?? ""
+  const limit = Math.min(Number(c.req.query("limit")) || 10, 50)
+  const minScore = Number(c.req.query("minScore")) || 0
 
-  const limit = limitStr ? parseInt(limitStr, 10) : 10
-  const minScore = minScoreStr ? parseFloat(minScoreStr) : 0.1
-
-  // Fetch all tools
-  let results = await db.select().from(tools)
-
-  let formattedResults = results.map((tool) => {
-    let score = 0.9 // Default score if no query
-    if (q) {
-      score = 0
-      const searchTerms = q.toLowerCase().split(/\s+/)
-      const provider = tool.provider.toLowerCase()
-      const path = tool.path.toLowerCase()
-      const desc = tool.description.toLowerCase()
-
-      for (const term of searchTerms) {
-        if (provider.includes(term) || path.includes(term)) {
-          score += 0.5
-        }
-        if (desc.includes(term)) {
-          score += 0.3
-        }
-      }
-      score = Math.min(score, 1.0)
-    }
-    return {
-      provider: tool.provider,
-      path: tool.path,
-      description: tool.description,
-      inputSchema: tool.inputSchema as any,
-      costModel: tool.costModel as any,
-      verified: tool.verified,
-      relevanceScore: score,
-    }
-  })
-
-  if (q) {
-    formattedResults = formattedResults
-      .filter((t) => (t.relevanceScore || 0) >= minScore)
-      .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
+  if (!q.trim()) {
+    return c.json({ error: "Query parameter 'q' is required" }, 400)
   }
 
-  const slicedResults = formattedResults.slice(0, limit)
+  const results = (await searchCatalog(q, limit, minScore))
+    .filter((e) => (e.relevanceScore ?? 0) >= minScore)
+    .slice(0, limit)
 
-  return c.json({
-    data: {
-      results: slicedResults,
-      total: slicedResults.length,
-      query: q,
-    },
-    requestId: Math.random().toString(36).substring(7),
-  })
-})
+  const hints: HintsBlock = {
+    nextCommands: results.length > 0
+      ? [
+          `aedex inspect --provider ${results[0].provider} --endpoint ${results[0].path}`,
+          `aedex run ${results[0].provider}/${results[0].path} --input '{}'`,
+        ]
+      : ["Try a broader search term"],
+    relatedEndpoints: results.slice(0, 3).map((e) => `${e.provider}/${e.path}`),
+    caveats: results.length === 0 ? ["No matching endpoints found. Try different keywords."] : undefined,
+  }
+
+  const response: ApiResponse<DiscoverResponse> = {
+    data: { results, total: results.length, query: q },
+    hints,
+    requestId: nanoid(8),
+  }
+
+  return c.json(response)
+}
+
+discoverRoute.get("/discover", handleDiscover)
+discoverRoute.post("/discover", handleDiscover)

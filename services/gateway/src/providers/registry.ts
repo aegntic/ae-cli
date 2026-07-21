@@ -1,9 +1,29 @@
 import type { ProviderAdapter, Endpoint } from "@aegntic/sdk"
 import { mockProvider } from "./mock.js"
+import { openMeteoProvider } from "./openmeteo.js"
+import { hackerNewsProvider } from "./hackernews.js"
+import { coinGeckoProvider } from "./coingecko.js"
+import { frankfurterProvider } from "./frankfurter.js"
+import { apifyProviderIfConfigured } from "./apify.js"
 
 const providers = new Map<string, ProviderAdapter>()
 
 providers.set(mockProvider.name, mockProvider)
+providers.set(openMeteoProvider.name, openMeteoProvider)
+providers.set(hackerNewsProvider.name, hackerNewsProvider)
+providers.set(coinGeckoProvider.name, coinGeckoProvider)
+providers.set(frankfurterProvider.name, frankfurterProvider)
+
+// Apify is the first CREDENTIALED provider. Register only if the token is
+// configured in the env; otherwise log a generic message (never the token
+// value) and skip. Catalog seed auto-ingests its endpoints when registered.
+const apifyProvider = apifyProviderIfConfigured()
+if (apifyProvider) {
+  providers.set(apifyProvider.name, apifyProvider)
+} else {
+  // eslint-disable-next-line no-console
+  console.log("[apify] token not configured — adapter disabled")
+}
 
 export function addProvider(adapter: ProviderAdapter): void {
   providers.set(adapter.name, adapter)

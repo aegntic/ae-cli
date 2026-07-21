@@ -1,0 +1,10 @@
+# Exclude local tool artifacts from Vercel uploads.
+# Some of these were committed before being gitignored; .vercelignore ensures
+# they (and runtime sockets like .beads/bd.sock) never enter the deploy upload.
+.beads/
+.gstack/
+.playwright-mcp/
+.factory/
+.turbo/
+.env.local
+.env

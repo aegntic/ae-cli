@@ -7,9 +7,9 @@ const { name, version } = pkg
 
 const main = defineCommand({
   meta: {
-    name,
+    name: "aedex",
     version,
-    description: "Discover and run data endpoints",
+    description: "Aegntic Decentralized Exchange CLI — Discover and run data endpoints",
   },
   subCommands: {
     discover: () => import("./commands/discover.js").then((m) => m.default),

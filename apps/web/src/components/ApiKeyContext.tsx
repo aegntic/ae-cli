@@ -1,8 +1,9 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
+import { API_KEY_STORAGE } from "@/lib/api"
 
-const STORAGE_KEY = "aegntic_api_key"
+const STORAGE_KEY = API_KEY_STORAGE
 
 interface ApiKeyContextValue {
   apiKey: string

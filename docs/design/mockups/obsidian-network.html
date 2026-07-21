@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>aedex — Obsidian Network direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,600,700&f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --obsidian:#0B0E14; --obs-raised:#11151D; --obs-sheen:#171C26;
+    --hair:#232A36; --hair-circ:#2E3645;
+    --marble:#EDEAE3; --marble-vein:#C9C5BC; --on-marble:#14171F;
+    --on-obs:#E8E6DF; --on-obs-mut:#9AA0AD;
+    --bronze:#C08457; --bronze-dim:#9A6A43; --on-bronze:#1A1208;
+    --signal:#34D3B8; --signal-dim:#27A993;
+    --warn:#E0A83B; --bad:#E0596B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--obsidian);color:var(--on-obs);font-family:"General Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 44px}
+
+  header{padding:24px 0;border-bottom:1px solid var(--hair);position:relative;z-index:5}
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .wordmark{font-family:"Satoshi",sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+  .wordmark .mk{width:30px;height:30px;border-radius:8px;background:var(--bronze);color:var(--on-bronze);display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;box-shadow:0 4px 12px rgba(192,132,87,.35), inset 0 1px 0 rgba(255,255,255,.25)}
+  nav ul{display:flex;gap:30px;list-style:none;align-items:center;font-size:14px}
+  nav a{color:var(--on-obs-mut);text-decoration:none;transition:color .2s}
+  nav a:hover{color:var(--on-obs)}
+
+  /* MARBLE BUTTON — the signature */
+  .btn-marble{
+    font:600 15px/1 "General Sans",sans-serif;
+    color:var(--on-marble);
+    background-color:var(--marble);
+    border:none;border-radius:10px;padding:14px 26px;cursor:pointer;
+    /* marble veining — dark vein streaks over stone base (explicit px, no % encoding) */
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='96'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.014 0.48' numOctaves='4' seed='9'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.39  0 0 0 0 0.35  0 0 0 0.75 0'/></filter><rect width='280' height='96' fill='%23EDEAE3'/><rect width='280' height='96' filter='url(%23m)'/></svg>");
+    background-size:auto;
+    box-shadow:0 12px 28px rgba(0,0,0,.6), 0 2px 0 rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 6px rgba(0,0,0,.14);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-marble:hover{transform:translateY(-1px);box-shadow:0 16px 34px rgba(0,0,0,.65),0 2px 0 rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.6),inset 0 -3px 6px rgba(0,0,0,.14)}
+  .btn-marble:active{transform:translateY(1px)}
+  .btn-bronze{
+    font:600 15px/1 "General Sans",sans-serif;color:var(--on-bronze);
+    background:var(--bronze);border:none;border-radius:10px;padding:14px 26px;cursor:pointer;
+    box-shadow:0 8px 20px rgba(192,132,87,.3), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .btn-ghost{font:500 14px/1 "General Sans",sans-serif;color:var(--on-obs);background:var(--obs-raised);border:1px solid var(--hair-circ);border-radius:8px;padding:12px 22px;cursor:pointer}
+
+  /* hero */
+  section.hero{padding:80px 0 56px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--bronze);margin-bottom:28px}
+  h1{font-family:"Satoshi",sans-serif;font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-0.03em}
+  h1 .wire{color:var(--signal)}
+  .sub{margin-top:24px;max-width:50ch;font-size:17px;line-height:1.6;color:var(--on-obs-mut)}
+
+  .cta-row{margin-top:34px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+
+  /* network graph */
+  .net{position:relative;width:100%;height:340px}
+  .net svg{width:100%;height:100%;overflow:visible}
+  .wire{stroke:var(--bronze-dim);stroke-width:1.25;fill:none;opacity:.7}
+  .wire-live{stroke:var(--signal);stroke-width:1.75;stroke-dasharray:5 6;animation:pulse 2.2s linear infinite;filter:drop-shadow(0 0 5px rgba(52,211,184,.85))}
+  @keyframes pulse{to{stroke-dashoffset:-44}}
+  .node{fill:var(--obs-sheen);stroke:var(--hair-circ);stroke-width:1.5}
+  .node-tool{fill:var(--obsidian);stroke:var(--bronze-dim);stroke-width:1.25}
+  .node-tool-live{fill:var(--obsidian);stroke:var(--signal);stroke-width:1.5;filter:drop-shadow(0 0 6px rgba(52,211,184,.6))}
+  .node-bot{fill:var(--bronze);stroke:rgba(255,210,160,.4);stroke-width:1.5;filter:drop-shadow(0 0 6px rgba(192,132,87,.55))}
+  .node-label{font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:500;fill:var(--on-obs)}
+  .node-label-bot{fill:var(--bronze);font-weight:600;letter-spacing:.08em}
+  .npt{fill:var(--signal)}
+
+  /* duo panels */
+  .duo{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;margin-top:54px}
+  .panel{background:var(--obs-raised);border:1px solid var(--hair);border-radius:10px;padding:24px 26px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  .panel .ph{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .panel .ph .d{width:8px;height:8px;border-radius:50%;border:1px solid var(--hair-circ)}
+  .panel .ph .tt{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--on-obs-mut);letter-spacing:.05em}
+  pre{font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.8;color:var(--on-obs);white-space:pre-wrap}
+  .c-cmd{color:var(--bronze)} .c-str{color:var(--signal)} .c-out{color:var(--on-obs-mut)} .c-h{color:var(--signal)}
+
+  .stat .k{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--on-obs-mut);letter-spacing:.06em}
+  .stat .v{font-family:"JetBrains Mono",monospace;font-size:54px;font-weight:500;color:var(--signal);line-height:1.1;margin-top:6px;letter-spacing:-.02em}
+  .stat .v .u{font-size:20px;color:var(--on-obs-mut)}
+  .stat .grid{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px;border-top:1px solid var(--hair);padding-top:16px}
+  .stat .cell .k2{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--on-obs-mut)}
+  .stat .cell .v2{font-family:"JetBrains Mono",monospace;font-size:15px;color:var(--on-obs);margin-top:3px}
+  .stat .fn{margin-top:16px;font-size:12px;color:var(--on-obs-mut);line-height:1.5;border-top:1px solid var(--hair);padding-top:14px}
+
+  /* provider rail = graph nodes */
+  section.rail{padding:70px 0 90px}
+  .label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--on-obs-mut);margin-bottom:26px}
+  .nodes{display:flex;flex-wrap:wrap;gap:14px}
+  .tnode{display:flex;align-items:center;gap:10px;background:var(--obs-raised);border:1px solid var(--hair-circ);border-radius:8px;padding:11px 17px;font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--on-obs)}
+  .tnode .dot{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px rgba(52,211,184,.6)}
+  .tnode .dot.mut{background:var(--hair-circ);box-shadow:none}
+
+  @media (prefers-reduced-motion: reduce){.wire-live{animation:none}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="wordmark"><span class="mk">ae</span>aedex</div>
+      <nav>
+        <ul>
+          <li><a href="#">Network</a></li>
+          <li><a href="#">Catalog</a></li>
+          <li><a href="#">Reliability</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><button class="btn-marble">Get an API key →</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">v1.0 · signed-ledger data-tool network</div>
+        <h1>Connect your agent to <span class="wire">every tool</span> it needs.</h1>
+        <p class="sub">Agents discover, call, and meter data tools across one signed-ledger network. Every run a wire, every charge a signed entry, every reliability number measured — not marketed.</p>
+        <div class="cta-row">
+          <button class="btn-marble">Start building</button>
+          <button class="btn-bronze">View the network</button>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--on-obs-mut)">no card · metered to the cent</span>
+        </div>
+      </div>
+
+      <!-- NETWORK GRAPH: bots (bronze) wired to tool nodes (obsidian); one live wire pulses -->
+      <div class="net" aria-hidden="true">
+        <svg viewBox="0 0 460 340" preserveAspectRatio="xMidYMid meet">
+          <!-- wires -->
+          <path class="wire" d="M70 80 C 180 80, 200 60, 320 60"/>
+          <path class="wire-live" d="M70 80 C 180 80, 200 130, 320 130"/>
+          <path class="wire" d="M70 170 C 180 170, 200 130, 320 130"/>
+          <path class="wire" d="M70 170 C 180 170, 200 200, 320 200"/>
+          <path class="wire-live" d="M70 260 C 180 260, 200 270, 320 270"/>
+          <path class="wire" d="M70 260 C 180 260, 200 200, 320 200"/>
+
+          <!-- bot nodes (left, bronze) -->
+          <circle class="node-bot" cx="70" cy="80" r="12"/>
+          <circle class="node-bot" cx="70" cy="170" r="12"/>
+          <circle class="node-bot" cx="70" cy="260" r="12"/>
+          <text class="node-label node-label-bot" x="70" y="108" text-anchor="middle">agent</text>
+          <text class="node-label node-label-bot" x="70" y="198" text-anchor="middle">agent</text>
+          <text class="node-label node-label-bot" x="70" y="288" text-anchor="middle">agent</text>
+
+          <!-- tool nodes (right, obsidian); live ones glow teal -->
+          <rect class="node-tool" x="300" y="46" width="120" height="28" rx="8"/>
+          <text class="node-label" x="360" y="64" text-anchor="middle">coingecko/price</text>
+          <rect class="node-tool-live" x="300" y="116" width="120" height="28" rx="8"/>
+          <text class="node-label" x="360" y="134" text-anchor="middle">openmeteo/weather</text>
+          <rect class="node-tool" x="300" y="186" width="120" height="28" rx="8"/>
+          <text class="node-label" x="360" y="204" text-anchor="middle">hackernews/top</text>
+          <rect class="node-tool-live" x="300" y="256" width="120" height="28" rx="8"/>
+          <text class="node-label" x="360" y="274" text-anchor="middle">frankfurter/rates</text>
+
+          <!-- live-run tag on the pulsing wire -->
+          <text class="node-label npt" x="200" y="120" text-anchor="middle">▸ run · signed</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="duo">
+        <div class="panel">
+          <div class="ph"><span class="d"></span><span class="d"></span><span class="d"></span><span class="tt">~ / aedex terminal</span></div>
+<pre><span class="c-cmd">$ aedex discover</span> -q <span class="c-str">"weather"</span>
+<span class="c-out">⚡ [openmeteo] weather/current  Score: 0.87  ✓ Verified</span>
+
+<span class="c-cmd">$ aedex run</span> openmeteo/weather/current \
+    <span class="c-h">--query</span> <span class="c-str">'{"latitude":52.52,"longitude":13.41}'</span>
+<span class="c-out">→ charge $0.0002 · ed25519 · sig 9f3a…c1e2</span></pre>
+        </div>
+        <div class="panel stat">
+          <div class="k">CATALOG / indexed</div>
+          <div class="v">18<span class="u"> tools</span></div>
+          <div class="grid">
+            <div class="cell"><div class="k2">providers</div><div class="v2">6</div></div>
+            <div class="cell"><div class="k2">billing</div><div class="v2">per-result</div></div>
+          </div>
+          <div class="fn">Public reliability leaderboard is live — tool rows publish as calls accrue (min 3 / tool). Failed runs are free.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rail">
+    <div class="wrap">
+      <div class="label">/ tool nodes on the network — 6 providers · 18 tools</div>
+      <div class="nodes">
+        <span class="tnode"><span class="dot"></span>openmeteo</span>
+        <span class="tnode"><span class="dot"></span>coingecko</span>
+        <span class="tnode"><span class="dot"></span>hackernews</span>
+        <span class="tnode"><span class="dot"></span>frankfurter</span>
+        <span class="tnode"><span class="dot"></span>apify</span>
+        <span class="tnode"><span class="dot"></span>cldcde</span>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

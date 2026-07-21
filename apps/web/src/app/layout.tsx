@@ -1,29 +1,53 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter_Tight, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const sans = Inter_Tight({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const serif = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Aegntic - Connect your agent to every tool it needs",
+  metadataBase: new URL("https://aedex.ing"),
+  title: "aegntic — connect your agent to every tool it needs",
   description:
     "The universal tool-discovery and execution marketplace for AI agents. Discover, inspect, and run any tool with one balance. No subscriptions.",
+  icons: {
+    icon: "/ae-logo.webp",
+    apple: "/ae-logo.webp",
+  },
   openGraph: {
-    title: "Aegntic - Connect your agent to every tool it needs",
+    title: "aegntic — connect your agent to every tool it needs",
     description:
       "The universal tool-discovery and execution marketplace for AI agents. One balance for every tool.",
-    url: "https://aegntic.ai",
-    siteName: "Aegntic",
+    url: "https://aedex.ing",
+    siteName: "aegntic",
+    images: [{ url: "/og-aegntic-skeleton.png", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aegntic - Connect your agent to every tool it needs",
+    title: "aegntic — connect your agent to every tool it needs",
     description:
       "The universal tool-discovery and execution marketplace for AI agents.",
+    images: ["/og-aegntic-skeleton.png"],
   },
 };
 
@@ -33,8 +57,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-bg text-text-primary antialiased">{children}</body>
+    <html
+      lang="en"
+      className={`${sans.variable} ${serif.variable} ${mono.variable} bg-bg text-text-primary`}
+    >
+      <body className="min-h-screen antialiased">{children}</body>
     </html>
   );
 }

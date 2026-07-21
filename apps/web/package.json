@@ -8,20 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next",
-    "pages:build": "npx @cloudflare/next-on-pages build",
-    "pages:dev": "npx @cloudflare/next-on-pages dev",
-    "pages:preview": "npx @cloudflare/next-on-pages preview"
+    "clean": "rm -rf .next"
   },
   "dependencies": {
     "@aegntic/sdk": "workspace:*",
-    "@cloudflare/next-on-pages": "^1.13.0",
-    "next": ">=15.1.0 <15.5.3",
+    "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "simple-icons": "^16.27.0"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
