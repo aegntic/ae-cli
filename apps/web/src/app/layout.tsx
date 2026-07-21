@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter_Tight, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const grotesk = Space_Grotesk({
+const sans = Inter_Tight({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const inter = Inter({
+const serif = Newsreader({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-body",
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -58,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${grotesk.variable} ${inter.variable} ${mono.variable} bg-bg text-text-primary`}
+      className={`${sans.variable} ${serif.variable} ${mono.variable} bg-bg text-text-primary`}
     >
       <body className="min-h-screen antialiased">{children}</body>
     </html>

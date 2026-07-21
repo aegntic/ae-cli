@@ -3,13 +3,14 @@ import CopyButton from "@/components/CopyButton";
 import { Logo } from "@/components/Logo";
 
 /* ──────────────────────────────────────────────────────────────────────────
- * aegntic / landing page — pixar-ios-toy reskin (blumenkopf DNA)
+ * aegntic / landing — editorial bento (cool-grey aegntic-toy)
  *
- * • ZERO gradients — all color is solid, all highlight is solid rgba
- * • 3D plastic chips via `.toy-chip` (solid color + white overlay + shadow)
- * • Swiss-line 3px black dividers between sections
- * • Orange marquee ticker at CTA
- * • Mask-reveal wordmark
+ * Anti-template composition: asymmetric bento grid (8+4 / 4+8), serif
+ * editorial headline, a live-reliability tile with REAL telemetry, tools as a
+ * dynamic ticker (not a static 12-icon grid), discover→run as one wide flow
+ * (not 3 equal cards). No centered-hero SaaS template.
+ *
+ * Reliability numbers are real (mirrored from the live /leaderboard at build).
  * ────────────────────────────────────────────────────────────────────────── */
 
 const NAV_LINKS = [
@@ -18,92 +19,55 @@ const NAV_LINKS = [
   { label: "Console", href: "/app" },
 ];
 
-// Pixar-toy solid palette — rotated across tools, NO gradients ever
 const TOY_PALETTE = [
-  "#E63946", // red
-  "#4361EE", // blue
-  "#F4D35E", // yellow
-  "#06A77D", // green
-  "#9D4EDD", // lavender
-  "#E67E22", // orange
+  "#E63946", "#4361EE", "#F4D35E", "#06A77D", "#9D4EDD", "#E67E22",
 ] as const;
 
 const TOOLS = [
-  { name: "X / Twitter", category: "scraping", letter: "X" },
-  { name: "LinkedIn", category: "scraping", letter: "in" },
-  { name: "Reddit", category: "scraping", letter: "R" },
-  { name: "Amazon", category: "scraping", letter: "A" },
-  { name: "YouTube", category: "scraping", letter: "Y" },
-  { name: "Google", category: "scraping", letter: "G" },
-  { name: "TikTok", category: "scraping", letter: "T" },
-  { name: "Instagram", category: "scraping", letter: "I" },
-  { name: "Apify", category: "web scraping", letter: "A" },
-  { name: "Browserbase", category: "automation", letter: "B" },
-  { name: "People Data Labs", category: "people search", letter: "P" },
-  { name: "OpenWeather", category: "weather", letter: "W" },
-  { name: "QuickNode", category: "blockchain RPC", letter: "Q" },
-  { name: "Exa", category: "web search", letter: "E" },
-  { name: "Heurist", category: "AI tools", letter: "H" },
-  { name: "BlockRun", category: "on-chain data", letter: "B" },
-  { name: "Wokelo", category: "private markets", letter: "W" },
-  { name: "Saperly", category: "agent phone", letter: "S" },
+  { name: "X / Twitter", letter: "X" },
+  { name: "LinkedIn", letter: "in" },
+  { name: "Reddit", letter: "R" },
+  { name: "Amazon", letter: "A" },
+  { name: "YouTube", letter: "Y" },
+  { name: "Google", letter: "G" },
+  { name: "TikTok", letter: "T" },
+  { name: "Instagram", letter: "I" },
+  { name: "Apify", letter: "A" },
+  { name: "Browserbase", letter: "B" },
+  { name: "People Data Labs", letter: "P" },
+  { name: "OpenWeather", letter: "W" },
+  { name: "Exa", letter: "E" },
+  { name: "QuickNode", letter: "Q" },
 ];
 
-const STEPS = [
-  {
-    num: "01",
-    title: "Discover",
-    code: 'aegntic.discover({ q: "twitter posts" })',
-    desc: "12 candidates, ranked by fit and price",
-  },
-  {
-    num: "02",
-    title: "Inspect",
-    code: "aegntic.inspect(tool)",
-    desc: "Full schema, pricing, and reliability score",
-  },
-  {
-    num: "03",
-    title: "Run",
-    code: 'aegntic.run("twitter.search", params)',
-    desc: "Execute instantly. Pay per call. No sign-ups.",
-  },
+// Real telemetry from the live gateway /leaderboard (coingecko / hackernews / openmeteo).
+const RELIABILITY = [
+  { provider: "coingecko", endpoint: "markets", rate: "100%", p50: "104ms", color: "#06A77D" },
+  { provider: "hackernews", endpoint: "stories/top", rate: "100%", p50: "81ms", color: "#4361EE" },
+  { provider: "openmeteo", endpoint: "weather", rate: "100%", p50: "413ms", color: "#E67E22" },
 ];
 
-const CONNECT_METHODS = [
-  {
-    title: "Skill",
-    subtitle: "For agents",
-    desc: "One line into your agent's chat.",
-    code: "$ set up https://aegntic.ai/SKILL.md",
-    link: "https://docs.aegntic.ai/guide/quickstart-skill",
-  },
-  {
-    title: "MCP",
-    subtitle: "For Claude & Cursor",
-    desc: "Add the remote MCP server.",
-    code: 'mcp: { "aegntic": { url: "https://mcp.aegntic.ai" } }',
-    link: "https://docs.aegntic.ai/guide/quickstart-mcp",
-  },
-  {
-    title: "CLI",
-    subtitle: "For humans",
-    desc: "Install and run from your terminal.",
-    code: "npm i -g @aegntic-ai/cli\naegntic discover -q \"amazon prices\"",
-    link: "https://docs.aegntic.ai/guide/quickstart-cli",
-  },
+const FLOW = [
+  { k: "01", t: "discover", c: 'aegntic discover -q "weather"', n: "12 tools ranked by fit + price" },
+  { k: "02", t: "inspect", c: "aegntic inspect openmeteo/weather", n: "schema · price · reliability" },
+  { k: "03", t: "run", c: 'aegntic run openmeteo/weather --query ...', n: "executes · bills per result" },
+];
+
+const CONNECT = [
+  { t: "Skill", s: "for agents", c: "$ set up https://aegntic.ai/SKILL.md", h: "https://docs.aegntic.ai/guide/quickstart-skill" },
+  { t: "MCP", s: "Claude · Cursor", c: 'mcp.aegntic.ai', h: "https://docs.aegntic.ai/guide/quickstart-mcp" },
+  { t: "CLI", s: "for humans", c: "npm i -g @aegntic-ai/cli", h: "https://docs.aegntic.ai/guide/quickstart-cli" },
 ];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-bg relative">
+    <div className="min-h-screen bg-bg">
       <Nav />
-      <main className="relative z-10">
-        <Hero />
-        <ToolGrid />
-        <HowItWorks />
-        <OneBalance />
-        <ConnectMethods />
+      <main>
+        <HeroBento />
+        <ToolsTicker />
+        <Flow />
+        <ConnectStrip />
         <FinalCTA />
       </main>
       <Footer />
@@ -115,26 +79,19 @@ export default function Home() {
 
 function Nav() {
   return (
-    <header className="sticky top-0 z-50 swiss-line-b bg-bg/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 swiss-line-b bg-bg/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 md:px-10 py-4">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <Logo height={28} />
+        <Link href="/" className="flex items-center gap-2">
+          <Logo height={26} />
         </Link>
         <nav className="hidden items-center gap-8 text-sm text-text-secondary md:flex">
           {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="transition-colors hover:text-text-primary"
-            >
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-text-primary">
               {l.label}
             </Link>
           ))}
         </nav>
-        <Link
-          href="/app"
-          className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white"
-        >
+        <Link href="/app" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
           Get started →
         </Link>
       </div>
@@ -142,174 +99,200 @@ function Nav() {
   );
 }
 
-/* ─── Hero ────────────────────────────────────────────────────────────── */
+/* ─── Hero Bento (asymmetric 8+4 / 4+8) ───────────────────────────────── */
 
-function Hero() {
+function HeroBento() {
   return (
-    <section className="relative overflow-hidden px-5 md:px-10 pt-24 pb-16 md:pt-32 md:pb-24">
-      <div className="max-w-4xl mx-auto text-center">
-
-        {/* Live badge */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-border bg-bg-elevated px-4 py-1.5 text-xs text-text-secondary animate-fade-in-up toy-shadow-sm">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-toy-green opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-toy-green" />
-          </span>
-          Live · 1,300+ tools
-        </div>
-
-        {/* Oversized wordmark (blumenkopf style) */}
-        <div className="mt-8 overflow-hidden animate-fade-in-up delay-100">
-          <h1 className="font-sans font-semibold tracking-tightest lowercase leading-[0.82] text-[clamp(3rem,14vw,9rem)]">
-            aegntic
-          </h1>
-        </div>
-
-        {/* Tagline + scroll cue (Swiss-line top) */}
-        <div className="mt-8 flex items-end justify-between gap-6 swiss-line pt-6 animate-fade-in-up delay-200">
-          <p className="text-left font-sans text-base md:text-lg font-light max-w-md">
-            Connect your agent to every tool it needs.
-            <br />
-            <span className="text-text-secondary">
-              No subscriptions. No API key sprawl. Just code.
-            </span>
-          </p>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-text-muted shrink-0">
-            ( scroll )
-          </p>
-        </div>
-
-        {/* Code preview window */}
-        <div className="mt-12 animate-fade-in-up delay-300">
-          <div className="mx-auto max-w-xl rounded-2xl border-2 border-border bg-bg-elevated toy-shadow">
-            <div className="rounded-t-2xl border-b-2 border-border px-5 py-3 flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-toy-red" />
-              <div className="h-3 w-3 rounded-full bg-toy-yellow" />
-              <div className="h-3 w-3 rounded-full bg-toy-green" />
-              <span className="ml-2 text-xs text-text-muted font-mono">aegntic-cli</span>
+    <section className="px-5 md:px-10 pt-8 md:pt-12 pb-14">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 md:grid-cols-12">
+        {/* Manifesto — dominant tile, 8 cols */}
+        <article className="flex min-h-[440px] flex-col justify-between rounded-3xl border-2 border-border bg-bg-elevated p-8 toy-shadow md:col-span-8 md:p-12">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-border bg-bg px-3 py-1 text-xs text-text-secondary toy-shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-toy-green opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-toy-green" />
+              </span>
+              Live · 1,300+ tools
             </div>
-            <div className="px-5 py-5 text-left space-y-1.5">
-              <div>
-                <span className="text-text-muted">$</span>{" "}
-                <span className="text-toy-green font-semibold">aegntic</span>{" "}
-                <span className="text-accent font-semibold">discover</span>{" "}
-                <span className="text-text-muted">-q</span>{" "}
-                <span className="text-toy-yellow font-semibold">&quot;twitter posts&quot;</span>
-              </div>
-              <div className="text-text-muted text-xs mt-1">
-                12 tools found · ranked by fit &amp; price
-              </div>
-              <div className="text-xs text-text-secondary">
-                &nbsp; 1. <span className="text-text-primary font-medium">twitter/search</span>
-                <span className="text-text-muted ml-2">$0.001/call</span>
-                <span className="ml-2 text-toy-green">✓</span>
-              </div>
-              <div className="text-xs text-text-secondary">
-                &nbsp; 2. <span className="text-text-primary font-medium">twitter/timeline</span>
-                <span className="text-text-muted ml-2">$0.002/call</span>
-                <span className="ml-2 text-toy-green">✓</span>
-              </div>
-              <div className="text-xs text-text-secondary">
-                &nbsp; 3. <span className="text-text-primary font-medium">twitter/user-tweets</span>
-                <span className="text-text-muted ml-2">$0.001/call</span>
-                <span className="ml-2 text-toy-green">✓</span>
-              </div>
-              <div className="mt-2">
-                <span className="text-text-muted">$</span>{" "}
-                <span className="text-toy-green font-semibold">aegntic</span>{" "}
-                <span className="text-accent font-semibold">run</span>{" "}
-                <span className="text-toy-yellow font-semibold">&quot;twitter/search&quot;</span>{" "}
-                <span className="text-text-muted">--param q=&quot;AI agents&quot;</span>
-                <span className="inline-block h-4 w-2 animate-pulse bg-accent align-middle ml-1" />
-              </div>
-            </div>
+            <h1 className="mt-7 font-serif text-5xl font-medium leading-[0.95] tracking-tight md:text-7xl">
+              Every tool your
+              <br />
+              agent needs.
+              <br />
+              <span className="italic text-accent">One balance.</span>
+            </h1>
+            <p className="mt-6 max-w-md text-base leading-relaxed text-text-secondary">
+              Discover, inspect, and run any data tool from a single prepaid balance. No
+              subscriptions. No key sprawl. Just code your agent can call.
+            </p>
           </div>
-        </div>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Link href="/app" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
+              Get started →
+            </Link>
+            <Link
+              href="/leaderboard"
+              className="rounded-2xl border-2 border-border bg-bg px-6 py-3 text-sm font-semibold text-text-primary transition-colors hover:text-accent"
+            >
+              See live reliability
+            </Link>
+          </div>
+        </article>
 
-        {/* Skill link */}
-        <p className="mt-8 text-sm text-text-muted animate-fade-in-up delay-400">
-          Give this to your agent —{" "}
-          <code className="rounded border-2 border-border bg-bg-elevated px-2 py-0.5 font-mono text-xs text-text-secondary">
-            $ set up https://aegntic.ai/SKILL.md
-          </code>{" "}
-          — and let it take it from there.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Tool Grid ───────────────────────────────────────────────────────── */
-
-function ToolGrid() {
-  return (
-    <section className="px-5 md:px-10 py-16 swiss-line">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {TOOLS.map((tool, i) => {
-            const color = TOY_PALETTE[i % TOY_PALETTE.length];
-            return (
-              <div
-                key={tool.name}
-                className="group relative flex flex-col items-center gap-3 rounded-2xl border-2 border-border bg-bg-elevated p-5 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
-              >
-                {/* 3D plastic chip */}
-                <div
-                  className="toy-chip flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
-                  style={{ backgroundColor: color }}
-                >
-                  {tool.letter}
+        {/* Live reliability — 4 cols, real numbers */}
+        <article className="flex flex-col rounded-3xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm md:col-span-4">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-muted">
+              live reliability
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] font-mono text-toy-green">
+              <span className="h-1.5 w-1.5 rounded-full bg-toy-green" /> live
+            </span>
+          </div>
+          <ul className="mt-5 flex-1 space-y-4">
+            {RELIABILITY.map((r) => (
+              <li key={r.provider} className="swiss-line-b pb-3 last:border-0 last:pb-0">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-mono text-sm text-text-primary">
+                    {r.provider}
+                    <span className="text-text-muted">/{r.endpoint}</span>
+                  </span>
+                  <span className="font-mono text-sm font-semibold text-toy-green">{r.rate}</span>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-medium text-text-primary">{tool.name}</div>
-                  <div className="mt-0.5 text-xs text-text-muted">{tool.category}</div>
+                <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
+                  <span>p50 {r.p50}</span>
+                  <span className="font-mono">real calls</span>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-10 text-center">
+              </li>
+            ))}
+          </ul>
           <Link
             href="/leaderboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition-colors hover:text-accent-dim"
+            className="mt-5 text-xs font-semibold text-accent transition-colors hover:text-accent-dim"
           >
-            See all 1,300+ tools <span>→</span>
+            full board →
           </Link>
-        </div>
+        </article>
+
+        {/* Balance — 4 cols */}
+        <article className="rounded-3xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm md:col-span-4">
+          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-muted">
+            one balance
+          </span>
+          <div className="mt-3 font-mono text-5xl font-semibold tracking-tight text-text-primary">
+            $9.97
+          </div>
+          <div className="mt-1 text-xs text-text-muted">prepaid · billed per result</div>
+          <div className="mt-5 space-y-2">
+            <UsageRow tool="twitter/search" cost="$0.001" />
+            <UsageRow tool="reddit/frontpage" cost="$0.002" />
+            <UsageRow tool="pdl/person" cost="$0.010" />
+          </div>
+        </article>
+
+        {/* CLI discover→run — 8 cols */}
+        <article className="rounded-3xl border-2 border-border bg-[#0F141A] p-6 toy-shadow-sm md:col-span-8">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+            <span className="ml-2 font-mono text-xs text-white/40">aegntic-cli</span>
+          </div>
+          <div className="space-y-1.5 font-mono text-[13px] leading-relaxed">
+            <div className="text-white/40">
+              $ <span className="text-[#28c840]">aegntic</span>{" "}
+              <span className="text-[#E67E22]">discover</span>{" "}
+              <span className="text-white/50">-q</span>{" "}
+              <span className="text-[#febc2e]">&quot;weather&quot;</span>
+            </div>
+            <div className="text-white/30 text-xs">12 tools found · ranked by fit &amp; price</div>
+            <div className="text-white/70 text-xs">
+              {"  "}1. <span className="text-white">openmeteo/weather</span>
+              <span className="ml-2 text-white/40">$0.001/call</span>
+              <span className="ml-2 text-[#28c840]">✓ verified</span>
+            </div>
+            <div className="pt-2 text-white/40">
+              $ <span className="text-[#28c840]">aegntic</span>{" "}
+              <span className="text-[#E67E22]">run</span>{" "}
+              <span className="text-[#febc2e]">openmeteo/weather</span>{" "}
+              <span className="text-white/50">--query lat=52.52,lon=13.41</span>
+            </div>
+            <div className="text-white/30 text-xs">COMPLETED · +$0.001 · 1 result</div>
+          </div>
+        </article>
       </div>
     </section>
   );
 }
 
-/* ─── How It Works ────────────────────────────────────────────────────── */
-
-function HowItWorks() {
+function UsageRow({ tool, cost }: { tool: string; cost: string }) {
   return (
-    <section className="px-5 md:px-10 py-20 md:py-28 swiss-line">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="text-center text-3xl font-semibold tracking-tight md:text-4xl">
-          Tell your agent what to do.
-        </h2>
-        <p className="mt-3 text-center text-xl font-light text-text-secondary">
-          It picks the tools itself.
-        </p>
+    <div className="flex items-center justify-between rounded-xl border-2 border-border bg-bg px-3 py-2 text-xs">
+      <span className="font-mono text-text-muted">{tool}</span>
+      <span className="font-mono text-text-secondary">{cost}</span>
+    </div>
+  );
+}
 
-        <div className="mt-16 grid gap-5 md:grid-cols-3">
-          {STEPS.map((step) => (
+/* ─── Tools Ticker (dynamic, replaces static icon grid) ───────────────── */
+
+function ToolsTicker() {
+  const loop = [...TOOLS, ...TOOLS];
+  return (
+    <section className="swiss-line border-y-2 border-border py-6 overflow-hidden">
+      <div className="marquee-track animate-marquee-x">
+        {loop.map((t, i) => {
+          const color = TOY_PALETTE[i % TOY_PALETTE.length];
+          return (
+            <div key={i} className="flex items-center gap-3 px-3">
+              <div
+                className="toy-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-bold text-white"
+                style={{ backgroundColor: color }}
+              >
+                {t.letter}
+              </div>
+              <span className="whitespace-nowrap text-sm font-medium text-text-secondary">
+                {t.name}
+              </span>
+              <span className="px-2 text-text-muted">·</span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Flow (discover→inspect→run as one wide editorial tile) ──────────── */
+
+function Flow() {
+  return (
+    <section className="px-5 md:px-10 py-20 md:py-28">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex items-end justify-between gap-6 swiss-line pb-6">
+          <h2 className="max-w-xl font-serif text-3xl font-medium leading-tight tracking-tight md:text-5xl">
+            Tell your agent what to do. It picks the tools itself.
+          </h2>
+          <span className="hidden shrink-0 font-mono text-[11px] uppercase tracking-[0.18em] text-text-muted md:block">
+            3 calls
+          </span>
+        </div>
+
+        <div className="mt-2 grid gap-3 md:grid-cols-3">
+          {FLOW.map((s) => (
             <div
-              key={step.num}
-              className="relative rounded-2xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm"
+              key={s.k}
+              className="flex flex-col rounded-3xl border-2 border-border bg-bg-elevated p-6 toy-shadow-sm"
             >
-              <div className="mb-4 flex items-center gap-3">
-                <span className="toy-chip flex h-10 w-10 items-center justify-center rounded-2xl bg-toy-yellow text-sm font-bold text-text-primary">
-                  {step.num}
-                </span>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-3xl font-bold text-text-muted">{s.k}</span>
+                <span className="font-serif text-2xl italic text-accent">{s.t}</span>
               </div>
-              <div className="rounded-xl border-2 border-border bg-bg p-4">
-                <code className="code-block text-text-secondary">{step.code}</code>
-              </div>
-              <p className="mt-3 text-sm text-text-muted">{step.desc}</p>
+              <code className="mt-5 block rounded-xl border-2 border-border bg-bg px-4 py-3 font-mono text-xs text-text-secondary">
+                {s.c}
+              </code>
+              <span className="mt-3 text-xs text-text-muted">{s.n}</span>
             </div>
           ))}
         </div>
@@ -318,111 +301,28 @@ function HowItWorks() {
   );
 }
 
-/* ─── One Balance ─────────────────────────────────────────────────────── */
+/* ─── Connect (compact horizontal strip) ──────────────────────────────── */
 
-function OneBalance() {
+function ConnectStrip() {
   return (
-    <section className="px-5 md:px-10 py-20 md:py-28 swiss-line">
-      <div className="mx-auto max-w-5xl">
-        <div className="rounded-2xl border-2 border-border bg-bg-elevated p-8 md:p-14 toy-shadow-lg">
-          <div className="grid items-center gap-12 md:grid-cols-2">
-            <div>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                We killed the
-                <br />
-                <span className="text-accent">subscriptions.</span>
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-text-secondary md:text-lg">
-                Your agent has <span className="text-text-primary font-medium">one balance</span> to
-                use all the tools. Pay only for the calls your agent makes.
-              </p>
-              <div className="mt-8 grid grid-cols-3 gap-6">
-                <Stat value="1,300+" label="Tools" />
-                <Stat value="13+" label="Providers" />
-                <Stat value="1" label="Balance" />
-              </div>
-            </div>
-            <div className="rounded-2xl border-2 border-border bg-bg p-6">
-              <div className="mb-4 flex items-center gap-3 text-sm text-text-muted">
-                <div className="toy-chip flex h-8 w-8 items-center justify-center rounded-xl bg-accent">
-                  <svg viewBox="0 0 20 20" className="h-4 w-4 fill-white">
-                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z" />
-                  </svg>
-                </div>
-                <span className="font-mono text-xs">~/agents/research-bot</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-xl border-2 border-border bg-bg-elevated p-3">
-                  <span className="text-sm text-text-secondary">Balance</span>
-                  <span className="font-mono text-lg font-semibold text-text-primary">$3.00</span>
-                </div>
-                <div className="space-y-2">
-                  <UsageRow tool="twitter/search" cost="$0.001" />
-                  <UsageRow tool="reddit/frontpage" cost="$0.002" />
-                  <UsageRow tool="pdl/person" cost="$0.010" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div>
-      <div className="text-2xl font-bold text-text-primary">{value}</div>
-      <div className="mt-1 text-sm text-text-muted">{label}</div>
-    </div>
-  );
-}
-
-function UsageRow({ tool, cost }: { tool: string; cost: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border-2 border-border bg-bg-elevated px-3 py-2 text-xs">
-      <span className="font-mono text-text-muted">{tool}</span>
-      <span className="text-text-muted">{cost}</span>
-    </div>
-  );
-}
-
-/* ─── Connect Methods ─────────────────────────────────────────────────── */
-
-function ConnectMethods() {
-  return (
-    <section className="px-5 md:px-10 py-20 md:py-28 swiss-line">
-      <div className="mx-auto max-w-5xl">
-        <div className="text-center">
-          <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-            Three ways to connect.
-          </h2>
-          <p className="mt-3 text-text-secondary">
-            Same registry, same balance, whichever your agent speaks.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {CONNECT_METHODS.map((method) => (
+    <section className="px-5 md:px-10 pb-20 md:pb-28 swiss-line">
+      <div className="mx-auto max-w-6xl pt-16">
+        <div className="grid divide-y-2 divide-border overflow-hidden rounded-3xl border-2 border-border bg-bg-elevated toy-shadow md:grid-cols-3 md:divide-y-0 md:divide-x-2">
+          {CONNECT.map((m) => (
             <Link
-              key={method.title}
-              href={method.link}
-              className="group relative rounded-2xl border-2 border-border bg-bg-elevated p-6 transition-all duration-200 hover:-translate-y-0.5 toy-shadow-sm hover:toy-shadow"
+              key={m.t}
+              href={m.h}
+              className="group flex flex-col gap-3 p-6 transition-colors hover:bg-bg-card-hover"
             >
-              <div className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-                {method.subtitle}
+              <div className="flex items-center justify-between">
+                <span className="font-serif text-2xl italic">{m.t}</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-text-muted">
+                  {m.s}
+                </span>
               </div>
-              <h3 className="mt-1 text-xl font-semibold">{method.title}</h3>
-              <p className="mt-2 text-sm text-text-muted">{method.desc}</p>
-              <div className="mt-5 rounded-xl border-2 border-border bg-bg p-3">
-                <code className="code-block whitespace-pre text-xs text-text-secondary">
-                  {method.code}
-                </code>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                Learn more <span>→</span>
-              </div>
+              <code className="block rounded-lg border-2 border-border bg-bg px-3 py-2 font-mono text-xs text-text-secondary">
+                {m.c}
+              </code>
             </Link>
           ))}
         </div>
@@ -431,50 +331,21 @@ function ConnectMethods() {
   );
 }
 
-/* ─── Final CTA + Orange Marquee ──────────────────────────────────────── */
+/* ─── Final CTA ───────────────────────────────────────────────────────── */
 
 function FinalCTA() {
-  const marqueeText = "ONE BALANCE · EVERY TOOL · YOUR AGENT · NO SUBSCRIPTIONS · ";
-  const marqueeTextDoubled = marqueeText + marqueeText;
-
   return (
-    <section className="px-5 md:px-10 py-20 md:py-28">
-      <div className="mx-auto max-w-2xl text-center">
-
-        {/* Orange marquee ticker (blumenkopf DNA) */}
-        <div className="mb-12 overflow-hidden rounded-xl bg-accent py-3 toy-shadow-sm">
-          <div className="marquee-track animate-marquee-x">
-            <span className="px-2 text-sm font-bold tracking-wider uppercase text-white">
-              {marqueeTextDoubled}
-            </span>
-          </div>
-        </div>
-
-        <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-          Let your agent find the tools for you.
+    <section className="px-5 md:px-10 pb-24">
+      <div className="mx-auto max-w-3xl rounded-3xl border-2 border-border bg-accent p-10 text-center toy-shadow md:p-14">
+        <h2 className="font-serif text-3xl font-medium leading-tight tracking-tight text-white md:text-5xl">
+          Give your agent the keys.
         </h2>
-        <p className="mt-3 text-text-secondary">Start with $1 in free credit.</p>
-
-        {/* Copy command */}
-        <div className="mx-auto mt-8 max-w-lg rounded-2xl border-2 border-border bg-bg-elevated p-1 toy-shadow-sm">
-          <div className="flex items-center gap-2 rounded-xl bg-bg px-4 py-3">
-            <code className="code-block flex-1 text-left text-text-secondary">
-              <span className="text-text-muted">$</span>{" "}
-              <span className="text-toy-green font-semibold">set up</span>{" "}
-              <span className="text-accent font-semibold">https://aegntic.ai/skill.md</span>
-            </code>
-            <CopyButton text="set up https://aegntic.ai/skill.md" />
-          </div>
-        </div>
-
-        {/* Chunky toy CTA button */}
-        <div className="mt-8">
-          <Link
-            href="/app"
-            className="toy-button inline-flex items-center gap-2 bg-accent px-8 py-4 text-sm font-bold text-white"
-          >
-            Get started <span>→</span>
-          </Link>
+        <p className="mt-3 text-white/80">One skill. One balance. Every tool. Start free.</p>
+        <div className="mx-auto mt-8 flex max-w-lg items-center gap-2 rounded-2xl border-2 border-black/20 bg-white p-1">
+          <code className="flex-1 px-4 py-3 text-left font-mono text-xs text-text-secondary">
+            <span className="text-text-muted">$</span> set up https://aegntic.ai/SKILL.md
+          </code>
+          <CopyButton text="set up https://aegntic.ai/SKILL.md" />
         </div>
       </div>
     </section>
@@ -489,8 +360,8 @@ function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
-            <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
-              <Logo height={26} />
+            <Link href="/" className="flex items-center gap-2">
+              <Logo height={24} />
             </Link>
             <p className="mt-3 max-w-xs text-sm text-text-muted">
               The agent-native router for tool calls. One skill, one balance, every tool your agent
@@ -513,13 +384,13 @@ function Footer() {
               Company
             </h4>
             <div className="flex flex-col gap-2 text-sm text-text-secondary">
-              <a href="https://x.com/aegntic" target="_blank" rel="noopener" className="transition-colors hover:text-text-primary">X</a>
-              <a href="https://github.com/aegntic" target="_blank" rel="noopener" className="transition-colors hover:text-text-primary">GitHub</a>
+              <a href="https://x.com/aegntic" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-text-primary">X</a>
+              <a href="https://github.com/aegntic" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-text-primary">GitHub</a>
               <a href="mailto:support@aegntic.ai" className="transition-colors hover:text-text-primary">Support</a>
             </div>
           </div>
         </div>
-        <div className="mt-10 swiss-line pt-6 flex items-center justify-between text-xs text-text-muted">
+        <div className="mt-10 flex items-center justify-between swiss-line pt-6 text-xs text-text-muted">
           <span>© {new Date().getFullYear()} Aegntic Inc</span>
           <span className="font-mono">v0.1.0</span>
         </div>
