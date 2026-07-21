@@ -61,7 +61,7 @@ const FLOW = [
 const CONNECT = [
   { t: "Skill", s: "for agents", c: "aegntic.ai/SKILL.md", h: "https://aegntic.ai/SKILL.md" },
   { t: "MCP", s: "Claude · Cursor", c: "stdio · gateway.aedex.ing", h: "/start" },
-  { t: "CLI", s: "for humans", c: "bun add -g ae", h: "/start" },
+  { t: "CLI", s: "for humans", c: "bun add -g @aegntic/aedex", h: "/start" },
 ];
 
 export default function Home() {
@@ -369,9 +369,9 @@ function FinalCTA() {
         <p className="mt-3 text-white/80">One skill. One balance. Every tool. Start free.</p>
         <div className="mx-auto mt-8 flex max-w-lg items-center gap-2 rounded-2xl border-2 border-black/20 bg-white p-1">
           <code className="flex-1 px-4 py-3 text-left font-mono text-xs text-text-secondary">
-            <span className="text-text-muted">$</span> bun add -g ae
+            <span className="text-text-muted">$</span> bun add -g @aegntic/aedex
           </code>
-          <CopyButton text="bun add -g ae" />
+          <CopyButton text="bun add -g @aegntic/aedex" />
         </div>
       </div>
     </section>

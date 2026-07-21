@@ -14,7 +14,7 @@ const STEPS = [
     k: "01",
     t: "install",
     sub: "one global install",
-    cmds: [{ label: "install", code: "bun add -g ae" }],
+    cmds: [{ label: "install", code: "bun add -g @aegntic/aedex" }],
     note: "Bun 1.0+. Works in any shell.",
   },
   {
