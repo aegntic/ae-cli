@@ -1,5 +1,5 @@
 import { defineCommand } from "citty"
-import { getClient } from "../utils/config.js"
+import { getClient } from "../lib/client.js"
 import consola from "consola"
 import { readFileSync, writeFileSync } from "fs"
 
@@ -9,17 +9,22 @@ export default defineCommand({
     description: "Execute a data tool or endpoint",
   },
   args: {
+    target: {
+      type: "positional",
+      description: "Provider/endpoint, e.g. openmeteo/weather/current",
+      required: false,
+    },
     provider: {
       type: "string",
       alias: "p",
-      description: "Provider name",
-      required: true,
+      description: "Provider name (alternative to the positional target)",
+      required: false,
     },
     endpoint: {
       type: "string",
       alias: "e",
-      description: "Endpoint path",
-      required: true,
+      description: "Endpoint path (alternative to the positional target)",
+      required: false,
     },
     input: {
       type: "string",
@@ -57,6 +62,27 @@ export default defineCommand({
   },
   async run({ args }) {
     try {
+      let { provider, endpoint } = args
+      if ((!provider || !endpoint) && args.target) {
+        const sep = args.target.indexOf("/")
+        if (sep < 0) {
+          consola.error(
+            `Positional target "${args.target}" must be <provider>/<endpoint>.`,
+          )
+          return
+        }
+        provider = args.target.slice(0, sep)
+        endpoint = args.target.slice(sep + 1)
+      }
+      if (!provider || !endpoint) {
+        consola.error(
+          "Provide a provider/endpoint, e.g. " +
+            "`aegntic run openmeteo/weather/current --query '{\"lat\":\"52.52\",\"lon\":\"13.41\"}'` " +
+            "or use -p/-e.",
+        )
+        return
+      }
+
       let bodyInput = {}
       if (args.input) {
         bodyInput = JSON.parse(args.input)
@@ -70,9 +96,9 @@ export default defineCommand({
         pathParams: args.path ? JSON.parse(args.path) : undefined,
       }
 
-      const client = getClient()
+      const client = await getClient()
       const waitOption = args.wait ? 30 : undefined
-      const response = await client.run(args.provider, args.endpoint, runInput, { wait: waitOption })
+      const response = await client.run(provider, endpoint, runInput, { wait: waitOption })
 
       if (args.json) {
         console.log(JSON.stringify(response, null, 2))

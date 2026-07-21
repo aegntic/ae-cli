@@ -1,5 +1,5 @@
 import { defineCommand } from "citty"
-import { getClient } from "../utils/config.js"
+import { getClient } from "../lib/client.js"
 import consola from "consola"
 import { writeFileSync } from "fs"
 
@@ -33,7 +33,7 @@ const getCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const client = getClient()
+      const client = await getClient()
       const waitOption = args.wait ? 30 : undefined
       const response = await client.getRun(args.runId, { wait: waitOption })
 
@@ -100,7 +100,7 @@ const stopCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const client = getClient()
+      const client = await getClient()
       const response = await client.stopRun(args.runId)
 
       if (args.json) {

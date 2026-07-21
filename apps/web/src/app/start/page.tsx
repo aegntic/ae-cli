@@ -23,7 +23,7 @@ const STEPS = [
     sub: "workspace + API key",
     cmds: [
       { label: "write config", code: "ae setup" },
-      { label: "mint a key", code: "ae keys add --label web" },
+      { label: "mint a key", code: "ae keys add -l web" },
     ],
     note: "Prints a key like aedex_live_… — copy it. This is the only secret you need.",
   },
@@ -32,7 +32,7 @@ const STEPS = [
     t: "run it",
     sub: "first tool, billed per result",
     cmds: [{ label: "discover + run", code: 'ae discover -q "weather"' }],
-    note: "Then ae run openmeteo/weather/current --query … Pays from one prepaid balance.",
+    note: "Then ae run openmeteo/weather/current --query '{\"lat\":\"52.52\",\"lon\":\"13.41\"}' -w. Pays from one prepaid balance.",
   },
 ];
 

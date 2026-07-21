@@ -1,6 +1,6 @@
 import { defineCommand } from "citty"
 import consola from "consola"
-import { getBalance } from "../lib/client.js"
+import { getClient } from "../lib/client.js"
 
 export default defineCommand({
   meta: {
@@ -8,7 +8,8 @@ export default defineCommand({
     description: "Check workspace balance",
   },
   async run() {
-    const data = await getBalance()
+    const client = await getClient()
+    const data = (await client.getBalance()).data
 
     console.log()
     consola.info("Workspace Balance")
