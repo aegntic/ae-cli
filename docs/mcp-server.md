@@ -20,14 +20,41 @@ attempt to connect to postgres.
 | `balance`      | Workspace balance/available/held.                            |
 | `balance_audit`| Verify the tamper-evident signed ledger for the workspace.   |
 
+## Install via Smithery (one step)
+
+Smithery builds the stdio server from [`smithery.yaml`](../smithery.yaml) and
+distributes it as an MCPB bundle any MCP-aware client can install. Once the
+listing is published, agents discover and connect without manual config:
+
+```bash
+npx @smithery/cli install aegntic --client claude
+```
+
+Replace `--client claude` with `cursor` (or `cline`, `windsurf`, ...) for the
+target agent. Smithery collects `AEGNTIC_API_KEY` (required) and
+`AEGNTIC_BASE_URL` (defaults to the live gateway) through its auto-generated
+config form and writes them into the client's MCP config for you. See the
+[Smithery publish docs](https://smithery.ai/docs/build/publish) for the
+manual publish flow (requires the @aegntic GitHub account).
+
+## Registries & discoverability
+
+| Registry   | Status          | How it's wired                                                                 |
+| ---------- | --------------- | ------------------------------------------------------------------------------ |
+| Smithery   | Ready to publish | `smithery.yaml` at repo root (startCommand → `node services/gateway/dist/mcp/server.js`). Publish via smithery.ai/new → MCPB bundle. |
+| mcp.run    | Follow-up       | mcp.run (Dylibso) distributes **WebAssembly** plugins, not Node stdio servers. Listing aedex there requires a Wasm-component port of the tool layer — tracked as a follow-up. |
+| `.mcp.json`| Local/CI       | Add the stdio server to Claude Code / Cursor per-client (blocks below).        |
+
 ## Configuration (env)
 
-| Env var           | Default                    | Notes                          |
-| ----------------- | -------------------------- | ------------------------------ |
-| `AEGNTIC_BASE_URL`| `http://localhost:3101`    | Gateway HTTP base URL.         |
-| `AEGNTIC_API_KEY` | _(required)_               | Workspace bearer key. Tools error clearly if unset. |
+| Env var           | Default                          | Notes                          |
+| ----------------- | -------------------------------- | ------------------------------ |
+| `AEGNTIC_BASE_URL`| `http://localhost:3101` (dev) / `https://aegntic-gateway.fly.dev` (hosted) | Gateway HTTP base URL. |
+| `AEGNTIC_API_KEY` | _(required)_                     | Workspace bearer key. Tools error clearly if unset. |
 
-`PORT` is not used — transport is stdio.
+`PORT` is not used — transport is stdio. The Smithery `smithery.yaml` passes
+the hosted gateway as the default base URL so a published install works out of
+the box; local dev overrides to `http://localhost:3101`.
 
 ## Claude Code config
 
