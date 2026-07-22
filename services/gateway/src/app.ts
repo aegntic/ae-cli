@@ -9,6 +9,7 @@ import { balanceRoute } from "./routes/balance.js"
 import { keysRoute } from "./routes/keys.js"
 import { reliabilityRoute } from "./routes/reliability.js"
 import { stripeRoute, handleStripeWebhook } from "./routes/stripe.js"
+import { signupRoute } from "./routes/signup.js"
 import { authMiddleware } from "./middleware/auth.js"
 import { rateLimitMiddleware } from "./middleware/ratelimit.js"
 import {
@@ -27,7 +28,7 @@ export function createApp(): Hono<Env> {
   app.use("*", cors({ origin: allowedOrigin }))
   app.use("*", logger())
 
-  app.get("/health", (c) => c.json({ status: "ok", version: "0.1.0" }))
+  app.get("/health", (c) => c.json({ status: "ok", version: "0.2.0" }))
 
   // PUBLIC (no auth) — mounted before the /v1/* authMiddleware.
   app.get("/leaderboard", async (c) => {
@@ -60,6 +61,13 @@ export function createApp(): Hono<Env> {
 
   // Stripe webhook — PUBLIC (no auth), Stripe sends its own signature.
   app.post("/v1/stripe/webhook", handleStripeWebhook)
+
+  // Self-service signup — PUBLIC (no auth). This is the only path a cold user
+  // (no workspace/key) can take to activate. MUST mount before the /v1/*
+  // authMiddleware so its endpoints are reachable without credentials.
+  // Hono matches the first registered handler for a path, and terminal routes
+  // registered before a `use()` middleware are not subject to it.
+  app.route("/v1", signupRoute)
 
   app.use("/v1/*", authMiddleware)
   // Rate limit runs AFTER auth so it buckets per workspace.id. The Stripe

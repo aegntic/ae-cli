@@ -44,9 +44,14 @@ export default function StartPage() {
           <Link href="/" className="flex items-center gap-2">
             <Logo height={26} />
           </Link>
-          <Link href="/app" className="text-sm font-semibold text-text-secondary transition-colors hover:text-text-primary">
-            I have a key →
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/signup" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
+              Get free credit →
+            </Link>
+            <Link href="/app" className="text-sm font-semibold text-text-secondary transition-colors hover:text-text-primary">
+              I have a key →
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -62,6 +67,18 @@ export default function StartPage() {
             Install the CLI, mint a workspace key, run your first tool. No account, no
             dashboard signup — just a terminal and one prepaid balance.
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-4 rounded-2xl border-2 border-border bg-bg-elevated px-5 py-4 toy-shadow-sm">
+            <p className="flex-1 text-sm text-text-secondary">
+              Prefer the web? Sign up with email and get free test credit — no install needed.
+            </p>
+            <Link
+              href="/signup"
+              className="toy-button bg-accent px-5 py-2.5 text-sm font-bold text-white"
+            >
+              Sign up on the web →
+            </Link>
+          </div>
 
           <ol className="mt-12 space-y-3">
             {STEPS.map((s) => (

@@ -19,6 +19,7 @@ const main = defineCommand({
     balance: () => import("./commands/balance.js").then((m) => m.default),
     keys: () => import("./commands/keys.js").then((m) => m.default),
     setup: () => import("./commands/setup.js").then((m) => m.default),
+    signup: () => import("./commands/signup.js").then((m) => m.default),
   },
 })
 

@@ -182,6 +182,41 @@ export const runEvents = pgTable(
 )
 
 /**
+ * SIGNUP OTPs — email-verified self-service signup.
+ *
+ * One row per issued OTP, keyed by email + createdAt. The latest unconsumed,
+ * unexpired row for an email is the live code. Stored values are derived/
+ * hashed — NEVER the plaintext code. Lifecycle:
+ *   - request: upsert the latest row {email, codeHash, expiresAt, attempts:0}
+ *   - confirm:  hash the submitted code; on mismatch increment `attempts`;
+ *     at >= MAX_OTP_ATTEMPTS consume it (consumedAt set) so the code is dead
+ *     and the caller must re-request. On match, consume + provision.
+ *   - expiry:   `expiresAt` (now + 10m); expired rows are 410 Gone.
+ *
+ * `email` is the user-supplied address; we store it to look the OTP up at
+ * confirm time. The OTP code itself is SHA-256 hashed like api keys — never
+ * recoverable from the DB.
+ */
+export const signupOtps = pgTable(
+  "signup_otps",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    // Lowercased, trimmed at write time. Latest row wins; the route deletes any
+    // prior unconsumed rows for the email before inserting the new code.
+    email: text("email").notNull(),
+    // SHA-256 hex of the 6-digit code, same hasher as api_keys.
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    emailIdx: index("signup_otps_email_idx").on(t.email),
+  }),
+)
+
+/**
  * TOOLS CATALOG — persisted, growable marketplace surface.
  *
  * Replaces the in-memory provider registry as the source of truth for
@@ -238,4 +273,5 @@ export type ApiKeyRow = typeof apiKeys.$inferSelect
 export type RunRow = typeof runs.$inferSelect
 export type LedgerRow = typeof balanceLedger.$inferSelect
 export type RunEventRow = typeof runEvents.$inferSelect
+export type SignupOtpRow = typeof signupOtps.$inferSelect
 export type ToolRow = typeof tools.$inferSelect
