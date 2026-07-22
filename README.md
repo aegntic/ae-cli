@@ -12,8 +12,8 @@
 
 ```bash
 bun add -g @aegntic/aedex     # or: npm i -g @aegntic/aedex
-ae setup                      # configure gateway + workspace
-ae keys add --label dev       # mint an API key (aedex_live_…)
+ae setup                      # configure gateway (defaults to prod)
+ae keys add -l dev            # mint an API key (aedex_live_…)
 ae discover -q "weather"      # → ranked endpoints
 ```
 
@@ -45,13 +45,13 @@ Agents and devs waste cycles hand-rolling scrapers, wiring auth, guessing at dat
 
 ```bash
 # One-time setup
-ae setup                    # writes ~/.config/aedex/config.json
-ae keys add --label dev     # mints aedex_live_<nanoid>, saves locally
+ae setup                    # writes ~/.aegntic/config.json (defaults to the prod gateway)
+ae keys add -l dev          # mints aedex_live_<nanoid>, saves locally + sets active
 
 # Discover & run (real providers, real billing)
 ae discover -q "weather"           # → openmeteo/weather/current
 ae inspect openmeteo/weather/current
-ae run openmeteo/weather/current --query '{"latitude":52.52,"longitude":13.41}'
+ae run openmeteo/weather/current --query '{"lat":"52.52","lon":"13.41"}' -w
 ae runs get <run-id>               # poll until COMPLETED
 ae balance                         # 4dp precision ($9.9840)
 ```

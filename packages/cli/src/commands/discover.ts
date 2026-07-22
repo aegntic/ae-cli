@@ -1,5 +1,5 @@
 import { defineCommand } from "citty"
-import { getClient } from "../utils/config.js"
+import { getClient } from "../lib/client.js"
 import consola from "consola"
 
 export default defineCommand({
@@ -28,7 +28,7 @@ export default defineCommand({
       type: "string",
       alias: "s",
       description: "Minimum relevance score threshold",
-      default: "0.1",
+      default: "0",
     },
     json: {
       type: "boolean",
@@ -44,7 +44,7 @@ export default defineCommand({
     }
 
     try {
-      const client = getClient()
+      const client = await getClient()
       const response = await client.discover(q, parseInt(args.limit, 10), parseFloat(args.score))
 
       if (args.json) {
