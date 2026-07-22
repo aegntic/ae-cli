@@ -125,6 +125,36 @@ export async function getBalance(workspaceId: string): Promise<{
   return { balance: b.balance, held: 0, currency: b.currency }
 }
 
+// ---------- workspace creation ----------
+
+/**
+ * Mint a brand-new workspace. Used by the self-service signup flow to
+ * provision a workspace + first key + free test credit for a cold user with
+ * no existing credentials. Mirrors the seed.ts default-workspace pattern but
+ * generates a unique `ws_<nanoid(16)>` id and derives the workspace name.
+ *
+ * @param name optional display name; falls back to a generated default.
+ */
+export async function createWorkspace(name?: string): Promise<Workspace> {
+  const id = `ws_${nanoid(16)}`
+  const displayName = name ?? `Workspace ${id.slice(-4)}`
+  await db.insert(schema.workspaces).values({
+    id,
+    name: displayName,
+    currency: "USD",
+  })
+  const bal = await computeBalance(id)
+  return rowToWorkspace(
+    {
+      id,
+      name: displayName,
+      currency: "USD",
+      createdAt: new Date(),
+    },
+    bal.balance,
+  )
+}
+
 // ---------- ledger ----------
 
 export async function charge(

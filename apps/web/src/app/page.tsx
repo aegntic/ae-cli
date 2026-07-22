@@ -96,8 +96,8 @@ function Nav() {
             </Link>
           ))}
         </nav>
-        <Link href="/start" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
-          Get started →
+        <Link href="/signup" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
+          Get free credit →
         </Link>
       </div>
     </header>
@@ -133,14 +133,14 @@ function HeroBento() {
             </p>
           </div>
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href="/start" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
-              Get started →
+            <Link href="/signup" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
+              Get free test credit →
             </Link>
             <Link
-              href="/leaderboard"
+              href="/start"
               className="rounded-2xl border-2 border-border bg-bg px-6 py-3 text-sm font-semibold text-text-primary transition-colors hover:text-accent"
             >
-              See live reliability
+              See the quickstart
             </Link>
           </div>
         </article>
@@ -373,6 +373,12 @@ function FinalCTA() {
           </code>
           <CopyButton text="bun add -g @aegntic/aedex" eventName="install_cmd_copied" />
         </div>
+        <Link
+          href="/signup"
+          className="mt-5 inline-flex items-center gap-2 rounded-2xl border-2 border-white/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/20"
+        >
+          Or sign up on the web for free test credit →
+        </Link>
       </div>
     </section>
   );

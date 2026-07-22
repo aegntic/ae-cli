@@ -184,3 +184,56 @@ export async function deleteKey(apiKey: string, label: string) {
     { method: "DELETE" }
   );
 }
+
+// ---------- self-service signup (public, unauthenticated) ----------
+//
+// These hit the gateway's /v1/signup/* endpoints, which are mounted BEFORE
+// the auth middleware. No API key / Authorization header is sent. Used only by
+// the /signup page so a cold visitor can create a workspace + first key.
+
+export interface SignupConfirmResult {
+  workspaceId: string;
+  apiKey: string;
+}
+
+async function publicRequest<T>(
+  path: string,
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error ?? `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Step 1: email a 6-digit verification code. Honeypot field included. */
+export async function signupRequest(
+  email: string,
+  honeypot?: string
+): Promise<{ sent: true }> {
+  return publicRequest<{ sent: true }>(`/v1/signup/request`, {
+    method: "POST",
+    body: JSON.stringify({ email, _company: honeypot }),
+  });
+}
+
+/** Step 2: verify the code; on success returns a workspace + one-time key. */
+export async function signupConfirm(
+  email: string,
+  code: string
+): Promise<SignupConfirmResult> {
+  const res = await publicRequest<ApiResponse<SignupConfirmResult>>(
+    `/v1/signup/confirm`,
+    { method: "POST", body: JSON.stringify({ email, code }) }
+  );
+  return res.data;
+}
+

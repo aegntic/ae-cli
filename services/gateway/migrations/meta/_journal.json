@@ -29,6 +29,13 @@
       "when": 1784317891301,
       "tag": "0003_tools_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784682528123,
+      "tag": "0004_signup_otps",
+      "breakpoints": true
     }
   ]
 }
