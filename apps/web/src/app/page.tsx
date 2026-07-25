@@ -26,6 +26,7 @@ import { ToolIcon } from "@/components/ToolIcon";
  * ────────────────────────────────────────────────────────────────────────── */
 
 const NAV_LINKS = [
+  { label: "Tools", href: "/tools" },
   { label: "Reliability", href: "/leaderboard" },
   { label: "Start", href: "/start" },
   { label: "Console", href: "/app" },
@@ -59,9 +60,9 @@ const FLOW = [
 ];
 
 const CONNECT = [
-  { t: "Skill", s: "for agents", c: "aegntic.ai/SKILL.md", h: "https://aegntic.ai/SKILL.md" },
+  { t: "Skill", s: "for agents", c: "set up https://aedex.ing/aedex.md", h: "/aedex.md" },
   { t: "MCP", s: "Claude · Cursor", c: "stdio · gateway.aedex.ing", h: "/start" },
-  { t: "CLI", s: "for humans", c: "bun add -g @aegntic/aedex", h: "/start" },
+  { t: "CLI", s: "for humans", c: "npm i -g @aegntic/aedex", h: "/start" },
 ];
 
 export default function Home() {
@@ -131,6 +132,12 @@ function HeroBento() {
               Discover, inspect, and run any data tool from a single prepaid balance. No
               subscriptions. No key sprawl. Just code your agent can call.
             </p>
+          </div>
+          <div className="mt-7 flex max-w-md items-center gap-2 rounded-2xl border-2 border-border bg-bg p-1">
+            <code className="flex-1 px-4 py-2.5 font-mono text-xs text-text-secondary">
+              <span className="text-text-muted">$</span> set up https://aedex.ing/aedex.md
+            </code>
+            <CopyButton text="set up https://aedex.ing/aedex.md" eventName="skill_cmd_copied" />
           </div>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link href="/signup" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
@@ -202,11 +209,11 @@ function HeroBento() {
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-            <span className="ml-2 font-mono text-xs text-white/40">aegntic-cli</span>
+            <span className="ml-2 font-mono text-xs text-white/40">aedex</span>
           </div>
           <div className="space-y-1.5 font-mono text-[13px] leading-relaxed">
             <div className="text-white/40">
-              $ <span className="text-[#2E9BFF]">aegntic</span>{" "}
+              $ <span className="text-[#2E9BFF]">ae</span>{" "}
               <span className="text-[#2E9BFF]">discover</span>{" "}
               <span className="text-white/50">-q</span>{" "}
               <span className="text-[#febc2e]">&quot;weather&quot;</span>
@@ -218,7 +225,7 @@ function HeroBento() {
               <span className="ml-2 text-[#2E9BFF]">✓ verified</span>
             </div>
             <div className="pt-2 text-white/40">
-              $ <span className="text-[#2E9BFF]">aegntic</span>{" "}
+              $ <span className="text-[#2E9BFF]">ae</span>{" "}
               <span className="text-[#2E9BFF]">run</span>{" "}
               <span className="text-[#febc2e]">openmeteo/weather</span>{" "}
               <span className="text-white/50">--query lat=52.52,lon=13.41</span>
@@ -251,7 +258,10 @@ function ToolsTicker() {
     <section className="swiss-line border-y-2 border-border py-12 overflow-hidden">
       <div className="mx-auto mb-8 max-w-6xl px-5 md:px-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-muted">
-          routes to 1,300+ tools across the providers agents already use
+          routes to 1,300+ tools across the providers agents already use ·{" "}
+          <Link href="/tools" className="text-accent hover:text-accent-dim">
+            browse the catalog →
+          </Link>
         </p>
       </div>
       <div className="space-y-5">
@@ -369,9 +379,9 @@ function FinalCTA() {
         <p className="mt-3 text-white/80">One skill. One balance. Every tool. Start free.</p>
         <div className="mx-auto mt-8 flex max-w-lg items-center gap-2 rounded-2xl border-2 border-black/20 bg-white p-1">
           <code className="flex-1 px-4 py-3 text-left font-mono text-xs text-text-secondary">
-            <span className="text-text-muted">$</span> bun add -g @aegntic/aedex
+            <span className="text-text-muted">$</span> npm i -g @aegntic/aedex
           </code>
-          <CopyButton text="bun add -g @aegntic/aedex" eventName="install_cmd_copied" />
+          <CopyButton text="npm i -g @aegntic/aedex" eventName="install_cmd_copied" />
         </div>
         <Link
           href="/signup"
@@ -406,7 +416,9 @@ function Footer() {
             </h4>
             <div className="flex flex-col gap-2 text-sm text-text-secondary">
               <Link href="/" className="transition-colors hover:text-text-primary">Home</Link>
+              <Link href="/tools" className="transition-colors hover:text-text-primary">Tools</Link>
               <Link href="/leaderboard" className="transition-colors hover:text-text-primary">Reliability</Link>
+              <Link href="/compare" className="transition-colors hover:text-text-primary">Compare</Link>
               <Link href="/app" className="transition-colors hover:text-text-primary">Console</Link>
               <Link href="/start" className="transition-colors hover:text-text-primary">Start</Link>
             </div>
