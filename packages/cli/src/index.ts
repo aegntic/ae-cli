@@ -20,6 +20,8 @@ const main = defineCommand({
     keys: () => import("./commands/keys.js").then((m) => m.default),
     setup: () => import("./commands/setup.js").then((m) => m.default),
     signup: () => import("./commands/signup.js").then((m) => m.default),
+    namespace: () => import("./commands/namespace.js").then((m) => m.default),
+    skills: () => import("./commands/skills.js").then((m) => m.default),
   },
 })
 
