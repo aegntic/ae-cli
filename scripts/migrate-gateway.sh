@@ -35,6 +35,6 @@ trap 'kill "$PROXY" 2>/dev/null || true' EXIT
 sleep 6
 
 echo "→ drizzle-kit migrate"
-DATABASE_URL="$LOCAL_URL" "$GW/node_modules/.bin/drizzle-kit migrate"
+DATABASE_URL="$LOCAL_URL" "$GW/node_modules/.bin/drizzle-kit" migrate
 
 echo "✓ migrations applied"

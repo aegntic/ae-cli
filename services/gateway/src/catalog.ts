@@ -44,6 +44,7 @@ function rowToEndpoint(row: CatalogRow): Endpoint {
     }) as Endpoint["costModel"],
     verified: row.verified,
     relevanceScore: row.score !== null ? Number(row.score) : undefined,
+    tags: row.tags ?? [],
   }
 }
 

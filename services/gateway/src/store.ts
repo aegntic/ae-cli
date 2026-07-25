@@ -41,7 +41,20 @@ function rowToWorkspace(r: WorkspaceRow, balance: number): Workspace {
     balance,
     currency: r.currency as Workspace["currency"],
     createdAt: r.createdAt.toISOString(),
+    isTrial: r.isTrial,
   }
+}
+
+/**
+ * Lift the trial restriction after the first paid Stripe top-up so the
+ * workspace can spend on any tool (including restricted media generation).
+ * Idempotent — no-op if already cleared.
+ */
+export async function clearWorkspaceTrial(workspaceId: string): Promise<void> {
+  await db
+    .update(schema.workspaces)
+    .set({ isTrial: false })
+    .where(eq(schema.workspaces.id, workspaceId))
 }
 
 function rowToApiKey(r: ApiKeyRow): ApiKey {
@@ -149,6 +162,7 @@ export async function createWorkspace(name?: string): Promise<Workspace> {
       id,
       name: displayName,
       currency: "USD",
+      isTrial: true,
       createdAt: new Date(),
     },
     bal.balance,

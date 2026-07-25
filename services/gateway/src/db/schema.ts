@@ -40,6 +40,9 @@ export const workspaces = pgTable("workspaces", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   currency: text("currency").notNull().default("USD"),
+  // Trial workspaces (free signup credit only) can't spend on restricted
+  // (expensive media) calls — see runs.ts gate. Cleared on first paid top-up.
+  isTrial: boolean("is_trial").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 

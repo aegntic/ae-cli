@@ -15,7 +15,7 @@ import { API_KEY_STORAGE, signupRequest, signupConfirm } from "@/lib/api";
  * routed to /app. This is the only page a cold visitor needs to reach a working
  * balance; no account system, no password.
  *
- * Copy says "free test credit" only — never the dollar amount.
+ * Copy says "trial credits" only — never the dollar amount.
  */
 export default function SignupPage() {
   return (
@@ -40,11 +40,11 @@ export default function SignupPage() {
             create account
           </p>
           <h1 className="mt-3 font-serif text-4xl font-medium leading-[1.02] tracking-tight md:text-5xl">
-            Start with <span className="italic text-accent">free test credit.</span>
+            Start with <span className="italic text-accent">trial credits.</span>
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-text-secondary">
             Verify your email and we&apos;ll spin up a workspace, mint your first API key,
-            and add free test credit so you can run tools right away. No card, no account.
+            and add trial credits so you can run cheap tools right away. No card, no account.
           </p>
 
           <div className="mt-10">
@@ -126,7 +126,7 @@ function SignupFlow() {
         </h2>
         <p className="mt-2 text-sm text-text-secondary">
           This is your only API key — copy it now. It&apos;s stored in this browser so the
-          console is ready, with free test credit to start.
+          console is ready, with trial credits to start.
         </p>
         <div className="mt-5 flex items-center gap-2 rounded-2xl border-2 border-border bg-bg p-1">
           <code className="flex-1 overflow-x-auto px-4 py-3 font-mono text-[13px] text-text-secondary">
@@ -238,7 +238,7 @@ function SignupFlow() {
       </button>
 
       <p className="mt-4 text-center text-xs text-text-muted">
-        By signing up you get free test credit to try aedex. Top up later only if you need more.
+        By signing up you get trial credits to try aedex&apos;s cheap calls. Video and image generation need paid credit. Top up only if you need more.
       </p>
     </form>
   );
