@@ -98,7 +98,7 @@ function Nav() {
           ))}
         </nav>
         <Link href="/signup" className="toy-button bg-accent px-4 py-2 text-sm font-semibold text-white">
-          Get free credit →
+          Start with trial credits →
         </Link>
       </div>
     </header>
@@ -141,7 +141,7 @@ function HeroBento() {
           </div>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link href="/signup" className="toy-button bg-accent px-6 py-3 text-sm font-bold text-white">
-              Get free test credit →
+              Start with trial credits →
             </Link>
             <Link
               href="/start"
@@ -387,7 +387,7 @@ function FinalCTA() {
           href="/signup"
           className="mt-5 inline-flex items-center gap-2 rounded-2xl border-2 border-white/40 bg-white/10 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/20"
         >
-          Or sign up on the web for free test credit →
+          Or sign up on the web for trial credits →
         </Link>
       </div>
     </section>

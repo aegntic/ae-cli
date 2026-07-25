@@ -4,6 +4,7 @@ import Stripe from "stripe"
 import type { Env } from "../types.js"
 import type { ApiResponse } from "@aegntic/sdk"
 import { appendLedgerEntry } from "../lib/ledger.js"
+import { clearWorkspaceTrial } from "../store.js"
 
 export const stripeRoute = new Hono<Env>()
 
@@ -125,6 +126,8 @@ export async function handleStripeWebhook(c: any) {
         reason: `Stripe payment ${session.payment_intent ?? session.id}`,
       })
       console.log(`[stripe] topup: +$${amount} to ${workspaceId}`)
+      // First real payment lifts the trial restriction (media calls unlocked).
+      await clearWorkspaceTrial(workspaceId)
     } catch (err) {
       console.error("[stripe] ledger topup failed:", err)
       return c.json({ error: "Ledger write failed" }, 500)

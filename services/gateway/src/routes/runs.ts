@@ -16,6 +16,30 @@ import { canonicalEncode } from "../lib/chain.js"
 import { getEndpoint, getProvider } from "../providers/registry.js"
 import { getCatalogEndpoint } from "../catalog.js"
 
+/**
+ * Tool tags marking expensive media generation. Trial (free-signup) credit
+ * exists to let a new user try cheap calls — not to subsidize video/image
+ * generation. These are blocked while the workspace is on trial credit; the
+ * first paid Stripe top-up clears the restriction (clearWorkspaceTrial).
+ */
+const RESTRICTED_TAGS = new Set([
+  "video",
+  "video-generation",
+  "videos",
+  "image",
+  "image-generation",
+  "images",
+  "media",
+  "music",
+  "audio",
+  "tts",
+  "3d",
+])
+
+function isMediaRestricted(ep: Endpoint): boolean {
+  return (ep.tags ?? []).some((t) => RESTRICTED_TAGS.has(t.toLowerCase()))
+}
+
 export const runsRoute = new Hono<Env>()
 
 runsRoute.post("/runs", async (c) => {
@@ -39,6 +63,19 @@ runsRoute.post("/runs", async (c) => {
   if (!ep) ep = getEndpoint(provider, endpoint)
   if (!ep) {
     return c.json({ error: `Endpoint ${provider}/${endpoint} not found` }, 404)
+  }
+
+  // Trial credit is for trying cheap calls, not subsidizing media generation.
+  // Blocked until the workspace adds real credit (first paid top-up).
+  if (workspace.isTrial && isMediaRestricted(ep)) {
+    return c.json(
+      {
+        error:
+          "Trial credits can't be used for video or image generation. Add credit to unlock media calls.",
+        restricted: true,
+      },
+      402,
+    )
   }
 
   const validationError = validateInput(ep.inputSchema, input)

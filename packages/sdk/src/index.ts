@@ -8,6 +8,7 @@ export interface Endpoint {
   costModel: CostModel
   verified: boolean
   relevanceScore?: number
+  tags?: string[]
 }
 
 export interface InputSchema {
@@ -78,6 +79,7 @@ export interface Workspace {
   balance: number
   currency: "USD"
   createdAt: string
+  isTrial: boolean
 }
 
 export interface ApiKey {

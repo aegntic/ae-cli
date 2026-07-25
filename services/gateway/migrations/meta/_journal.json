@@ -36,6 +36,13 @@
       "when": 1784682528123,
       "tag": "0004_signup_otps",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784981740724,
+      "tag": "0005_even_nomad",
+      "breakpoints": true
     }
   ]
 }
