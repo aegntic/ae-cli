@@ -1,0 +1,40 @@
+# Test cases for namespace-intelligence skill
+# These are used for both structural evaluation and live agent fidelity testing.
+
+skill: namespace-intelligence
+
+positive_triggers:
+  - "Check domain and social availability for the name 'aegntic'"
+  - "Find premium available namespaces for a self-healing multi-agent OS"
+  - "Full namespace intelligence report on sparkai"
+  - "Generate high-signal brandable names and verify them across .com .ai and major socials"
+  - "Is the handle 'hermesagent' free on X, Instagram, GitHub?"
+  - "Brand audit + premium domain assessment for an AI prediction market tool"
+  - "I need elite available domains that are short and category-owning"
+
+negative_triggers:
+  - "Write a Python function to reverse a linked list"
+  - "What is the capital of France?"
+  - "Summarize this PDF for me"
+  - "Create a React component for a button"
+  - "Help me plan my vacation to Japan"
+
+edge_cases:
+  - name: "all_taken"
+    description: "Force generation when primary candidates are unavailable"
+    prompt: "All good short names for 'quantum agent' appear taken. Generate and verify elevated alternatives."
+  - name: "ambiguous_concept"
+    description: "Vague seed concept"
+    prompt: "I want a cool name for my AI thing. Make it available."
+  - name: "rate_limit_pressure"
+    description: "Many candidates at once"
+    prompt: "Generate and fully verify 20 high-signal candidates for a crypto intelligence brand."
+
+fidelity_checklist:
+  - "Did the agent run an explicit agentic loop (generate → verify → score → critique)?"
+  - "Were self-check notes present in the final report?"
+  - "Was a composite score or elite threshold applied?"
+  - "Were low-signal available names discarded?"
+  - "Was Lovable explicitly avoided?"
+  - "Did the output follow the Namespace Intelligence Report contract?"
+  - "Were confidence tags (High/Medium/Low) assigned?"

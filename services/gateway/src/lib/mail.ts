@@ -46,7 +46,11 @@ function mailFrom(): string {
  */
 export async function sendOtp(email: string, code: string): Promise<void> {
   if (!isMailConfigured()) {
-    // Local dev / tests: no-op. The stored OTP row is still verifiable.
+    // Local dev / tests: mail delivery is not available. Print the code so a
+    // developer can complete the signup flow by hand. NEVER fires in prod
+    // (isMailConfigured is true when RESEND_API_KEY is set).
+    // eslint-disable-next-line no-console
+    console.log(`[mail:dev] OTP for ${email} -> ${code}`)
     return
   }
 

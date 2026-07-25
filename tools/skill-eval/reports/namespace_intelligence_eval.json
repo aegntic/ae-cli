@@ -1,0 +1,86 @@
+{
+  "skill_name": "namespace-intelligence",
+  "skill_path": "/home/workdir/.grok/skills/namespace-intelligence",
+  "timestamp": "2026-07-23T18:45:58.326711+00:00",
+  "overall_score": 93.5,
+  "grade": "Elite",
+  "checks": [
+    {
+      "name": "Spec Compliance & Portability",
+      "passed": true,
+      "score": 1.0,
+      "weight": 0.15,
+      "details": "Fully compliant with Agent Skills open standard",
+      "evidence": [
+        "name: namespace-intelligence",
+        "description length: 438 chars",
+        "references/: True, scripts/: False"
+      ]
+    },
+    {
+      "name": "Trigger Quality",
+      "passed": true,
+      "score": 0.89,
+      "weight": 0.2,
+      "details": "Description specificity and trigger coverage",
+      "evidence": [
+        "description length: 438",
+        "trigger signal hits: 2"
+      ]
+    },
+    {
+      "name": "Instruction Rigor + Self-Checking",
+      "passed": true,
+      "score": 0.99,
+      "weight": 0.3,
+      "details": "Presence of agentic loops, mandatory checks, and hard quality gates",
+      "evidence": [
+        "found: agentic|loop|iterate|cycle|sel...",
+        "found: never present|must|mandatory|r...",
+        "found: confidence|score|rank|elite|th...",
+        "self-check terms: ['self-check', 'audit', 'integrity', 'consistency', 'quality gate', 'confidence tag']",
+        "hard threshold language present"
+      ]
+    },
+    {
+      "name": "Output Contract Consistency",
+      "passed": true,
+      "score": 0.93,
+      "weight": 0.2,
+      "details": "Clarity and completeness of expected final output structure",
+      "evidence": [
+        "contract signal: output contract|structure every response",
+        "contract signal: ranked|shortlist|matrix|score|confidence",
+        "contract signal: risk surface|acquisition path|self-check",
+        "contract signal: loop summary|cycles run",
+        "explicit Output Contract section found"
+      ]
+    },
+    {
+      "name": "Edge-Case Resilience",
+      "passed": true,
+      "score": 0.83,
+      "weight": 0.15,
+      "details": "Handling of blocked names, rate limits, and saturation",
+      "evidence": [
+        "resilience: if .* blocked|when primary.*taken|s...",
+        "resilience: rate limit|fewer than|abort|narrow|...",
+        "resilience: never present an unverified|reject ...",
+        "resilience: failure|edge case|all names taken..."
+      ]
+    }
+  ],
+  "recommendations": [
+    "No critical gaps detected. Proceed to live multi-run fidelity testing."
+  ],
+  "raw_frontmatter": {
+    "name": "namespace-intelligence",
+    "description": "Elite agentic brand namespace intelligence engine. Use for domain availability, social handle conflicts, premium name scoring, alternative generation, trademark surface analysis, and full namespace audits. Triggers on namecheck, domain check, social availability, brand audit, namespace validation, premium domain, handle taken, invent brandable names, or any request requiring verified multi-platform namespace status with self-critique."
+  },
+  "body_stats": {
+    "approx_tokens": 925,
+    "char_count": 5564,
+    "has_references": true,
+    "has_scripts": false
+  }
+}
