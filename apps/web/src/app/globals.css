@@ -125,6 +125,21 @@ body {
 .animate-wordmark-in  { animation: wordmark-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-float        { animation: float 4s ease-in-out infinite; }
 
+@keyframes check-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+/* pathLength={1} on the <path> normalizes the dash to 0..1 */
+.animate-check-draw   { stroke-dasharray: 1; stroke-dashoffset: 1; animation: check-draw 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Soft staged reveal for the hero CLI demo — reads as a live run unfolding. */
+.animate-line-in      { opacity: 0; transform: translateY(4px); animation: line-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes line-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.caret-blink          { animation: blink-caret 1.1s step-end infinite; }
+
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }

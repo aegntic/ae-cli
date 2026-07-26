@@ -212,25 +212,28 @@ function HeroBento() {
             <span className="ml-2 font-mono text-xs text-white/40">aedex</span>
           </div>
           <div className="space-y-1.5 font-mono text-[13px] leading-relaxed">
-            <div className="text-white/40">
+            <div className="animate-line-in delay-100 text-white/40">
               $ <span className="text-[#2E9BFF]">ae</span>{" "}
               <span className="text-[#2E9BFF]">discover</span>{" "}
               <span className="text-white/50">-q</span>{" "}
               <span className="text-[#febc2e]">&quot;weather&quot;</span>
             </div>
-            <div className="text-white/30 text-xs">12 tools found · ranked by fit &amp; price</div>
-            <div className="text-white/70 text-xs">
+            <div className="animate-line-in delay-200 text-white/30 text-xs">12 tools found · ranked by fit &amp; price</div>
+            <div className="animate-line-in delay-300 text-white/70 text-xs">
               {"  "}1. <span className="text-white">openmeteo/weather</span>
               <span className="ml-2 text-white/40">$0.001/call</span>
               <span className="ml-2 text-[#2E9BFF]">✓ verified</span>
             </div>
-            <div className="pt-2 text-white/40">
+            <div className="animate-line-in delay-400 pt-2 text-white/40">
               $ <span className="text-[#2E9BFF]">ae</span>{" "}
               <span className="text-[#2E9BFF]">run</span>{" "}
               <span className="text-[#febc2e]">openmeteo/weather</span>{" "}
               <span className="text-white/50">--query lat=52.52,lon=13.41</span>
             </div>
-            <div className="text-white/30 text-xs">COMPLETED · +$0.001 · 1 result</div>
+            <div className="animate-line-in delay-500 text-white/30 text-xs">
+              COMPLETED · +$0.001 · 1 result
+              <span aria-hidden className="caret-blink ml-1 inline-block h-[12px] w-0 translate-y-[2px] border-l-2 border-[#2E9BFF]" />
+            </div>
           </div>
         </article>
       </div>
